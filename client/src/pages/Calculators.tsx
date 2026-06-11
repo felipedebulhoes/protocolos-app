@@ -132,6 +132,51 @@ export default function Calculators() {
     setPadResult(null);
   };
 
+  // --- ESTADO REEMBOLSO ---
+  const [surgicalValue, setSurgicalValue] = useState("");
+  const [reimbursementLimit, setReimbursementValue] = useState("");
+  const [reimbursementPercent, setReimbursementPercent] = useState("100");
+  const [reimbursementResult, setReimbursementResult] = useState<{
+    covered: number;
+    patientPart: number;
+    patientPartPercent: number;
+    isFullyCovered: boolean;
+  } | null>(null);
+
+  const calculateReimbursement = () => {
+    const total = parseFloat(surgicalValue);
+    const limit = parseFloat(reimbursementLimit);
+    const percent = parseFloat(reimbursementPercent) / 100;
+
+    if (isNaN(total) || isNaN(limit) || total <= 0 || limit <= 0) {
+      alert("Por favor, insira valores numéricos válidos e maiores que zero.");
+      return;
+    }
+
+    // O reembolso real é o limite do plano multiplicado pelo percentual de cobertura contratado (geralmente 100% da prévia, mas pode variar)
+    const realReimbursement = limit * percent;
+    
+    // O valor coberto nunca pode exceder o valor total da cirurgia
+    const covered = Math.min(total, realReimbursement);
+    const patientPart = Math.max(0, total - covered);
+    const patientPartPercent = (patientPart / total) * 100;
+    const isFullyCovered = patientPart === 0;
+
+    setReimbursementResult({
+      covered,
+      patientPart,
+      patientPartPercent,
+      isFullyCovered
+    });
+  };
+
+  const resetReimbursement = () => {
+    setSurgicalValue("");
+    setReimbursementValue("");
+    setReimbursementPercent("100");
+    setReimbursementResult(null);
+  };
+
   return (
     <Layout>
       <div className="space-y-8 max-w-3xl mx-auto">
@@ -139,19 +184,23 @@ export default function Calculators() {
         <div className="space-y-2">
           <h2 className="text-3xl font-serif font-bold text-primary">Calculadoras Médicas</h2>
           <p className="text-muted-foreground text-sm">
-            Ferramentas de quantificação clínica para suporte à decisão durante o atendimento.
+            Ferramentas de quantificação clínica e simulações de consultório para suporte à decisão.
           </p>
         </div>
 
         <Tabs defaultValue="iief" className="space-y-6">
-          <TabsList className="grid grid-cols-2 bg-secondary rounded-xl p-1">
+          <TabsList className="grid grid-cols-3 bg-secondary rounded-xl p-1">
             <TabsTrigger value="iief" className="rounded-lg py-2.5 text-xs font-semibold gap-2">
               <Calculator className="w-4 h-4" />
-              IIEF-5 (Disfunção Erétil)
+              IIEF-5 (Ereção)
             </TabsTrigger>
             <TabsTrigger value="padtest" className="rounded-lg py-2.5 text-xs font-semibold gap-2">
               <Scale className="w-4 h-4" />
-              Pad Test 24h (Incontinência)
+              Pad Test 24h (Fuga)
+            </TabsTrigger>
+            <TabsTrigger value="reimbursement" className="rounded-lg py-2.5 text-xs font-semibold gap-2">
+              <ClipboardList className="w-4 h-4" />
+              Simulador de Reembolso
             </TabsTrigger>
           </TabsList>
 
@@ -287,6 +336,105 @@ export default function Calculators() {
                       <p className="text-xs font-bold text-destructive">&gt; 400g / 24h</p>
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ABA REEMBOLSO */}
+          <TabsContent value="reimbursement" className="space-y-6">
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-6 pb-4 border-b border-border/40">
+                <CardTitle className="text-lg font-serif font-bold text-primary">Simulador de Reembolso de Honorários</CardTitle>
+                <CardDescription className="text-xs">Cálculo de coparticipação, cobertura do plano e saldo particular residual para cirurgias eletivas.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="total_value" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Valor Particular da Equipe (R$)</Label>
+                    <Input
+                      id="total_value"
+                      type="number"
+                      placeholder="Ex: 15000"
+                      value={surgicalValue}
+                      onChange={(e) => setSurgicalValue(e.target.value)}
+                      className="py-5 bg-card border-border rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="limit_value" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Limite Prévio do Plano (R$)</Label>
+                    <Input
+                      id="limit_value"
+                      type="number"
+                      placeholder="Ex: 12000"
+                      value={reimbursementLimit}
+                      onChange={(e) => setReimbursementValue(e.target.value)}
+                      className="py-5 bg-card border-border rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="percent_coverage" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Percentual de Cobertura (%)</Label>
+                    <Input
+                      id="percent_coverage"
+                      type="number"
+                      placeholder="Ex: 100"
+                      value={reimbursementPercent}
+                      onChange={(e) => setReimbursementPercent(e.target.value)}
+                      className="py-5 bg-card border-border rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                {/* Resultado do Reembolso */}
+                {reimbursementResult && (
+                  <div className={`p-5 rounded-xl border space-y-4 ${reimbursementResult.isFullyCovered ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-950 dark:text-emerald-50" : "bg-primary/5 border-border text-foreground"}`}>
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-border/40 pb-4">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Resultado da Simulação</p>
+                        <h4 className="text-lg font-serif font-bold leading-none">
+                          {reimbursementResult.isFullyCovered ? "Cobertura Total pelo Plano" : "Coparticipação Particular Necessária"}
+                        </h4>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={resetReimbursement} className="gap-2 border-border hover:bg-secondary rounded-xl text-xs">
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Limpar Simulação
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                      <div className="p-3 bg-card rounded-lg border border-border/40">
+                        <p className="text-[10px] text-muted-foreground font-semibold uppercase">Reembolso do Plano</p>
+                        <p className="text-base font-bold text-emerald-600">R$ {reimbursementResult.covered.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      </div>
+                      <div className="p-3 bg-card rounded-lg border border-border/40">
+                        <p className="text-[10px] text-muted-foreground font-semibold uppercase">Diferença Particular</p>
+                        <p className={`text-base font-bold ${reimbursementResult.isFullyCovered ? "text-emerald-600" : "text-amber-600"}`}>
+                          R$ {reimbursementResult.patientPart.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                      <div className="p-3 bg-card rounded-lg border border-border/40">
+                        <p className="text-[10px] text-muted-foreground font-semibold uppercase">Sua Participação (%)</p>
+                        <p className="text-base font-bold text-primary">{reimbursementResult.patientPartPercent.toFixed(1)}%</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!reimbursementResult && (
+                  <Button onClick={calculateReimbursement} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md shadow-accent/15">
+                    Simular Reembolso
+                  </Button>
+                )}
+
+                {/* Nota Explicativa */}
+                <div className="p-4 bg-secondary/30 rounded-xl border border-border/50 space-y-2">
+                  <div className="flex items-center gap-2 text-primary">
+                    <Info className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Como funciona o Reembolso de Honorários?</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    O reembolso é um direito garantido por lei para planos com livre escolha de prestadores. O cálculo baseia-se na multiplicação da <strong>UCO (Unidade de Custo Operacional)</strong> ou tabela de coeficientes específica do seu plano de saúde. Esta calculadora simula o valor final que o paciente receberá de volta com base na prévia oficial de reembolso fornecida pelo aplicativo do convênio.
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -35,8 +35,13 @@ import {
   Bookmark,
   Share2,
   PhoneCall,
-  Image as ImageIcon
+  Image as ImageIcon,
+  MessageSquare,
+  PlayCircle,
+  Video
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +67,8 @@ export default function ProtocolDetail() {
 
   const [favorites, setFavorites] = useState<string[]>([]);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [patientName, setPatientName] = useState("");
+  const [whatsappCopied, setWhatsappCopied] = useState<number | null>(null);
 
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
@@ -152,6 +159,31 @@ export default function ProtocolDetail() {
           </div>
         </div>
 
+	        {/* Seção de Vídeos Clínicos e Animações 3D Oficiais */}
+	        {(protocol.id === "13_hpb_manejo_completo" || protocol.id === "14_reabilitacao_pos_prostatectomia" || protocol.id === "1_implante_protese_peniana") && (
+	          <div className="space-y-4">
+	            <div className="flex items-center gap-2 border-b border-border pb-2">
+	              <Video className="w-5 h-5 text-accent" />
+	              <h3 className="text-lg font-serif font-bold text-primary">Animações Clínicas e Explicações 3D Oficiais</h3>
+	            </div>
+	            <Card className="overflow-hidden border border-border bg-card shadow-sm max-w-2xl mx-auto">
+	              <div className="aspect-video relative bg-black flex items-center justify-center">
+	                <video 
+	                  src="/videos/prostate-to-b.mp4" 
+	                  controls 
+	                  poster="/images/surgical/protese_anatomia_posicionamento.png"
+	                  className="w-full h-full object-contain"
+	                />
+	              </div>
+	              <CardContent className="p-4 bg-secondary/10 border-t border-border/40">
+	                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+	                  <span className="font-bold text-accent">Animação Oficial Dr. Felipe de Bulhões:</span> Demonstração anatômica tridimensional de posicionamento e dinâmica do fluxo urológico e andrológico.
+	                </p>
+	              </CardContent>
+	            </Card>
+	          </div>
+	        )}
+
 	        {/* Seção de Imagens de Atlas Cirúrgico (se disponível para o protocolo) */}
 	        {protocol.images && protocol.images.length > 0 && (
 	          <div className="space-y-4">
@@ -176,6 +208,85 @@ export default function ProtocolDetail() {
 	                  </CardContent>
 	                </Card>
 	              ))}
+	            </div>
+	          </div>
+	        )}
+
+	        {/* Seção de Modelos Rápidos de WhatsApp para a Secretaria */}
+	        {protocol.whatsapp_scripts && protocol.whatsapp_scripts.length > 0 && (
+	          <div className="space-y-4 bg-amber-500/[0.02] border border-amber-500/10 rounded-2xl p-5 shadow-sm">
+	            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-3">
+	              <div className="flex items-center gap-2">
+	                <MessageSquare className="w-5 h-5 text-emerald-500" />
+	                <div>
+	                  <h3 className="text-base font-serif font-bold text-primary">Modelos Rápidos de WhatsApp (Secretaria)</h3>
+	                  <p className="text-[10px] text-muted-foreground font-medium">Mensagens prontas para agilizar o contato e conversão de cirurgias.</p>
+	                </div>
+	              </div>
+	              <div className="w-full md:w-48">
+	                <Input
+	                  placeholder="Nome do Paciente..."
+	                  value={patientName}
+	                  onChange={(e) => setPatientName(e.target.value)}
+	                  className="h-8 text-xs rounded-lg border-border"
+	                />
+	              </div>
+	            </div>
+
+	            <div className="space-y-4 pt-1">
+	              {protocol.whatsapp_scripts.map((script: any, i: number) => {
+	                // Substituição dinâmica do nome do paciente
+	                const formattedMessage = script.message.replace(/\[Nome\]/g, patientName || "Paciente");
+	                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(formattedMessage)}`;
+
+	                const copyWhatsappMessage = () => {
+	                  navigator.clipboard.writeText(formattedMessage);
+	                  setWhatsappCopied(i);
+	                  toast.success("Mensagem do WhatsApp copiada!");
+	                  setTimeout(() => setWhatsappCopied(null), 2000);
+	                };
+
+	                return (
+	                  <div key={i} className="bg-card border border-border/60 rounded-xl p-4 space-y-3 shadow-sm">
+	                    <div className="flex items-center justify-between">
+	                      <Badge variant="outline" className="border-emerald-500/20 text-emerald-600 bg-emerald-500/5 font-semibold text-[10px] uppercase tracking-wider">
+	                        {script.trigger}
+	                      </Badge>
+	                      <div className="flex items-center gap-2">
+	                        <Button
+	                          variant="ghost"
+	                          size="sm"
+	                          onClick={copyWhatsappMessage}
+	                          className="h-7 gap-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:text-foreground"
+	                        >
+	                          {whatsappCopied === i ? (
+	                            <>
+	                              <Check className="w-3 h-3 text-emerald-500" />
+	                              Copiado
+	                            </>
+	                          ) : (
+	                            <>
+	                              <Copy className="w-3 h-3" />
+	                              Copiar
+	                            </>
+	                          )}
+	                        </Button>
+	                        <a 
+	                          href={whatsappUrl} 
+	                          target="_blank" 
+	                          rel="noopener noreferrer"
+	                          className="inline-flex items-center justify-center h-7 px-3 rounded-lg text-[10px] font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors shadow-sm gap-1"
+	                        >
+	                          Enviar WhatsApp
+	                        </a>
+	                      </div>
+	                    </div>
+	                    <p className="text-xs text-foreground/80 leading-relaxed font-mono whitespace-pre-wrap bg-secondary/30 p-3 rounded-lg border border-border/40">
+	                      {formattedMessage}
+	                    </p>
+	                  </div>
+	                );
+	              })}
 	            </div>
 	          </div>
 	        )}
