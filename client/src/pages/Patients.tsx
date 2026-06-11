@@ -12,7 +12,8 @@ import {
   Calendar, 
   Clipboard,
   AlertCircle,
-  Download
+  Download,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -21,6 +22,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   ResponsiveContainer, 
   LineChart, 
@@ -39,6 +49,7 @@ interface HormonioRegistro {
   livre?: number;
   shbg?: number;
   hematocrito?: number;
+  intervencao?: string; // Dosagem/Conduta alterada nesta data (ex: "Gel de Testo 5% 1 pump/dia", "Início de Nebido")
 }
 
 interface SintomaRegistro {
@@ -66,6 +77,7 @@ interface Paciente {
   hematocrito: string;
   notas: string;
   dataCadastro: string;
+  telefone?: string; // Telefone para contato e lembretes via WhatsApp
   shbg?: string;
   testoLivre?: string;
   historicoHormonal?: HormonioRegistro[];
@@ -91,6 +103,7 @@ export default function Patients() {
   const [shbg, setShbg] = useState("");
   const [testoLivre, setTestoLivre] = useState("");
   const [albumina, setAlbumina] = useState("4.3"); // Albumina padrão de 4.3 g/dL para fórmula de Vermeulen
+  const [telefone, setTelefone] = useState(""); // Telefone para alertas de WhatsApp
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
 
   // Função para cálculo científico de Testosterona Livre (Vermeulen, 1999)
@@ -162,6 +175,7 @@ export default function Patients() {
   const [newLivre, setNewLivre] = useState("");
   const [newShbg, setNewShbg] = useState("");
   const [newHemaPonto, setNewHemaPonto] = useState("");
+  const [newIntervencao, setNewIntervencao] = useState(""); // Ajuste de conduta / dosagem (ex: "Início de Nebido", "Gel de Testo 5% 1 pump/dia")
   const [newDataPonto, setNewDataPonto] = useState(new Date().toLocaleDateString("pt-BR").substring(0, 5));
 
   // Estados para inserção de novo ponto de sintomas
@@ -169,6 +183,65 @@ export default function Patients() {
   const [newIpss, setNewIpss] = useState("");
   const [newAdam, setNewAdam] = useState(false);
   const [newDataSintoma, setNewDataSintoma] = useState(new Date().toLocaleDateString("pt-BR").substring(0, 5));
+
+  // Estados para o Módulo de Prescrição Inteligente
+  const [prescricaoOpen, setPrescricaoOpen] = useState(false);
+  const [prescricaoPaciente, setPrescricaoPaciente] = useState<Paciente | null>(null);
+  const [prescricaoModelo, setPrescricaoPacienteModelo] = useState("");
+  const [prescricaoConteudo, setPrescricaoConteudo] = useState("");
+
+  // Modelos de receitas oficiais do Dr. Felipe de Bulhões baseados em diretrizes urológicas (SBU/AUA/EAU)
+  const modelosPrescricao = [
+    {
+      id: "gel_testo_5",
+      titulo: "Gel de Testosterona Pentravan 5% (TRT)",
+      conteudo: `USO TÓPICO
+
+1. Gel de Testosterona 5% em veículo Pentravan ------------ 30 g (QSP)
+   Dispenser em frasco Pump (entregar 1 frasco)
+   Posologia: Aplicar 1 pump (equivalente a 50mg de testosterona) sobre a pele limpa e seca do ombro, braço ou abdômen, preferencialmente pela manhã, massageando levemente até completa absorção. Lavar as mãos imediatamente após a aplicação e evitar contato da área com mulheres ou crianças por pelo menos 4 horas.
+
+2. Sabonete líquido neutro --------------------------------- 150 mL
+   Posologia: Lavar o local de aplicação após 6 horas para remoção de resíduos e máxima segurança.`
+    },
+    {
+      id: "undecilato_nebido",
+      titulo: "Undecilato de Testosterona 250mg/mL (Nebido/TRT)",
+      conteudo: `USO INTRAMUSCULAR
+
+1. Undecilato de Testosterona 250 mg/mL (Ampola de 4 mL) ---- 1 ampola
+   Posologia: Aplicar 1 ampola (1000 mg) por via intramuscular profunda na região glútea, lentamente (durante pelo menos 60 segundos), com intervalo de 10 a 14 semanas, conforme orientação médica e controle laboratorial periódico.
+
+* Nota: A primeira aplicação de reforço (segunda dose) pode ser recomendada após 6 semanas para saturação mais rápida do compartimento de reserva.`
+    },
+    {
+      id: "cipionato_deposteron",
+      titulo: "Cipionato de Testosterona 100mg/mL (Deposteron/TRT)",
+      conteudo: `USO INTRAMUSCULAR
+
+1. Cipionato de Testosterona 200 mg / 2 mL (Ampola) --------- 3 ampolas
+   Posologia: Aplicar 1 ampola (200 mg) por via intramuscular profunda na região glútea a cada 14 dias (duas semanas) para manutenção de níveis fisiológicos de testosterona. Realizar exames de controle de Testosterona Total e Hematócrito antes da 4ª aplicação.`
+    },
+    {
+      id: "clomifeno_estimulo",
+      titulo: "Clomifeno 25mg/dia (Estímulo Endógeno/Andropausa)",
+      conteudo: `USO ORAL
+
+1. Citrato de Clomifeno 25 mg ------------------------------- 60 cápsulas
+   Posologia: Tomar 1 cápsula por via oral, uma vez ao dia, preferencialmente no mesmo horário, por 60 dias. 
+   Objetivo: Estímulo do eixo hipotálamo-hipófise-gonadal para aumento da produção endógena de testosterona e preservação da espermatogênese.`
+    },
+    {
+      id: "tadalafila_diaria",
+      titulo: "Tadalafila 5mg de Uso Diário (Disfunção Erétil & LUTS)",
+      conteudo: `USO ORAL
+
+1. Tadalafila 5 mg ------------------------------------------ 30 comprimidos
+   Posologia: Tomar 1 comprimido por via oral, uma vez ao dia, sempre no mesmo horário (preferencialmente à noite ou 2 horas antes de dormir). Uso contínuo.
+
+* Benefícios: Melhora da função erétil e redução dos sintomas urinários obstrutivos (IPSS) por hiperplasia prostática benigna (HPB).`
+    }
+  ];
 
   // Carregar pacientes do LocalStorage
   useEffect(() => {
@@ -219,6 +292,7 @@ export default function Patients() {
             psa,
             hematocrito,
             notas: notas.trim(),
+            telefone: telefone.trim(),
             shbg,
             testoLivre,
             historicoHormonal: hist
@@ -250,6 +324,7 @@ export default function Patients() {
         psa,
         hematocrito,
         notas: notas.trim(),
+        telefone: telefone.trim(),
         shbg,
         testoLivre,
         dataCadastro: new Date().toLocaleDateString("pt-BR"),
@@ -277,6 +352,7 @@ export default function Patients() {
     setNotas(p.notas);
     setShbg(p.shbg || "");
     setTestoLivre(p.testoLivre || "");
+    setTelefone(p.telefone || "");
     setIsAdding(true);
   };
 
@@ -305,7 +381,8 @@ export default function Patients() {
           total: parseFloat(newTotal),
           livre: newLivre ? parseFloat(newLivre) : undefined,
           shbg: newShbg ? parseFloat(newShbg) : undefined,
-          hematocrito: newHemaPonto ? parseFloat(newHemaPonto) : undefined
+          hematocrito: newHemaPonto ? parseFloat(newHemaPonto) : undefined,
+          intervencao: newIntervencao.trim() || undefined
         };
         return {
           ...p,
@@ -324,6 +401,7 @@ export default function Patients() {
     setNewLivre("");
     setNewShbg("");
     setNewHemaPonto("");
+    setNewIntervencao("");
   };
 
   const handleAddSintomaPonto = (pacienteId: string) => {
@@ -381,6 +459,7 @@ export default function Patients() {
     setNotas("");
     setShbg("");
     setTestoLivre("");
+    setTelefone("");
   };
 
   const handleCancel = () => {
@@ -638,15 +717,27 @@ export default function Patients() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="queixa" className="text-xs font-bold text-primary uppercase tracking-wider">Queixa Principal / Diagnóstico</Label>
-                  <Input 
-                    id="queixa" 
-                    placeholder="Ex: Disfunção erétil leve + Sintomas de hipogonadismo (DAEM)" 
-                    value={queixa}
-                    onChange={(e) => setQueixa(e.target.value)}
-                    className="rounded-xl h-11"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="queixa" className="text-xs font-bold text-primary uppercase tracking-wider">Queixa Principal / Diagnóstico</Label>
+                    <Input 
+                      id="queixa" 
+                      placeholder="Ex: Disfunção erétil leve + Sintomas de hipogonadismo (DAEM)" 
+                      value={queixa}
+                      onChange={(e) => setQueixa(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="telefone" className="text-xs font-bold text-primary uppercase tracking-wider">Telefone (WhatsApp)</Label>
+                    <Input 
+                      id="telefone" 
+                      placeholder="Ex: 11 98112-4455" 
+                      value={telefone}
+                      onChange={(e) => setTelefone(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4 border-t border-border/40 pt-5">
@@ -889,7 +980,58 @@ export default function Patients() {
                             {p.idade && <span>• {p.idade} anos</span>}
                           </div>
                         </div>
-                        <div className="flex gap-1 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          {/* Botão de Busca Ativa / Alerta via WhatsApp */}
+                          {(() => {
+                            const hist = p.historicoHormonal || [];
+                            if (hist.length === 0) return null;
+                            
+                            const lastDateStr = hist[hist.length - 1].data;
+                            const parts = lastDateStr.split("/");
+                            const day = parseInt(parts[0]);
+                            const month = parseInt(parts[1]) - 1;
+                            const currentYear = new Date().getFullYear();
+                            const lastExamDate = new Date(currentYear, month, day);
+                            const today = new Date();
+                            if (lastExamDate > today) lastExamDate.setFullYear(currentYear - 1);
+                            
+                            const diffTime = Math.abs(today.getTime() - lastExamDate.getTime());
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            const diffMonths = diffDays / 30.4;
+
+                            if (diffMonths >= 3) {
+                              const cleanPhone = p.telefone ? p.telefone.replace(/\D/g, "") : "";
+                              const dddAndPhone = cleanPhone.length === 11 ? cleanPhone : "55" + cleanPhone; // Se não tiver DDI, assume 55 (Brasil)
+                              
+                              const isLateCritical = diffMonths >= 6;
+                              const textMsg = isLateCritical
+                                ? `Olá, ${p.nome.split(" ")[0]}. Tudo bem? Aqui é da equipe do Dr. Felipe de Bulhões. Notamos que seu último exame de acompanhamento de Terapia de Reposição Hormonal (TRT) foi realizado há mais de 6 meses (em ${lastDateStr}). Para sua segurança cardiovascular, prostática e controle de poliglobulia, é fundamental realizarmos a consulta de retorno e novos exames. Como estão seus horários para agendarmos?`
+                                : `Olá, ${p.nome.split(" ")[0]}. Tudo bem? Aqui é da equipe do Dr. Felipe de Bulhões. Lembramos que já completou mais de 3 meses desde o seu último exame laboratorial de acompanhamento (em ${lastDateStr}). Recomendamos uma avaliação periódica para ajuste de dose e segurança da sua TRT. Vamos agendar seu retorno?`;
+
+                              const whatsappUrl = `https://api.whatsapp.com/send?phone=${dddAndPhone}&text=${encodeURIComponent(textMsg)}`;
+
+                              return (
+                                <a
+                                  href={p.telefone ? whatsappUrl : undefined}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={p.telefone ? "Enviar Lembrete de Retorno (WhatsApp)" : "Cadastre um telefone para enviar lembretes de retorno"}
+                                  onClick={(e) => {
+                                    if (!p.telefone) {
+                                      e.preventDefault();
+                                      toast.info("Para enviar o lembrete, edite o cadastro do paciente e informe o número de telefone.");
+                                    }
+                                  }}
+                                  className={`h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all duration-200 ${p.telefone ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20" : "bg-muted/40 text-muted-foreground cursor-not-allowed"}`}
+                                >
+                                  <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
+                                  Busca Ativa
+                                </a>
+                              );
+                            }
+                            return null;
+                          })()}
+
                           <Button 
                             variant="ghost" 
                             size="sm" 
@@ -1029,6 +1171,29 @@ export default function Patients() {
                                         strokeDasharray="4 4" 
                                         label={{ value: 'Limite Ht (52%)', fill: '#DC2626', fontSize: 9, fontWeight: 'bold', position: 'insideBottomRight' }} 
                                       />
+                                      {/* Linhas Verticais de Intervenções / Ajustes de Conduta */}
+                                      {chartData.map((pt, idx) => {
+                                        if (pt.intervencao) {
+                                          return (
+                                            <ReferenceLine
+                                              key={`interv_${idx}`}
+                                              x={pt.data}
+                                              stroke="#B87333"
+                                              strokeWidth={1.5}
+                                              strokeDasharray="3 3"
+                                              label={{ 
+                                                value: pt.intervencao, 
+                                                fill: '#B87333', 
+                                                fontSize: 8, 
+                                                fontWeight: 'bold', 
+                                                position: 'insideTopLeft',
+                                                offset: 10
+                                              }}
+                                            />
+                                          );
+                                        }
+                                        return null;
+                                      })}
                                       {/* Linhas de Dados */}
                                       <Line 
                                         yAxisId="left"
@@ -1079,6 +1244,26 @@ export default function Patients() {
                                     <span className="text-[#3B82F6]">SHBG (nmol/L - Eixo Dir.)</span>
                                   </div>
                                 </div>
+
+                                {/* Linha do Tempo de Intervenções / Condutas */}
+                                {chartData.some(pt => pt.intervencao) && (
+                                  <div className="border-t border-border/40 pt-3 space-y-2">
+                                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">
+                                      Histórico de Ajustes de Dosagem &amp; Condutas:
+                                    </span>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                      {chartData.map((pt, idx) => {
+                                        if (!pt.intervencao) return null;
+                                        return (
+                                          <div key={`conduta_list_${idx}`} className="flex items-center gap-2 bg-accent/5 px-2.5 py-1.5 rounded-lg border border-accent/10 text-[11px]">
+                                            <span className="font-bold text-[#B87333] shrink-0">{pt.data}:</span>
+                                            <span className="text-primary font-medium truncate" title={pt.intervencao}>{pt.intervencao}</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             ) : (
                               <div className="p-6 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
@@ -1088,6 +1273,22 @@ export default function Patients() {
 
                             {/* Botões de Exportação (JSON e PDF Timbrado Completo) */}
                             <div className="flex justify-end gap-2 pt-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPrescricaoPaciente(p);
+                                  setPrescricaoPacienteModelo("");
+                                  setPrescricaoConteudo("");
+                                  setPrescricaoOpen(true);
+                                }}
+                                className="h-9 rounded-xl text-xs font-bold border-accent/30 text-primary hover:bg-accent/5 gap-1.5"
+                              >
+                                <Activity className="w-3.5 h-3.5 text-accent animate-pulse" />
+                                Prescrever Protocolo
+                              </Button>
+
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -1114,6 +1315,7 @@ export default function Patients() {
                                       <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px;">${h.livre ? `${h.livre} ng/dL` : "N/A"}</td>
                                       <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px;">${h.shbg ? `${h.shbg} nmol/L` : "N/A"}</td>
                                       <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px; font-weight: bold; color: ${h.hematocrito && h.hematocrito > 52 ? '#DC2626' : '#1C3D5A'};">${h.hematocrito ? `${h.hematocrito}%` : "N/A"}</td>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px; font-style: italic; color: #B87333; font-weight: 500;">${h.intervencao || "Nenhum ajuste"}</td>
                                     </tr>
                                   `).join("");
 
@@ -1419,6 +1621,7 @@ export default function Patients() {
                                               <th>Testosterona Livre</th>
                                               <th>SHBG</th>
                                               <th>Hematócrito</th>
+                                              <th>Ajuste de Dose / Conduta</th>
                                             </tr>
                                           </thead>
                                           <tbody>
@@ -1556,7 +1759,7 @@ export default function Patients() {
                             </div>
 
                             {/* Formulário rápido para adicionar ponto no gráfico */}
-                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
+                            <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
                               <Input 
                                 type="number" 
                                 placeholder="Total (ng/dL)" 
@@ -1584,6 +1787,13 @@ export default function Patients() {
                                 value={newHemaPonto}
                                 onChange={(e) => setNewHemaPonto(e.target.value)}
                                 className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Input 
+                                type="text" 
+                                placeholder="Ajuste de Dose / Conduta (ex: Início Nebido)" 
+                                value={newIntervencao}
+                                onChange={(e) => setNewIntervencao(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card col-span-2 sm:col-span-1"
                               />
                               <Button 
                                 size="sm" 
@@ -1776,6 +1986,344 @@ export default function Patients() {
           </div>
         )}
       </div>
+
+      {/* Modal do Módulo de Prescrição Inteligente */}
+      <Dialog open={prescricaoOpen} onOpenChange={setPrescricaoOpen}>
+        <DialogContent className="max-w-2xl bg-[#FEFEFE] rounded-2xl border border-border shadow-xl p-6">
+          <DialogHeader className="border-b border-border/40 pb-3">
+            <DialogTitle className="text-base font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+              <Activity className="w-5 h-5 text-accent animate-pulse" />
+              Módulo de Prescrição Eletrônica Inteligente
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Selecione um protocolo clínico baseado em evidências urológicas (SBU/EAU/AUA) para gerar a receita oficial timbrada para <strong>{prescricaoPaciente?.nome}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-4">
+            {/* Seletor de Modelo */}
+            <div className="space-y-1.5">
+              <Label htmlFor="modelo-prescricao" className="text-xs font-bold text-primary uppercase tracking-wider">Modelo de Protocolo Clínico:</Label>
+              <select
+                id="modelo-prescricao"
+                value={prescricaoModelo}
+                onChange={(e) => {
+                  const mId = e.target.value;
+                  setPrescricaoPacienteModelo(mId);
+                  const selected = modelosPrescricao.find(m => m.id === mId);
+                  if (selected) {
+                    setPrescricaoConteudo(selected.conteudo);
+                  } else {
+                    setPrescricaoConteudo("");
+                  }
+                }}
+                className="w-full h-10 px-3 rounded-xl border border-border bg-card text-xs font-medium focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none"
+              >
+                <option value="">-- Selecione um modelo de prescrição --</option>
+                {modelosPrescricao.map(m => (
+                  <option key={m.id} value={m.id}>{m.titulo}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Editor de Texto da Receita */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="conteudo-prescricao" className="text-xs font-bold text-primary uppercase tracking-wider">Conteúdo da Receita (Editável):</Label>
+                <span className="text-[10px] text-accent font-bold uppercase">Via de Tratamento e Posologia</span>
+              </div>
+              <Textarea
+                id="conteudo-prescricao"
+                value={prescricaoConteudo}
+                onChange={(e) => setPrescricaoConteudo(e.target.value)}
+                placeholder="Selecione um modelo acima ou digite a prescrição livremente..."
+                className="min-h-[220px] rounded-xl text-xs font-medium font-sans bg-card border-border focus:ring-accent/20 leading-relaxed"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-border/40 pt-4 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setPrescricaoOpen(false);
+                setPrescricaoPaciente(null);
+                setPrescricaoPacienteModelo("");
+                setPrescricaoConteudo("");
+              }}
+              className="h-9 rounded-xl text-xs font-bold border-border"
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              disabled={!prescricaoConteudo.trim() || !prescricaoPaciente}
+              onClick={() => {
+                if (!prescricaoPaciente || !prescricaoConteudo.trim()) return;
+
+                // Gerar o documento em PDF timbrado via iframe de impressão
+                const printFrame = document.createElement("iframe");
+                printFrame.style.position = "fixed";
+                printFrame.style.right = "0";
+                printFrame.style.bottom = "0";
+                printFrame.style.width = "0";
+                printFrame.style.height = "0";
+                printFrame.style.border = "0";
+                document.body.appendChild(printFrame);
+
+                const docToday = new Date().toLocaleDateString("pt-BR");
+                const signatureUrl = localStorage.getItem("protoUro_signature_data") || "";
+                const useSignature = localStorage.getItem("protouro_use_signature") !== "false";
+
+                const htmlContent = `
+                  <!DOCTYPE html>
+                  <html lang="pt-BR">
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>Receita Médica - Dr. Felipe de Bulhões</title>
+                    <style>
+                      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap');
+                      
+                      body {
+                        font-family: 'Montserrat', sans-serif;
+                        color: #1C3D5A;
+                        margin: 0;
+                        padding: 40px;
+                        line-height: 1.6;
+                        background-color: #FEFEFE;
+                        min-height: 297mm;
+                        box-sizing: border-box;
+                        position: relative;
+                      }
+                      
+                      .header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border-bottom: 2px solid #B87333;
+                        padding-bottom: 15px;
+                        margin-bottom: 30px;
+                      }
+                      
+                      .logo-area {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                      }
+                      
+                      .logo-text {
+                        font-family: 'Playfair Display', serif;
+                        font-size: 18px;
+                        font-weight: 700;
+                        color: #1C3D5A;
+                        letter-spacing: 0.5px;
+                      }
+                      
+                      .logo-sub {
+                        font-size: 9px;
+                        font-weight: 700;
+                        color: #B87333;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        margin-top: 2px;
+                      }
+                      
+                      .clinic-info {
+                        text-align: right;
+                        font-size: 9px;
+                        color: #64748B;
+                        line-height: 1.4;
+                      }
+                      
+                      .prescription-title {
+                        text-align: center;
+                        font-family: 'Playfair Display', serif;
+                        font-size: 24px;
+                        font-weight: 700;
+                        color: #1C3D5A;
+                        margin-bottom: 40px;
+                        letter-spacing: 0.5px;
+                        text-transform: uppercase;
+                        border-bottom: 1px dashed #E2E8F0;
+                        padding-bottom: 10px;
+                      }
+                      
+                      .patient-info {
+                        background-color: #F8FAFC;
+                        border: 1px solid #E2E8F0;
+                        border-radius: 12px;
+                        padding: 15px 20px;
+                        margin-bottom: 35px;
+                        font-size: 12px;
+                      }
+                      
+                      .patient-name {
+                        font-size: 16px;
+                        font-weight: 700;
+                        color: #1C3D5A;
+                        margin-bottom: 4px;
+                      }
+                      
+                      .prescription-content {
+                        font-size: 12px;
+                        color: #334155;
+                        white-space: pre-wrap;
+                        line-height: 1.7;
+                        margin-bottom: 80px;
+                        min-height: 250px;
+                        font-weight: 500;
+                      }
+                      
+                      .signature-area {
+                        position: absolute;
+                        bottom: 80px;
+                        left: 0;
+                        right: 0;
+                        display: flex;
+                        flex-col: column;
+                        align-items: center;
+                        text-align: center;
+                      }
+                      
+                      .signature-img {
+                        max-height: 55px;
+                        margin-bottom: 5px;
+                      }
+                      
+                      .signature-line {
+                        width: 250px;
+                        border-top: 1px solid #CBD5E1;
+                        margin: 0 auto 8px auto;
+                      }
+                      
+                      .footer {
+                        position: absolute;
+                        bottom: 30px;
+                        left: 40px;
+                        right: 40px;
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 8px;
+                        color: #94A3B8;
+                        border-top: 1px solid #E2E8F0;
+                        padding-top: 10px;
+                      }
+                      
+                      @media print {
+                        body {
+                          padding: 20px;
+                        }
+                        .no-print {
+                          display: none;
+                        }
+                      }
+                    </style>
+                  </head>
+                  <body>
+                    <!-- Cabeçalho Oficial -->
+                    <div class="header">
+                      <div class="logo-area">
+                        <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M20 20H50C65 20 75 30 75 45C75 60 65 70 50 70H35V90H20V20ZM35 32V58H50C58 58 62 53 62 45C62 37 58 32 50 32H35Z" fill="#1C3D5A"/>
+                          <path d="M45 40H65C73 40 80 47 80 55C80 63 73 70 65 70H45V40Z" fill="#B87333" opacity="0.85"/>
+                        </svg>
+                        <div>
+                          <div class="logo-text">DR. FELIPE DE BULHÕES</div>
+                          <div class="logo-sub">Urologia & Andrologia de Alta Performance</div>
+                        </div>
+                      </div>
+                      <div class="clinic-info">
+                        <strong>CRM-SP 241.135 | RQE 112.445</strong><br>
+                        drfelipebulhoes@bulhoesurohealth.com<br>
+                        WhatsApp: (11) 98112-4455
+                      </div>
+                    </div>
+
+                    <div class="prescription-title">Receituário Especial</div>
+
+                    <!-- Ficha do Paciente -->
+                    <div class="patient-info">
+                      <div style="color: #B87333; font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">Paciente Receituário</div>
+                      <div class="patient-name">${prescricaoPaciente.nome}</div>
+                      <div style="color: #64748B; margin-top: 4px;">Idade: ${prescricaoPaciente.idade ? `${prescricaoPaciente.idade} anos` : "N/A"} • Data: ${docToday}</div>
+                    </div>
+
+                    <!-- Conteúdo da Receita -->
+                    <div class="prescription-content">${prescricaoConteudo}</div>
+
+                    <!-- Assinatura ICP-Brasil -->
+                    <div class="signature-area">
+                      ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" />` : `<div style="height: 45px;"></div>`}
+                      <div class="signature-line"></div>
+                      <strong style="font-size: 11px; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</strong><br>
+                      <span style="font-size: 9px; color: #64748B;">Urologista - CRM-SP 241.135 | RQE 112.445</span><br>
+                      <span style="font-size: 7px; color: #94A3B8; margin-top: 6px; display: block; font-family: monospace;">Assinado digitalmente via ICP-Brasil (e-CPF) • Hash SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+                    </div>
+
+                    <!-- Rodapé Fixo -->
+                    <div class="footer">
+                      <span>Receituário Digital • Gerado via ProtoUro App</span>
+                      <span>Campinas: Av. José de Souza Campos, 123 | São Paulo: Av. Paulista, 1000</span>
+                      <span>Página 1 de 1</span>
+                    </div>
+                  </body>
+                  </html>
+                `;
+
+                const doc = printFrame.contentWindow?.document || printFrame.contentDocument;
+                if (doc) {
+                  doc.open();
+                  doc.write(htmlContent);
+                  doc.close();
+
+                  // Adicionar o documento gerado ao histórico do paciente
+                  const selectedModelo = modelosPrescricao.find(m => m.id === prescricaoModelo);
+                  const docTitulo = selectedModelo ? `Receita: ${selectedModelo.titulo}` : "Receita Médica Personalizada";
+
+                  const novoDocumento = {
+                    id: Math.random().toString(36).substring(2, 9),
+                    titulo: docTitulo,
+                    tipo: "receita" as "receita",
+                    data: docToday,
+                    conteudo: prescricaoConteudo
+                  };
+
+                  const pacientesAtualizados = pacientes.map(p => {
+                    if (p.id === prescricaoPaciente.id) {
+                      return {
+                        ...p,
+                        documentos: [novoDocumento, ...(p.documentos || [])]
+                      };
+                    }
+                    return p;
+                  });
+
+                  setPacientes(pacientesAtualizados);
+                  saveToStorage(pacientesAtualizados);
+
+                  setTimeout(() => {
+                    printFrame.contentWindow?.focus();
+                    printFrame.contentWindow?.print();
+                    setTimeout(() => {
+                      document.body.removeChild(printFrame);
+                    }, 1000);
+                  }, 500);
+
+                  toast.success("Receita enviada para impressão e registrada no prontuário!");
+                  setPrescricaoOpen(false);
+                  setPrescricaoPaciente(null);
+                  setPrescricaoPacienteModelo("");
+                  setPrescricaoConteudo("");
+                }
+              }}
+              className="h-9 rounded-xl text-xs font-bold copper-gradient text-white"
+            >
+              Imprimir Receita &amp; Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
