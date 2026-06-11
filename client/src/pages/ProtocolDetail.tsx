@@ -1296,30 +1296,73 @@ export default function ProtocolDetail() {
 	                        </Badge>
 	                      )}
 	                      {isSecretary && (
-	                        <Badge variant="outline" className="border-amber-500/20 text-amber-600 bg-amber-500/5 font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1">
-	                          <PhoneCall className="w-2.5 h-2.5" />
-	                          Comunicação & Vendas
-	                        </Badge>
-	                      )}
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(section.content, section.title, isPrescription)}
-                          className="h-8 gap-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground"
-                        >
-                          {copiedText === section.title ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-emerald-500" />
-                              Copiado
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              Copiar
-                            </>
-                          )}
-                        </Button>
+		                        <Badge variant="outline" className="border-amber-500/20 text-amber-600 bg-amber-500/5 font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1">
+		                          <PhoneCall className="w-2.5 h-2.5" />
+		                          Comunicação & Vendas
+		                        </Badge>
+		                      )}
+	                      <div className="flex items-center gap-1.5">
+	                        {isSecretary ? (
+	                          <div className="flex items-center gap-1.5">
+	                            <Button
+	                              variant="ghost"
+	                              size="sm"
+	                              onClick={() => {
+	                                const cleanContent = section.content
+	                                  .replace(/\[Nome do Paciente\]/g, patientName || "Paciente")
+	                                  .replace(/\[Nome\]/g, patientName || "Paciente");
+	                                copyToClipboard(cleanContent, section.title, false);
+	                              }}
+	                              className="h-8 gap-1.5 rounded-lg text-xs font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-500/5 border border-amber-500/10"
+	                            >
+	                              {copiedText === section.title ? (
+	                                <>
+	                                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+	                                  Copiado
+	                                </>
+	                              ) : (
+	                                <>
+	                                  <Copy className="w-3.5 h-3.5" />
+	                                  Copiar Roteiro
+	                                </>
+	                              )}
+	                            </Button>
+	                            <Button
+	                              variant="ghost"
+	                              size="sm"
+	                              onClick={() => {
+	                                const cleanContent = section.content
+	                                  .replace(/\[Nome do Paciente\]/g, patientName || "Paciente")
+	                                  .replace(/\[Nome\]/g, patientName || "Paciente");
+	                                const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(cleanContent)}`;
+	                                window.open(url, "_blank");
+	                              }}
+	                              className="h-8 gap-1.5 rounded-lg text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors shadow-sm"
+	                            >
+	                              <MessageSquare className="w-3.5 h-3.5" />
+	                              Enviar WhatsApp
+	                            </Button>
+	                          </div>
+	                        ) : (
+	                          <Button
+	                            variant="ghost"
+	                            size="sm"
+	                            onClick={() => copyToClipboard(section.content, section.title, isPrescription)}
+	                            className="h-8 gap-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground"
+	                          >
+	                            {copiedText === section.title ? (
+	                              <>
+	                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+	                                Copiado
+	                              </>
+	                            ) : (
+	                              <>
+	                                <Copy className="w-3.5 h-3.5" />
+	                                Copiar
+	                              </>
+	                            )}
+	                          </Button>
+	                        )}
                         {isPrescription && (
                           <div className="flex items-center gap-1.5">
                             <Button

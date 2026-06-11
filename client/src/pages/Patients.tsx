@@ -13,7 +13,8 @@ import {
   Clipboard,
   AlertCircle,
   Download,
-  MessageSquare
+  MessageSquare,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -83,6 +84,7 @@ interface Paciente {
   historicoHormonal?: HormonioRegistro[];
   historicoSintomas?: SintomaRegistro[];
   documentos?: DocumentoVinculado[];
+  leadStage?: "lead" | "agendado" | "realizado" | "proposto" | "operado"; // CRM Funil de Vendas CPP
 }
 
 export default function Patients() {
@@ -104,6 +106,8 @@ export default function Patients() {
   const [testoLivre, setTestoLivre] = useState("");
   const [albumina, setAlbumina] = useState("4.3"); // Albumina padrão de 4.3 g/dL para fórmula de Vermeulen
   const [telefone, setTelefone] = useState(""); // Telefone para alertas de WhatsApp
+  const [leadStage, setLeadStage] = useState<"lead" | "agendado" | "realizado" | "proposto" | "operado">("lead"); // CRM Funil
+  const [activeView, setActiveView] = useState<"list" | "crm">("list"); // Visualização ativa (Lista vs CRM Kanban)
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
 
   // Função para cálculo científico de Testosterona Livre (Vermeulen, 1999)
@@ -295,7 +299,8 @@ export default function Patients() {
             telefone: telefone.trim(),
             shbg,
             testoLivre,
-            historicoHormonal: hist
+            historicoHormonal: hist,
+            leadStage: leadStage
           };
         }
         return p;
@@ -329,7 +334,8 @@ export default function Patients() {
         testoLivre,
         dataCadastro: new Date().toLocaleDateString("pt-BR"),
         historicoHormonal: hist,
-        documentos: []
+        documentos: [],
+        leadStage: leadStage
       };
       saveToStorage([novo, ...pacientes]);
       toast.success("Paciente cadastrado com sucesso!");
@@ -353,6 +359,7 @@ export default function Patients() {
     setShbg(p.shbg || "");
     setTestoLivre(p.testoLivre || "");
     setTelefone(p.telefone || "");
+    setLeadStage(p.leadStage || "lead");
     setIsAdding(true);
   };
 
@@ -460,6 +467,7 @@ export default function Patients() {
     setShbg("");
     setTestoLivre("");
     setTelefone("");
+    setLeadStage("lead");
   };
 
   const handleCancel = () => {
@@ -717,7 +725,7 @@ export default function Patients() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="queixa" className="text-xs font-bold text-primary uppercase tracking-wider">Queixa Principal / Diagnóstico</Label>
                     <Input 
@@ -737,6 +745,21 @@ export default function Patients() {
                       onChange={(e) => setTelefone(e.target.value)}
                       className="rounded-xl h-11"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="leadStage" className="text-xs font-bold text-primary uppercase tracking-wider">Estágio do Funil (CRM)</Label>
+                    <select
+                      id="leadStage"
+                      value={leadStage}
+                      onChange={(e) => setLeadStage(e.target.value as any)}
+                      className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="lead">Lead (Mídias Sociais)</option>
+                      <option value="agendado">Consulta Agendada</option>
+                      <option value="realizado">Consulta Realizada</option>
+                      <option value="proposto">Cirurgia Proposta</option>
+                      <option value="operado">Cirurgia Realizada</option>
+                    </select>
                   </div>
                 </div>
 
@@ -841,6 +864,30 @@ export default function Patients() {
         {/* Barra de Busca e Listagem */}
         {!isAdding && (
           <div className="space-y-6">
+            {/* Abas de Visualização (Lista vs Funil CRM) */}
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={activeView === "list" ? "default" : "ghost"}
+                  onClick={() => setActiveView("list")}
+                  className={`h-9 rounded-xl text-xs font-bold gap-1.5 ${activeView === "list" ? "copper-gradient text-white border-0" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <Users className="w-4 h-4" />
+                  Visualização em Lista
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeView === "crm" ? "default" : "ghost"}
+                  onClick={() => setActiveView("crm")}
+                  className={`h-9 rounded-xl text-xs font-bold gap-1.5 ${activeView === "crm" ? "copper-gradient text-white border-0" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  Funil de Vendas (CRM CPP)
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-3">
               <div className="relative">
                 <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" />
@@ -908,7 +955,104 @@ export default function Patients() {
               </div>
             </div>
 
-            {filteredPacientes.length > 0 ? (
+            {activeView === "crm" ? (
+              /* VISUALIZAÇÃO FUNIL CRM KANBAN */
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
+                {/* Definição das Colunas do Funil */}
+                {[
+                  { id: "lead", title: "Leads", desc: "Mídias / Contatos", color: "bg-blue-500/10 border-blue-500/20 text-blue-600" },
+                  { id: "agendado", title: "Agendados", desc: "Consulta Marcada", color: "bg-amber-500/10 border-amber-500/20 text-amber-600" },
+                  { id: "realizado", title: "Consultados", desc: "Consulta Realizada", color: "bg-purple-500/10 border-purple-500/20 text-purple-600" },
+                  { id: "proposto", title: "Propostos", desc: "Cirurgia Proposta", color: "bg-orange-500/10 border-orange-500/20 text-orange-600" },
+                  { id: "operado", title: "Operados", desc: "Cirurgia Realizada", color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-600" }
+                ].map((col) => {
+                  const colPacientes = filteredPacientes.filter(p => (p.leadStage || "lead") === col.id);
+                  return (
+                    <div key={col.id} className="bg-secondary/20 rounded-2xl p-4 border border-border/40 flex flex-col min-w-[200px] space-y-4">
+                      {/* Cabeçalho da Coluna */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-serif font-bold text-sm text-primary">{col.title}</h3>
+                          <Badge variant="outline" className={`${col.color} text-[10px] font-bold px-2 rounded-full border`}>
+                            {colPacientes.length}
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground font-medium">{col.desc}</p>
+                      </div>
+
+                      {/* Lista de Cards na Coluna */}
+                      <div className="flex-1 space-y-3 overflow-y-auto max-h-[500px] pr-1">
+                        {colPacientes.length > 0 ? (
+                          colPacientes.map((p) => (
+                            <div
+                              key={p.id}
+                              onClick={() => {
+                                setIsAdding(false);
+                                setEditingExpandedId(p.id);
+                                toggleExpand(p.id);
+                              }}
+                              className="bg-card border border-border/60 hover:border-accent/20 rounded-xl p-3 shadow-sm hover:shadow transition-all duration-200 cursor-pointer space-y-2 relative group"
+                            >
+                              <div>
+                                <h4 className="font-serif font-bold text-xs text-primary group-hover:text-accent transition-colors truncate">{p.nome}</h4>
+                                <p className="text-[10px] text-muted-foreground font-medium truncate">{p.queixa || "Sem queixa principal"}</p>
+                              </div>
+
+                              {/* Telefone e Parâmetros Rápidos */}
+                              <div className="flex items-center justify-between text-[9px] text-muted-foreground font-semibold border-t border-border/40 pt-1.5">
+                                <span>{p.idade ? `${p.idade} anos` : ""}</span>
+                                {p.testosterona && (
+                                  <span className="text-accent font-bold">T: {p.testosterona} ng/dL</span>
+                                )}
+                              </div>
+
+                              {/* Controles Rápidos de Estágio (Avanço/Retrocesso) */}
+                              <div className="flex items-center justify-between gap-1 border-t border-border/40 pt-1.5" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  disabled={col.id === "lead"}
+                                  onClick={() => {
+                                    const stages: Array<"lead" | "agendado" | "realizado" | "proposto" | "operado"> = ["lead", "agendado", "realizado", "proposto", "operado"];
+                                    const currIdx = stages.indexOf(col.id as any);
+                                    if (currIdx > 0) {
+                                      const updated = pacientes.map(pac => p.id === pac.id ? { ...pac, leadStage: stages[currIdx - 1] } : pac);
+                                      saveToStorage(updated);
+                                      toast.info("Estágio recuado!");
+                                    }
+                                  }}
+                                  className="text-[9px] font-bold text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded bg-secondary/50 disabled:opacity-30 disabled:cursor-not-allowed"
+                                >
+                                  ←
+                                </button>
+                                <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-wider">Mover</span>
+                                <button
+                                  disabled={col.id === "operado"}
+                                  onClick={() => {
+                                    const stages: Array<"lead" | "agendado" | "realizado" | "proposto" | "operado"> = ["lead", "agendado", "realizado", "proposto", "operado"];
+                                    const currIdx = stages.indexOf(col.id as any);
+                                    if (currIdx < stages.length - 1) {
+                                      const updated = pacientes.map(pac => p.id === pac.id ? { ...pac, leadStage: stages[currIdx + 1] } : pac);
+                                      saveToStorage(updated);
+                                      toast.success("Estágio avançado com sucesso!");
+                                    }
+                                  }}
+                                  className="text-[9px] font-bold text-accent hover:text-accent-foreground px-1.5 py-0.5 rounded bg-accent/5 hover:bg-accent/10 border border-accent/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                                >
+                                  →
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="h-24 border border-dashed border-border/40 rounded-xl flex items-center justify-center bg-secondary/5">
+                            <span className="text-[10px] text-muted-foreground font-medium">Nenhum paciente</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : filteredPacientes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {filteredPacientes.map((p) => {
                   const isExpanded = expandedId === p.id;

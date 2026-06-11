@@ -15,7 +15,8 @@ import {
   ExternalLink,
   Calendar,
   MessageCircle,
-  Users
+  Users,
+  GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -40,6 +41,7 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/favoritos", label: "Favoritos", icon: Heart },
     { href: "/calculadoras", label: "Calculadoras", icon: Calculator },
     { href: "/pacientes", label: "Pacientes", icon: Users },
+    { href: "/treinamento", label: "Treinar Equipe", icon: GraduationCap },
   ];
 
   return (

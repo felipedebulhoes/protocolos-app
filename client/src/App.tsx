@@ -9,6 +9,7 @@ import ProtocolDetail from "./pages/ProtocolDetail";
 import Favorites from "./pages/Favorites";
 import Calculators from "./pages/Calculators";
 import Patients from "./pages/Patients";
+import SecretaryTraining from "./pages/SecretaryTraining";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/favoritos" component={Favorites} />
       <Route path="/calculadoras" component={Calculators} />
       <Route path="/pacientes" component={Patients} />
+      <Route path="/treinamento" component={SecretaryTraining} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
