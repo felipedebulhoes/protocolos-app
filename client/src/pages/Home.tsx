@@ -93,21 +93,34 @@ export default function Home() {
   return (
     <Layout>
       <div className="space-y-8">
-        {/* Banner de Boas-vindas Premium */}
+        {/* Banner de Boas-vindas Premium com Pattern Oficial */}
         <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 md:p-8 shadow-lg shadow-primary/5">
+          {/* Pattern oficial de marca com 4% de opacidade */}
+          <div className="absolute inset-0 brand-pattern opacity-[0.04] pointer-events-none" />
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -mr-20 -mt-20" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-2xl -ml-20 -mb-20" />
           
-          <div className="relative z-10 max-w-2xl space-y-3">
-            <Badge variant="outline" className="border-accent/30 text-accent bg-accent/5 px-3 py-1 font-semibold text-xs uppercase tracking-wider">
-              Handbook Digital Premium
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary leading-tight">
-              Protocolos Clínicos de Urologia & Andrologia
-            </h2>
-            <p className="text-muted-foreground text-sm md:text-base leading-relaxed font-normal">
-              Acesso rápido a condutas cirúrgicas, painéis metabólicos, prescrições modelo e Medicina de Estilo de Vida (MEV) baseada em evidências científicas de alto impacto.
-            </p>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="max-w-2xl space-y-3">
+              <Badge variant="outline" className="border-accent/30 text-accent bg-accent/5 px-3 py-1 font-semibold text-xs uppercase tracking-wider">
+                Handbook Digital Premium
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary leading-tight">
+                Protocolos Clínicos de Urologia & Andrologia
+              </h2>
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed font-normal font-sans">
+                Acesso rápido a condutas cirúrgicas, painéis metabólicos, prescrições modelo e Medicina de Estilo de Vida (MEV) baseada em evidências científicas de alto impacto.
+              </p>
+            </div>
+            
+            {/* Logotipo Landscape em SVG para compor o banner */}
+            <div className="hidden lg:block shrink-0 bg-primary/5 p-4 rounded-xl border border-primary/10">
+              <img 
+                src="/images/logo_landscape.svg" 
+                alt="Logo Dr. Felipe de Bulhões" 
+                className="h-16 object-contain dark:invert"
+              />
+            </div>
           </div>
         </div>
 

@@ -42,92 +42,101 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-:root {
-  /* Azul Marinho Cirúrgico como Primário */
-  --primary: oklch(0.22 0.08 250);
-  --primary-foreground: oklch(0.98 0.01 250);
-  
-  /* Cobre Premium como Accent e Destaques */
-  --accent: oklch(0.62 0.15 45);
-  --accent-foreground: oklch(0.98 0.01 45);
+/* Importar Fonte Proprietária Callingstone */
+@font-face {
+  font-family: 'Callingstone';
+  src: url('/fonts/Callingstone.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --sidebar-primary: oklch(0.22 0.08 250);
-  --sidebar-primary-foreground: oklch(0.98 0.01 250);
+:root {
+  /* Azul do Nilo (#1C3D5A) como Primário */
+  --primary: #1C3D5A;
+  --primary-foreground: #FEFEFE;
   
-  --chart-1: oklch(0.22 0.08 250);
-  --chart-2: oklch(0.62 0.15 45);
-  --chart-3: oklch(0.4 0.1 250);
-  --chart-4: oklch(0.75 0.1 45);
-  --chart-5: oklch(0.15 0.05 250);
+  /* Cobre Premium (#B87333) como Accent e Destaques */
+  --accent: #B87333;
+  --accent-foreground: #FEFEFE;
+
+  --sidebar-primary: #1C3D5A;
+  --sidebar-primary-foreground: #FEFEFE;
+  
+  --chart-1: #1C3D5A;
+  --chart-2: #B87333;
+  --chart-3: #4A6B82;
+  --chart-4: #D4884A;
+  --chart-5: #0F2A3F;
   
   --radius: 0.5rem;
   
-  /* Fundos Clássicos Clínicos */
-  --background: oklch(0.99 0.005 250);
-  --foreground: oklch(0.18 0.02 250);
+  /* Fundos Clássicos Clínicos baseados no Branco #FEFEFE e Nuvem #C4C4C4 */
+  --background: #FEFEFE;
+  --foreground: #1C3D5A;
   
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 250);
+  --card: #FEFEFE;
+  --card-foreground: #1C3D5A;
   
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 250);
+  --popover: #FEFEFE;
+  --popover-foreground: #1C3D5A;
   
-  --secondary: oklch(0.94 0.01 250);
-  --secondary-foreground: oklch(0.25 0.02 250);
+  --secondary: #F4F6F8;
+  --secondary-foreground: #1C3D5A;
   
-  --muted: oklch(0.95 0.01 250);
-  --muted-foreground: oklch(0.45 0.02 250);
+  --muted: #EBF0F3;
+  --muted-foreground: #5C768D;
   
-  --destructive: oklch(0.55 0.18 25);
-  --destructive-foreground: oklch(0.98 0.01 25);
+  --destructive: #A33A3A;
+  --destructive-foreground: #FEFEFE;
   
-  --border: oklch(0.90 0.01 250);
-  --input: oklch(0.90 0.01 250);
-  --ring: oklch(0.62 0.15 45);
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #B87333;
   
-  --sidebar: oklch(0.98 0.005 250);
-  --sidebar-foreground: oklch(0.18 0.02 250);
-  --sidebar-accent: oklch(0.94 0.01 250);
-  --sidebar-accent-foreground: oklch(0.22 0.08 250);
-  --sidebar-border: oklch(0.90 0.01 250);
-  --sidebar-ring: oklch(0.62 0.15 45);
+  --sidebar: #FEFEFE;
+  --sidebar-foreground: #1C3D5A;
+  --sidebar-accent: #F4F6F8;
+  --sidebar-accent-foreground: #1C3D5A;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #B87333;
 }
 
 .dark {
-  --primary: oklch(0.85 0.03 250);
-  --primary-foreground: oklch(0.15 0.02 250);
+  --primary: #8EB3C7;
+  --primary-foreground: #0F2A3F;
   
-  --accent: oklch(0.70 0.12 45);
-  --accent-foreground: oklch(0.15 0.02 45);
+  --accent: #D4884A;
+  --accent-foreground: #0F2A3F;
 
-  --background: oklch(0.15 0.01 250);
-  --foreground: oklch(0.92 0.01 250);
+  --background: #0F2A3F;
+  --foreground: #FEFEFE;
   
-  --card: oklch(0.18 0.01 250);
-  --card-foreground: oklch(0.92 0.01 250);
+  --card: #15354D;
+  --card-foreground: #FEFEFE;
   
-  --popover: oklch(0.18 0.01 250);
-  --popover-foreground: oklch(0.92 0.01 250);
+  --popover: #15354D;
+  --popover-foreground: #FEFEFE;
   
-  --secondary: oklch(0.22 0.01 250);
-  --secondary-foreground: oklch(0.85 0.01 250);
+  --secondary: #1C445C;
+  --secondary-foreground: #FEFEFE;
   
-  --muted: oklch(0.22 0.01 250);
-  --muted-foreground: oklch(0.65 0.01 250);
+  --muted: #1C445C;
+  --muted-foreground: #8EB3C7;
   
-  --destructive: oklch(0.60 0.18 25);
-  --destructive-foreground: oklch(0.98 0.01 25);
+  --destructive: #C55D5D;
+  --destructive-foreground: #FEFEFE;
   
-  --border: oklch(0.25 0.01 250);
-  --input: oklch(0.25 0.01 250);
-  --ring: oklch(0.70 0.12 45);
+  --border: #1F4F6B;
+  --input: #1F4F6B;
+  --ring: #D4884A;
   
-  --sidebar: oklch(0.18 0.01 250);
-  --sidebar-foreground: oklch(0.92 0.01 250);
-  --sidebar-accent: oklch(0.22 0.01 250);
-  --sidebar-accent-foreground: oklch(0.85 0.01 250);
-  --sidebar-border: oklch(0.25 0.01 250);
-  --sidebar-ring: oklch(0.70 0.12 45);
+  --sidebar: #0F2A3F;
+  --sidebar-foreground: #FEFEFE;
+  --sidebar-accent: #15354D;
+  --sidebar-accent-foreground: #FEFEFE;
+  --sidebar-border: #1F4F6B;
+  --sidebar-ring: #D4884A;
 }
 
 @layer base {
@@ -138,7 +147,7 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Callingstone', Georgia, serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -155,15 +164,26 @@
 
 /* Custom Premium Utilities */
 .font-sans {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+}
+
+.font-serif {
+  font-family: 'Callingstone', Georgia, serif;
 }
 
 .copper-gradient {
-  background: linear-gradient(135deg, oklch(0.62 0.15 45) 0%, oklch(0.45 0.12 45) 100%);
+  background: linear-gradient(135deg, #B87333 0%, #8B5A2B 100%);
 }
 
 .navy-gradient {
-  background: linear-gradient(135deg, oklch(0.22 0.08 250) 0%, oklch(0.12 0.05 250) 100%);
+  background: linear-gradient(135deg, #1C3D5A 0%, #0F2A3F 100%);
+}
+
+/* Background Pattern do Dr. Felipe Bulhões */
+.brand-pattern {
+  background-image: url('/images/pattern.svg');
+  background-repeat: repeat;
+  background-size: 180px;
 }
 
 /* Custom Scrollbar */

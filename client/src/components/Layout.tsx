@@ -43,9 +43,11 @@ export default function Layout({ children }: LayoutProps) {
       {/* HEADER MOBILE */}
       <header className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-card sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
-            <span className="font-serif text-lg font-bold text-primary-foreground">P</span>
-          </div>
+          <img 
+            src="/images/isotipo.svg" 
+            alt="Isotipo Dr. Felipe Bulhões" 
+            className="w-8 h-8 object-contain dark:invert"
+          />
           <span className="font-serif text-lg font-bold tracking-tight text-primary">ProtoUro</span>
         </Link>
         <div className="flex items-center gap-2">
@@ -64,14 +66,16 @@ export default function Layout({ children }: LayoutProps) {
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
         {/* Logo / Header da Sidebar */}
-        <div className="p-6 border-b border-border hidden md:flex items-center justify-between">
+        <div className="p-5 border-b border-border hidden md:flex items-center justify-between bg-secondary/10">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/10">
-              <span className="font-serif text-xl font-bold text-primary-foreground">P</span>
-            </div>
+            <img 
+              src="/images/isotipo.svg" 
+              alt="Isotipo Dr. Felipe Bulhões" 
+              className="w-10 h-10 object-contain dark:invert"
+            />
             <div>
               <h1 className="font-serif text-xl font-bold tracking-tight text-primary leading-none">ProtoUro</h1>
-              <span className="text-[10px] text-muted-foreground tracking-wider uppercase font-semibold">Dr. Felipe Bulhões</span>
+              <span className="text-[9px] text-muted-foreground tracking-wider uppercase font-bold">Dr. Felipe de Bulhões</span>
             </div>
           </Link>
         </div>
@@ -111,12 +115,14 @@ export default function Layout({ children }: LayoutProps) {
           </div>
           
           <div className="p-3 bg-card rounded-lg border border-border flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-4 h-4 text-primary" />
-            </div>
+            <img 
+              src="/images/isotipo.svg" 
+              alt="Dr. Felipe de Bulhões" 
+              className="w-8 h-8 rounded-full bg-primary/5 p-1 object-contain dark:invert"
+            />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold truncate text-foreground">Dr. Felipe Bulhões</p>
-              <p className="text-[10px] text-muted-foreground truncate">Urologia & Andrologia</p>
+              <p className="text-xs font-bold truncate text-foreground font-serif">Dr. Felipe de Bulhões</p>
+              <p className="text-[9px] text-muted-foreground truncate uppercase tracking-wider font-semibold">Urologista & Cirurgião</p>
             </div>
           </div>
         </div>

@@ -130,11 +130,13 @@ export default function ProtocolDetail() {
           </div>
         </div>
 
-        {/* Cabeçalho do Protocolo */}
+        {/* Cabeçalho do Protocolo com Pattern Oficial */}
         <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-md">
-          <div className="absolute top-0 left-0 w-[6px] h-full bg-primary" />
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center">
+          {/* Pattern oficial de marca com 4% de opacidade */}
+          <div className="absolute inset-0 brand-pattern opacity-[0.04] pointer-events-none" />
+          <div className="absolute top-0 left-0 w-[6px] h-full bg-accent" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
               <IconComponent className="w-6 h-6 text-accent" />
             </div>
             <div className="space-y-1">
