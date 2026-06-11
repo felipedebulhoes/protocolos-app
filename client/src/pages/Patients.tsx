@@ -68,6 +68,13 @@ interface DocumentoVinculado {
   conteudo: string;
 }
 
+interface ContatoRegistro {
+  id: string;
+  data: string;
+  tipo: "whatsapp" | "ligacao" | "email" | "retorno";
+  notas: string;
+}
+
 interface Paciente {
   id: string;
   nome: string;
@@ -85,6 +92,7 @@ interface Paciente {
   historicoSintomas?: SintomaRegistro[];
   documentos?: DocumentoVinculado[];
   leadStage?: "lead" | "agendado" | "realizado" | "proposto" | "operado"; // CRM Funil de Vendas CPP
+  comercialHist?: ContatoRegistro[]; // Linha do Tempo Comercial CPP
 }
 
 export default function Patients() {
@@ -187,6 +195,10 @@ export default function Patients() {
   const [newIpss, setNewIpss] = useState("");
   const [newAdam, setNewAdam] = useState(false);
   const [newDataSintoma, setNewDataSintoma] = useState(new Date().toLocaleDateString("pt-BR").substring(0, 5));
+
+  // Estados para novos registros de contatos comerciais (CRM Linha do Tempo)
+  const [newContatoTipo, setNewContatoTipo] = useState<"whatsapp" | "ligacao" | "email" | "retorno">("whatsapp");
+  const [newContatoNotas, setNewContatoNotas] = useState("");
 
   // Estados para o Módulo de Prescrição Inteligente
   const [prescricaoOpen, setPrescricaoOpen] = useState(false);
@@ -438,6 +450,33 @@ export default function Patients() {
     setNewIief("");
     setNewIpss("");
     setNewAdam(false);
+  };
+
+  const handleAddContato = (pacienteId: string) => {
+    if (!newContatoNotas.trim()) {
+      toast.error("Preencha as observações do contato realizado.");
+      return;
+    }
+
+    const updated = pacientes.map(p => {
+      if (p.id === pacienteId) {
+        const hist = p.comercialHist || [];
+        const novoPonto: ContatoRegistro = {
+          id: "contato_" + Date.now(),
+          data: new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR").substring(0, 5),
+          tipo: newContatoTipo,
+          notas: newContatoNotas.trim()
+        };
+        return {
+          ...p,
+          comercialHist: [novoPonto, ...hist] // Ordenar por mais recente no topo
+        };
+      }
+      return p;
+    });
+    saveToStorage(updated);
+    toast.success("Contato comercial registrado na Linha do Tempo!");
+    setNewContatoNotas("");
   };
 
   const toggleExpand = (id: string) => {
@@ -957,7 +996,70 @@ export default function Patients() {
 
             {activeView === "crm" ? (
               /* VISUALIZAÇÃO FUNIL CRM KANBAN */
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
+              <div className="space-y-4">
+                {/* Painel de Metas & Premiações (Gamificação CPP) */}
+                <div className="bg-gradient-to-r from-primary/5 via-[#B87333]/5 to-primary/5 border border-[#B87333]/20 rounded-2xl p-4 shadow-sm space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-[#B87333] uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                        🏆 Desafio de Conversão Cirúrgica CPP (Meta Mensal)
+                      </span>
+                      <h3 className="font-serif font-bold text-sm text-primary">
+                        Transforme Leads em Pacientes Operados
+                      </h3>
+                    </div>
+                    {/* Indicador de Status da Meta */}
+                    {(() => {
+                      const totalOperados = pacientes.filter(p => p.leadStage === "operado").length;
+                      const metaCirurgica = 5; // Meta padrão de 5 cirurgias por mês urológico premium
+                      const percentual = Math.min(Math.round((totalOperados / metaCirurgica) * 100), 100);
+                      const premioEstimado = totalOperados * 500; // R$ 500 de bônus por conversão urológica premium para a equipe
+                      
+                      return (
+                        <div className="flex items-center gap-4 shrink-0 bg-card border border-border/40 p-2.5 rounded-xl">
+                          <div className="text-center">
+                            <span className="text-[8px] font-bold text-muted-foreground uppercase block">Progresso</span>
+                            <span className="text-xs font-bold text-primary">{totalOperados} / {metaCirurgica}</span>
+                          </div>
+                          <div className="h-8 w-px bg-border/40" />
+                          <div className="text-center">
+                            <span className="text-[8px] font-bold text-emerald-600 uppercase block">Premiação Estimada</span>
+                            <span className="text-xs font-bold text-emerald-600">R$ {premioEstimado.toLocaleString("pt-BR")}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Barra de Progresso Customizada e Indicadores */}
+                  {(() => {
+                    const totalOperados = pacientes.filter(p => p.leadStage === "operado").length;
+                    const totalLeads = pacientes.filter(p => p.leadStage === "lead").length;
+                    const metaCirurgica = 5;
+                    const percentual = Math.min(Math.round((totalOperados / metaCirurgica) * 100), 100);
+                    const taxaConversao = totalLeads > 0 ? Math.round((totalOperados / (totalLeads + totalOperados)) * 100) : 0;
+                    
+                    return (
+                      <div className="space-y-2">
+                        <div className="w-full bg-secondary/30 h-2 rounded-full overflow-hidden">
+                          <div 
+                            className="copper-gradient h-full rounded-full transition-all duration-500 ease-out"
+                            style={{ width: `${percentual}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold">
+                          <span>{percentual}% da meta atingida</span>
+                          <span className="flex items-center gap-1 text-primary">
+                            <TrendingUp className="w-3.5 h-3.5 text-accent" />
+                            Taxa de Conversão Geral: <strong className="text-accent">{taxaConversao}%</strong>
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
                 {/* Definição das Colunas do Funil */}
                 {[
                   { id: "lead", title: "Leads", desc: "Mídias / Contatos", color: "bg-blue-500/10 border-blue-500/20 text-blue-600" },
@@ -1051,6 +1153,7 @@ export default function Patients() {
                     </div>
                   );
                 })}
+              </div>
               </div>
             ) : filteredPacientes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -2108,6 +2211,79 @@ export default function Patients() {
                             ) : (
                               <div className="p-6 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
                                 Nenhum documento (receita, atestado ou laudo) foi gerado para este paciente ainda.
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Acompanhamento Comercial & Linha do Tempo CPP */}
+                          <div className="space-y-4 pt-3 border-t border-border/40">
+                            <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                              <TrendingUp className="w-4 h-4 text-[#B87333]" />
+                              Linha do Tempo de Acompanhamento Comercial (CRM CPP)
+                            </span>
+
+                            {/* Formulário para registrar novo contato */}
+                            <div className="flex flex-col sm:flex-row gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
+                              <select
+                                value={newContatoTipo}
+                                onChange={(e) => setNewContatoTipo(e.target.value as any)}
+                                className="h-9 rounded-lg text-xs bg-card border border-border/40 px-2 font-semibold text-primary focus:outline-none shrink-0"
+                              >
+                                <option value="whatsapp">💬 WhatsApp</option>
+                                <option value="ligacao">📞 Ligação</option>
+                                <option value="email">✉️ E-mail</option>
+                                <option value="retorno">🔄 Agendamento Retorno</option>
+                              </select>
+                              <Input
+                                type="text"
+                                placeholder="Notas do contato comercial (ex: Enviado roteiro de Peyronie, aguardando retorno)"
+                                value={newContatoNotas}
+                                onChange={(e) => setNewContatoNotas(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card flex-1"
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => handleAddContato(p.id)}
+                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white shrink-0 px-4"
+                              >
+                                Registrar Contato
+                              </Button>
+                            </div>
+
+                            {/* Listagem da Linha do Tempo Comercial */}
+                            {p.comercialHist && p.comercialHist.length > 0 ? (
+                              <div className="relative border-l-2 border-border/60 ml-2.5 pl-4 space-y-4 pt-1">
+                                {p.comercialHist.map((item) => (
+                                  <div key={item.id} className="relative">
+                                    {/* Indicador de Tipo de Contato */}
+                                    <div className="absolute -left-[23px] top-0.5 w-3 h-3 rounded-full bg-card border-2 border-[#B87333] flex items-center justify-center">
+                                      <div className="w-1 h-1 rounded-full bg-[#B87333]" />
+                                    </div>
+                                    <div className="space-y-1 text-left">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-bold text-muted-foreground">{item.data}</span>
+                                        <Badge variant="outline" className={`text-[8px] font-bold uppercase py-0 px-1.5 ${
+                                          item.tipo === "whatsapp" ? "border-emerald-500/20 text-emerald-600 bg-emerald-500/5" :
+                                          item.tipo === "ligacao" ? "border-blue-500/20 text-blue-600 bg-blue-500/5" :
+                                          item.tipo === "email" ? "border-purple-500/20 text-purple-600 bg-purple-500/5" :
+                                          "border-amber-500/20 text-amber-600 bg-amber-500/5"
+                                        }`}>
+                                          {item.tipo === "whatsapp" ? "WhatsApp" :
+                                           item.tipo === "ligacao" ? "Ligação" :
+                                           item.tipo === "email" ? "E-mail" :
+                                           "Retorno"}
+                                        </Badge>
+                                      </div>
+                                      <p className="text-xs text-foreground/80 leading-relaxed font-medium bg-secondary/20 p-2.5 rounded-xl border border-border/30">
+                                        {item.notas}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="p-4 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
+                                Nenhum contato comercial registrado. Use o formulário acima para registrar a busca ativa.
                               </div>
                             )}
                           </div>

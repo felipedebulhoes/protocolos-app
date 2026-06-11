@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,9 @@ import {
   Play, 
   RefreshCw,
   PhoneCall,
-  UserCheck
+  UserCheck,
+  Volume2,
+  Square
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -154,8 +156,56 @@ export default function SecretaryTraining() {
   const [score, setScore] = useState(0);
   const [totalScore, setTotalScore] = useState(0);
   const [completedScenarios, setCompletedScenarios] = useState<string[]>([]);
+  const [isPlayingAudio, setIsPlayingAudio] = useState<"objection" | "correct_option" | null>(null);
+
+  // Parar qualquer áudio em reprodução ao desmontar ou mudar de cenário
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis?.cancel();
+    };
+  }, [activeScenario]);
+
+  const speakText = (text: string, type: "objection" | "correct_option") => {
+    if (!window.speechSynthesis) {
+      toast.error("O seu navegador não suporta síntese de voz.");
+      return;
+    }
+
+    if (isPlayingAudio === type) {
+      window.speechSynthesis.cancel();
+      setIsPlayingAudio(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    
+    // Extrair apenas o texto limpo sem prefixos de identificação (ex: "Paciente: '...'")
+    const cleanText = text.replace(/^Paciente:\s*['"]?|['"]\s*$/g, "").trim();
+    
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = "pt-BR";
+    
+    // Tentar selecionar uma voz em português de alta qualidade
+    const voices = window.speechSynthesis.getVoices();
+    const ptVoice = voices.find(v => v.lang.startsWith("pt")) || voices[0];
+    if (ptVoice) {
+      utterance.voice = ptVoice;
+    }
+
+    // Configurações de tom e velocidade para soar natural e profissional
+    utterance.rate = type === "objection" ? 0.95 : 1.05; // Paciente fala ligeiramente mais lento/hesitante, secretária fala dinâmica e confiante
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => setIsPlayingAudio(type);
+    utterance.onend = () => setIsPlayingAudio(null);
+    utterance.onerror = () => setIsPlayingAudio(null);
+
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleStartScenario = (index: number) => {
+    window.speechSynthesis?.cancel();
+    setIsPlayingAudio(null);
     setActiveScenario(index);
     setSelectedOption(null);
     setHasSubmitted(false);
@@ -187,6 +237,8 @@ export default function SecretaryTraining() {
   };
 
   const handleNextScenario = () => {
+    window.speechSynthesis?.cancel();
+    setIsPlayingAudio(null);
     setActiveScenario(null);
     setSelectedOption(null);
     setHasSubmitted(false);
@@ -336,16 +388,25 @@ export default function SecretaryTraining() {
               
               <CardContent className="p-6 space-y-6">
                 {/* Balão de Fala do Paciente (Objeção) */}
-                <div className="flex gap-3 items-start bg-secondary/50 p-4 rounded-2xl border border-border/60">
+                <div className="flex gap-3 items-start bg-secondary/50 p-4 rounded-2xl border border-border/60 relative group">
                   <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/20">
                     <PhoneCall className="w-4 h-4 text-amber-600" />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1 pr-12">
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Objeção do Paciente</p>
                     <p className="text-sm font-serif font-semibold text-primary leading-relaxed italic">
                       {SCENARIOS[activeScenario].objection}
                     </p>
                   </div>
+                  <Button
+                    onClick={() => speakText(SCENARIOS[activeScenario].objection, "objection")}
+                    variant="outline"
+                    size="sm"
+                    className={`absolute right-4 top-4 h-8 w-8 rounded-full p-0 border-amber-500/20 hover:bg-amber-500/10 ${isPlayingAudio === "objection" ? "bg-amber-500/10 border-amber-500 text-amber-600 animate-pulse" : "text-amber-600"}`}
+                    title={isPlayingAudio === "objection" ? "Parar Áudio" : "Ouvir Objeção em Áudio"}
+                  >
+                    {isPlayingAudio === "objection" ? <Square className="w-3.5 h-3.5 fill-current" /> : <Volume2 className="w-3.5 h-3.5" />}
+                  </Button>
                 </div>
 
                 {/* Opções de Resposta da Secretária */}
@@ -379,7 +440,7 @@ export default function SecretaryTraining() {
 
                 {/* Resultado e Feedback após Enviar */}
                 {hasSubmitted && (
-                  <div className={`p-5 rounded-xl border space-y-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-300 ${
+                  <div className={`p-5 rounded-xl border space-y-3 animate-in fade-in-50 slide-in-from-bottom-2 duration-300 relative ${
                     SCENARIOS[activeScenario].options.find(o => o.id === selectedOption)?.correct 
                       ? "bg-emerald-500/[0.03] border-emerald-500/20" 
                       : "bg-amber-500/[0.03] border-amber-500/20"
@@ -396,9 +457,38 @@ export default function SecretaryTraining() {
                           : `Resposta Parcial/Incorreta! (+${score} pts)`}
                       </h4>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                    <p className="text-xs text-muted-foreground leading-relaxed font-medium pr-12">
                       {SCENARIOS[activeScenario].options.find(o => o.id === selectedOption)?.feedback}
                     </p>
+
+                    {/* Botão de Áudio para ouvir a resposta perfeita (correta) do CPP */}
+                    <div className="border-t border-border/40 pt-3 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <Volume2 className="w-4 h-4 text-emerald-600" />
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Treinamento de Entonação</span>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          const correctOpt = SCENARIOS[activeScenario].options.find(o => o.correct);
+                          if (correctOpt) speakText(correctOpt.text, "correct_option");
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className={`h-8 rounded-xl text-[10px] font-bold gap-1.5 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/5 ${isPlayingAudio === "correct_option" ? "bg-emerald-500/10 border-emerald-500 animate-pulse" : ""}`}
+                      >
+                        {isPlayingAudio === "correct_option" ? (
+                          <>
+                            <Square className="w-3 h-3 fill-current" />
+                            Parar Áudio
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-3 h-3" />
+                            Ouvir Resposta Perfeita (CPP)
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 )}
 
