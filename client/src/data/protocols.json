@@ -606,6 +606,12 @@
         "titulo": "Laudo de Parecer Clínico Urológico Especializado",
         "modelo": "Paciente: {paciente}\nData da Avaliação: {data}\n\nLAUDO DE PARECER UROLÓGICO ESPECIALIZADO\n\nDeclaro que o(a) paciente acima citado(a) encontra-se em acompanhamento urológico ambulatorial regular neste serviço para investigação e controle clínico de {titulo} (CID-10: {cid}). Ao exame físico e laboratorial atual, apresenta-se estável, sem evidências de complicações agudas ou sinais de urgência cirúrgica. Segue em tratamento clínico otimizado conforme diretrizes científicas atuais da Sociedade Brasileira de Urologia (SBU) e Associação Europeia de Urologia (EAU). Recomenda-se retorno ambulatorial em 3 a 6 meses para reavaliação periódica."
       }
+    ],
+    "images": [
+      {
+        "url": "/images/surgical/vasectomia.jpg",
+        "legend": "Técnica de vasectomia sem bisturi: isolamento do ducto deferente, ressecção de segmento, cauterização e interposição fascial."
+      }
     ]
   },
   {
@@ -902,6 +908,12 @@
       {
         "titulo": "Laudo de Parecer Clínico Urológico Especializado",
         "modelo": "Paciente: {paciente}\nData da Avaliação: {data}\n\nLAUDO DE PARECER UROLÓGICO ESPECIALIZADO\n\nDeclaro que o(a) paciente acima citado(a) encontra-se em acompanhamento urológico ambulatorial regular neste serviço para investigação e controle clínico de {titulo} (CID-10: {cid}). Ao exame físico e laboratorial atual, apresenta-se estável, sem evidências de complicações agudas ou sinais de urgência cirúrgica. Segue em tratamento clínico otimizado conforme diretrizes científicas atuais da Sociedade Brasileira de Urologia (SBU) e Associação Europeia de Urologia (EAU). Recomenda-se retorno ambulatorial em 3 a 6 meses para reavaliação periódica."
+      }
+    ],
+    "images": [
+      {
+        "url": "/images/surgical/postectomia.jpg",
+        "legend": "Técnica de postectomia clássica com ressecção de excesso de prepúcio e sutura com pontos simples absorvíveis."
       }
     ]
   },
@@ -2130,6 +2142,16 @@
         "titulo": "Laudo de Implante de Sling de Uretra Média",
         "modelo": "Paciente: {paciente}\nData do Procedimento: {data}\n\nLAUDO MÉDICO DE TRATAMENTO DE INCONTINÊNCIA URINÁRIA\n\nDeclaro que a paciente acima citada apresentava quadro clínico e urodinâmico de Incontinência Urinária de Esforço (CID-10 N39.3) com impacto significativo na qualidade de vida. Foi submetida a tratamento cirúrgico por meio de implante de Sling de Uretra Média por via transobturatória (TOT) / retropúbica (TVT), sem intercorrências. O procedimento obteve excelente suporte uretral imediato e teste de tosse negativo sob anestesia. A paciente recebe alta em excelentes condições clínicas, urinando espontaneamente e sem resíduo pós-miccional significativo."
       }
+    ],
+    "images": [
+      {
+        "url": "/images/surgical/sling_feminino.jpg",
+        "legend": "Técnica de Sling de Uretra Média (Mid-Urethral Sling - TVT/TOT) para correção de hipermobilidade uretral feminina."
+      },
+      {
+        "url": "/images/surgical/esfincter_artificial.jpg",
+        "legend": "Componentes e posicionamento anatômico do Esfíncter Urinário Artificial (manguito uretral, balão regulador de pressão e bomba escrotal) para tratamento de incontinência urinária pós-prostatectomia."
+      }
     ]
   },
   {
@@ -2201,6 +2223,12 @@
       {
         "titulo": "Laudo de Parecer Clínico Urológico Especializado",
         "modelo": "Paciente: {paciente}\nData da Avaliação: {data}\n\nLAUDO DE PARECER UROLÓGICO ESPECIALIZADO\n\nDeclaro que o(a) paciente acima citado(a) encontra-se em acompanhamento urológico ambulatorial regular neste serviço para investigação e controle clínico de {titulo} (CID-10: {cid}). Ao exame físico e laboratorial atual, apresenta-se estável, sem evidências de complicações agudas ou sinais de urgência cirúrgica. Segue em tratamento clínico otimizado conforme diretrizes científicas atuais da Sociedade Brasileira de Urologia (SBU) e Associação Europeia de Urologia (EAU). Recomenda-se retorno ambulatorial em 3 a 6 meses para reavaliação periódica."
+      }
+    ],
+    "images": [
+      {
+        "url": "/images/surgical/cistoscopia.jpg",
+        "legend": "Avaliação endoscópica da uretra e bexiga por cistoscopia flexível diagnóstica."
       }
     ]
   }

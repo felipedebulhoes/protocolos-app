@@ -11,7 +11,8 @@ import {
   X, 
   Calendar, 
   Clipboard,
-  AlertCircle
+  AlertCircle,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -545,6 +546,60 @@ export default function Patients() {
                                 Registre pelo menos um valor de testosterona para gerar o gráfico.
                               </div>
                             )}
+
+                            {/* Botão de Exportação de Prontuário Externo (JSON) */}
+                            <div className="flex justify-end pt-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Criar objeto de exportação estruturado
+                                  const exportData = {
+                                    exportadoEm: new Date().toLocaleString("pt-BR"),
+                                    medico: "Dr. Felipe de Bulhões",
+                                    paciente: {
+                                      id: p.id,
+                                      nome: p.nome,
+                                      idade: p.idade,
+                                      dataCadastro: p.dataCadastro,
+                                      queixa: p.queixa,
+                                      parametrosLaboratoriais: {
+                                        testosteronaTotal: p.testosterona ? `${p.testosterona} ng/dL` : "N/A",
+                                        testosteronaLivre: p.testoLivre ? `${p.testoLivre} ng/dL` : "N/A",
+                                        shbg: p.shbg ? `${p.shbg} nmol/L` : "N/A",
+                                        psa: p.psa ? `${p.psa} ng/mL` : "N/A",
+                                        hematocrito: p.hematocrito ? `${p.hematocrito} %` : "N/A"
+                                      },
+                                      historicoHormonal: p.historicoHormonal || [],
+                                      documentosGerados: (p.documentos || []).map(doc => ({
+                                        titulo: doc.titulo,
+                                        tipo: doc.tipo,
+                                        dataGeracao: doc.data,
+                                        conteudo: doc.conteudo
+                                      })),
+                                      notasClinicas: p.notas
+                                    }
+                                  };
+
+                                  // Gerar arquivo JSON para download
+                                  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+                                  const url = URL.createObjectURL(blob);
+                                  const link = document.createElement("a");
+                                  link.href = url;
+                                  link.download = `prontuario_${p.nome.toLowerCase().replace(/\s+/g, "_")}.json`;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                  URL.revokeObjectURL(url);
+                                  toast.success("Prontuário exportado com sucesso!");
+                                }}
+                                className="h-9 rounded-xl text-xs font-bold border-border hover:bg-secondary/40 gap-1.5"
+                              >
+                                <Download className="w-3.5 h-3.5 text-accent" />
+                                Exportar para Prontuário (JSON)
+                              </Button>
+                            </div>
 
                             {/* Formulário rápido para adicionar ponto no gráfico */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">

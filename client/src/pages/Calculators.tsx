@@ -243,6 +243,69 @@ export default function Calculators() {
     followUp: string;
   } | null>(null);
 
+  // --- ESTADO CLEARANCE CREATININA (COCKCROFT-GAULT) ---
+  const [crAge, setCrAge] = useState<string>("");
+  const [crWeight, setCrWeight] = useState<string>("");
+  const [crCreatinine, setCrCreatinine] = useState<string>("");
+  const [crGender, setCrGender] = useState<"male" | "female">("male");
+  const [crResult, setCrResult] = useState<{ clearance: number; classification: string; color: string; tip: string } | null>(null);
+
+  const calculateClearance = () => {
+    const age = parseFloat(crAge);
+    const weight = parseFloat(crWeight);
+    const creatinine = parseFloat(crCreatinine);
+
+    if (isNaN(age) || isNaN(weight) || isNaN(creatinine) || creatinine <= 0) {
+      alert("Por favor, preencha todos os campos com valores válidos.");
+      return;
+    }
+
+    // Fórmula de Cockcroft-Gault: ((140 - idade) * peso) / (72 * creatinina)
+    let clearance = ((140 - age) * weight) / (72 * creatinine);
+    
+    // Ajuste para o sexo feminino (multiplicar por 0.85)
+    if (crGender === "female") {
+      clearance *= 0.85;
+    }
+
+    clearance = Math.round(clearance * 10) / 10; // Arredondar para 1 casa decimal
+
+    let classification = "";
+    let color = "";
+    let tip = "";
+
+    if (clearance >= 90) {
+      classification = "Função Renal Normal (Estágio G1)";
+      color = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+      tip = "Nenhum ajuste de dose de antibióticos ou contraste é necessário por função renal.";
+    } else if (clearance >= 60) {
+      classification = "Disfunção Renal Leve (Estágio G2)";
+      color = "bg-blue-500/10 text-blue-600 border-blue-500/20";
+      tip = "Geralmente seguro para a maioria dos antibióticos e contraste. Monitore se uso prolongado.";
+    } else if (clearance >= 30) {
+      classification = "Disfunção Renal Moderada (Estágio G3a/G3b)";
+      color = "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
+      tip = "ATENÇÃO: Requer ajuste de dose para diversos antibióticos (ex: Quinolonas, Beta-lactâmicos) e hidratação vigorosa se for usar contraste iodado.";
+    } else if (clearance >= 15) {
+      classification = "Disfunção Renal Grave (Estágio G4)";
+      color = "bg-orange-500/10 text-orange-600 border-orange-500/20";
+      tip = "CRÍTICO: Redução drástica de dose ou espaçamento de dose obrigatório para a maioria dos fármacos. Evitar contraste iodado.";
+    } else {
+      classification = "Falência Renal / Estágio Terminal (Estágio G5)";
+      color = "bg-destructive/10 text-destructive border-destructive/20";
+      tip = "URGENTE: Ajuste extremo de doses. Contraindicação absoluta para contrastes nefrotóxicos comuns sem diálise planejada.";
+    }
+
+    setCrResult({ clearance, classification, color, tip });
+  };
+
+  const resetClearance = () => {
+    setCrAge("");
+    setCrWeight("");
+    setCrCreatinine("");
+    setCrResult(null);
+  };
+
   const calculateTRT = () => {
     const serum = parseFloat(trtSerumTesto);
     const target = parseFloat(trtTargetTesto);
@@ -327,7 +390,7 @@ export default function Calculators() {
         </div>
 
         <Tabs defaultValue="iief" className="space-y-6">
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 bg-secondary rounded-xl p-1 h-auto gap-1">
+          <TabsList className="grid grid-cols-2 md:grid-cols-6 bg-secondary rounded-xl p-1 h-auto gap-1">
             <TabsTrigger value="iief" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
               <Calculator className="w-3.5 h-3.5 shrink-0" />
               IIEF-5 (Ereção)
@@ -343,6 +406,10 @@ export default function Calculators() {
             <TabsTrigger value="padtest" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
               <Scale className="w-3.5 h-3.5 shrink-0" />
               Pad Test 24h
+            </TabsTrigger>
+            <TabsTrigger value="clearance" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+              <Calculator className="w-3.5 h-3.5 shrink-0" />
+              ClCr (Função Renal)
             </TabsTrigger>
             <TabsTrigger value="reimbursement" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
               <ClipboardList className="w-3.5 h-3.5 shrink-0" />
@@ -706,6 +773,123 @@ export default function Calculators() {
                       <p className="text-[10px] text-muted-foreground font-semibold">Grave</p>
                       <p className="text-xs font-bold text-destructive">&gt; 400g / 24h</p>
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ABA CLEARANCE CREATININA */}
+          <TabsContent value="clearance" className="space-y-6">
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-6 pb-4 border-b border-border/40">
+                <CardTitle className="text-lg font-serif font-bold text-primary">Clearance de Creatinina (Cockcroft-Gault)</CardTitle>
+                <CardDescription className="text-xs">
+                  Estimativa da taxa de filtração glomerular para ajuste de dose de medicamentos e avaliação pré-contraste.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-primary uppercase tracking-wider">Idade (anos)</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="Ex: 65" 
+                          value={crAge} 
+                          onChange={(e) => setCrAge(e.target.value)}
+                          className="rounded-xl border-border bg-background"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-primary uppercase tracking-wider">Peso (kg)</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="Ex: 80" 
+                          value={crWeight} 
+                          onChange={(e) => setCrWeight(e.target.value)}
+                          className="rounded-xl border-border bg-background"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-primary uppercase tracking-wider">Creatinina Sérica (mg/dL)</Label>
+                      <Input 
+                        type="number" 
+                        step="0.01"
+                        placeholder="Ex: 1.1" 
+                        value={crCreatinine} 
+                        onChange={(e) => setCrCreatinine(e.target.value)}
+                        className="rounded-xl border-border bg-background"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-primary uppercase tracking-wider">Sexo Biológico</Label>
+                      <div className="flex gap-4">
+                        <Button 
+                          type="button"
+                          variant={crGender === "male" ? "default" : "outline"}
+                          onClick={() => setCrGender("male")}
+                          className="w-full rounded-xl"
+                        >
+                          Masculino
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant={crGender === "female" ? "default" : "outline"}
+                          onClick={() => setCrGender("female")}
+                          className="w-full rounded-xl"
+                        >
+                          Feminino
+                        </Button>
+                      </div>
+                    </div>
+
+                    {crResult && (
+                      <Button onClick={resetClearance} variant="outline" className="w-full py-6 rounded-xl text-sm font-semibold border-border">
+                        Limpar Dados
+                      </Button>
+                    )}
+
+                    {!crResult && (
+                      <Button onClick={calculateClearance} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md">
+                        Calcular Clearance
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col justify-center">
+                    {crResult ? (
+                      <div className={`p-6 rounded-xl border space-y-4 ${crResult.color}`}>
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold uppercase tracking-wider opacity-80">Clearance de Creatinina Estimado</p>
+                          <h3 className="text-3xl font-serif font-bold leading-none">{crResult.clearance} <span className="text-sm font-sans font-normal opacity-80">mL/min</span></h3>
+                        </div>
+                        
+                        <div className="space-y-1 border-t border-current/10 pt-3">
+                          <p className="text-xs font-bold uppercase tracking-wider opacity-80">Classificação</p>
+                          <p className="text-sm font-semibold">{crResult.classification}</p>
+                        </div>
+
+                        <div className="p-3 bg-white/40 dark:bg-black/20 rounded-lg text-xs space-y-1 border border-current/10">
+                          <p className="font-bold uppercase tracking-wider opacity-90 flex items-center gap-1">
+                            <Info className="w-3.5 h-3.5" /> Conduta e Ajuste de Dose
+                          </p>
+                          <p className="opacity-90 leading-relaxed">{crResult.tip}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="border border-dashed border-border rounded-xl p-8 text-center space-y-2">
+                        <Calculator className="w-8 h-8 mx-auto text-muted-foreground opacity-50" />
+                        <h4 className="text-sm font-semibold text-muted-foreground">Aguardando dados de entrada</h4>
+                        <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                          Insira a idade, peso, creatinina sérica e sexo do paciente para estimar a taxa de filtração glomerular.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

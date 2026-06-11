@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation, Link } from "wouter";
 import { 
   ArrowLeft, 
@@ -120,6 +120,91 @@ export default function ProtocolDetail() {
     setSignatureUrl("");
     localStorage.removeItem("protoUro_signature_data");
     toast.info("Assinatura digitalizada removida.");
+  };
+
+  // --- LÓGICA DO CANVAS DE ASSINATURA ---
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.strokeStyle = "#1C3D5A"; // Azul do Nilo para a assinatura
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // Pegar coordenadas corretas
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+    
+    if ("touches" in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+    
+    if ("touches" in e) {
+      // Prevenir rolagem da tela no mobile ao assinar
+      e.preventDefault();
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const saveCanvasSignature = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    // Verificar se o canvas está vazio (opcional, mas bom para evitar salvar em branco)
+    const base64String = canvas.toDataURL("image/png");
+    setSignatureUrl(base64String);
+    localStorage.setItem("protoUro_signature_data", base64String);
+    toast.success("Assinatura desenhada salva com sucesso!");
   };
 
   const handlePatientNameChange = (name: string) => {
@@ -668,42 +753,73 @@ export default function ProtocolDetail() {
               </div>
             </div>
 
-            {/* Configuração de Upload de Assinatura */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-border/50 bg-secondary/10">
-              <div className="space-y-1 text-center sm:text-left">
-                <h4 className="text-xs font-bold text-primary uppercase tracking-wider">Sua Assinatura Digitalizada</h4>
-                <p className="text-[11px] text-muted-foreground">
-                  Faça o upload de uma imagem com fundo transparente (PNG) para ser injetada automaticamente no PDF timbrado.
-                </p>
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                {signatureUrl ? (
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-28 bg-white border border-border rounded-lg p-1 flex items-center justify-center">
-                      <img src={signatureUrl} className="max-h-10 max-w-full object-contain" alt="Assinatura" />
+            {/* Configuração de Upload e Desenho de Assinatura */}
+            <div className="flex flex-col gap-4 p-4 rounded-xl border border-border/50 bg-secondary/10">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="space-y-1 text-center sm:text-left">
+                  <h4 className="text-xs font-bold text-primary uppercase tracking-wider">Sua Assinatura Digitalizada</h4>
+                  <p className="text-[11px] text-muted-foreground">
+                    Desenhe sua assinatura na tela ou faça o upload de uma imagem PNG com fundo transparente.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {signatureUrl ? (
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-28 bg-white border border-border rounded-lg p-1 flex items-center justify-center">
+                        <img src={signatureUrl} className="max-h-10 max-w-full object-contain" alt="Assinatura" />
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={handleClearSignature} className="text-destructive hover:text-destructive/80 text-xs font-bold h-9 px-3 rounded-lg">
+                        Remover
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={handleClearSignature} className="text-destructive hover:text-destructive/80 text-xs font-bold h-9 px-3 rounded-lg">
-                      Remover
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <input
-                      type="file"
-                      id="signature-file"
-                      accept="image/*"
-                      onChange={handleSignatureUpload}
-                      className="hidden"
-                    />
-                    <Label
-                      htmlFor="signature-file"
-                      className="h-10 px-4 rounded-xl border border-border bg-card hover:bg-secondary flex items-center justify-center text-xs font-semibold cursor-pointer transition-colors"
-                    >
-                      Fazer Upload (.png)
-                    </Label>
-                  </div>
-                )}
+                  ) : (
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="signature-file"
+                        accept="image/*"
+                        onChange={handleSignatureUpload}
+                        className="hidden"
+                      />
+                      <Label
+                        htmlFor="signature-file"
+                        className="h-10 px-4 rounded-xl border border-border bg-card hover:bg-secondary flex items-center justify-center text-xs font-semibold cursor-pointer transition-colors"
+                      >
+                        Fazer Upload (.png)
+                      </Label>
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {!signatureUrl && (
+                <div className="border-t border-border/40 pt-3 space-y-3">
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">Desenhar Assinatura na Tela:</span>
+                  <div className="flex flex-col items-center gap-3">
+                    <canvas
+                      ref={canvasRef}
+                      width={320}
+                      height={120}
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      onTouchStart={startDrawing}
+                      onTouchMove={draw}
+                      onTouchEnd={stopDrawing}
+                      className="bg-white border border-border rounded-xl cursor-crosshair max-w-full touch-none shadow-inner"
+                    />
+                    <div className="flex gap-2 w-full max-w-[320px]">
+                      <Button variant="outline" size="sm" onClick={clearCanvas} className="flex-1 rounded-xl text-xs h-9 font-semibold border-border">
+                        Limpar Tela
+                      </Button>
+                      <Button size="sm" onClick={saveCanvasSignature} className="flex-1 rounded-xl text-xs h-9 font-bold copper-gradient text-white">
+                        Salvar Desenho
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Histórico de Pacientes Recentes */}
