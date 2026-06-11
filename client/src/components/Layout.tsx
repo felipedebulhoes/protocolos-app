@@ -12,7 +12,9 @@ import {
   ChevronRight,
   Activity,
   User,
-  ExternalLink
+  ExternalLink,
+  Calendar,
+  MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -117,6 +119,29 @@ export default function Layout({ children }: LayoutProps) {
             </Button>
           </div>
           
+          {/* Botões Rápidos de Agendamento */}
+          <div className="space-y-1.5 pt-1">
+            <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider px-2">Links Rápidos</p>
+            <a 
+              href="https://www.doctoralia.com.br/felipe-de-bulhoes-ojeda-2/urologista/campinas" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-[#B87333] hover:bg-[#B87333]/90 transition-colors shadow-sm"
+            >
+              <Calendar className="w-4 h-4" />
+              Doctoralia Campinas
+            </a>
+            <a 
+              href="https://wa.me/5511981124455" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm"
+            >
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp Comercial
+            </a>
+          </div>
+
           <div className="p-3 bg-white/5 rounded-lg border border-white/10 flex items-center gap-3">
             <img 
               src="/images/isotipo.svg" 

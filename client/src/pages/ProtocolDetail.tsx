@@ -107,12 +107,19 @@ export default function ProtocolDetail() {
     toast.success(isFav ? "Removido dos favoritos" : "Adicionado aos favoritos");
   };
 
-  const copyToClipboard = (text: string, sectionTitle: string) => {
+  const copyToClipboard = (text: string, sectionTitle: string, isPrescription: boolean = false) => {
     // Limpar marcações markdown de blocos de código se houver
-    const cleanText = text.replace(/```[\s\S]*?\n/g, "").replace(/```/g, "");
+    let cleanText = text.replace(/```[\s\S]*?\n/g, "").replace(/```/g, "");
+    
+    // Se for uma prescrição e tiver um nome de paciente definido, injetar o cabeçalho personalizado
+    if (isPrescription) {
+      const nameHeader = `--------------------------------------------------\nDR. FELIPE DE BULHÕES - UROLOGISTA & CIRURGIÃO GERAL\nRECEITUÁRIO MÉDICO\n\nPaciente: ${patientName || "______________________________________"}\nData: ${new Date().toLocaleDateString("pt-BR")}\n--------------------------------------------------\n\n`;
+      cleanText = nameHeader + cleanText;
+    }
+
     navigator.clipboard.writeText(cleanText);
     setCopiedText(sectionTitle);
-    toast.success("Copiado para a área de transferência!");
+    toast.success(isPrescription ? "Prescrição personalizada copiada!" : "Copiado para a área de transferência!");
     setTimeout(() => setCopiedText(null), 2000);
   };
 
@@ -148,7 +155,7 @@ export default function ProtocolDetail() {
             <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
               <IconComponent className="w-6 h-6 text-accent" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 flex-1">
               <Badge variant="secondary" className="text-[10px] uppercase tracking-wider font-semibold">
                 {protocol.category}
               </Badge>
@@ -158,6 +165,26 @@ export default function ProtocolDetail() {
             </div>
           </div>
         </div>
+
+        {/* Campo Global de Nome do Paciente para Prescrições e WhatsApp */}
+        <Card className="border-accent/20 bg-accent/[0.02] shadow-sm">
+          <CardContent className="p-4 flex flex-col md:flex-row items-center gap-4">
+            <div className="space-y-1 text-center md:text-left flex-1">
+              <h4 className="text-sm font-serif font-bold text-primary">Identificação do Paciente</h4>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Insira o nome do paciente para personalizar automaticamente todas as <strong>Prescrições Modelo</strong> e <strong>Scripts de WhatsApp</strong> deste protocolo.
+              </p>
+            </div>
+            <div className="w-full md:w-72">
+              <Input
+                placeholder="Nome completo do paciente..."
+                value={patientName}
+                onChange={(e) => setPatientName(e.target.value)}
+                className="py-5 bg-card border-border rounded-xl text-sm"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
 	        {/* Seção de Vídeos Clínicos e Animações 3D Oficiais */}
 	        {(protocol.id === "13_hpb_manejo_completo" || protocol.id === "14_reabilitacao_pos_prostatectomia" || protocol.id === "1_implante_protese_peniana") && (
@@ -222,14 +249,6 @@ export default function ProtocolDetail() {
 	                  <h3 className="text-base font-serif font-bold text-primary">Modelos Rápidos de WhatsApp (Secretaria)</h3>
 	                  <p className="text-[10px] text-muted-foreground font-medium">Mensagens prontas para agilizar o contato e conversão de cirurgias.</p>
 	                </div>
-	              </div>
-	              <div className="w-full md:w-48">
-	                <Input
-	                  placeholder="Nome do Paciente..."
-	                  value={patientName}
-	                  onChange={(e) => setPatientName(e.target.value)}
-	                  className="h-8 text-xs rounded-lg border-border"
-	                />
 	              </div>
 	            </div>
 
@@ -349,7 +368,7 @@ export default function ProtocolDetail() {
 	                      <Button
 	                        variant="ghost"
 	                        size="sm"
-	                        onClick={() => copyToClipboard(section.content, section.title)}
+	                        onClick={() => copyToClipboard(section.content, section.title, isPrescription)}
 	                        className="h-8 gap-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground"
 	                      >
 	                        {copiedText === section.title ? (

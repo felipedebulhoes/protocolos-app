@@ -1,0 +1,17 @@
+{
+  "short_name": "ProtoUro",
+  "name": "ProtoUro - Handbook Digital de Urologia",
+  "icons": [
+    {
+      "src": "/images/isotipo.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#1C3D5A",
+  "theme_color": "#1C3D5A",
+  "display": "standalone",
+  "orientation": "portrait"
+}
