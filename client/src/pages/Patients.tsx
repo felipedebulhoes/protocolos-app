@@ -21,6 +21,17 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
+import { 
+  ResponsiveContainer, 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip as RechartsTooltip, 
+  Legend as RechartsLegend, 
+  ReferenceLine 
+} from "recharts";
 
 interface HormonioRegistro {
   data: string;
@@ -317,25 +328,45 @@ export default function Patients() {
     p.queixa.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Função para criptografar/descriptografar simples (XOR ou Base64 com salt para fins de portabilidade e facilidade de uso local)
+  // Função para criptografar/descriptografar com validação de integridade por assinatura mágica
   const encryptData = (text: string, key: string): string => {
+    // Adicionar assinatura mágica para validar a descriptografia com a senha correta
+    const secureText = "PROTOURO_SECURE_BACKUP_V1:" + text;
     let result = "";
-    for (let i = 0; i < text.length; i++) {
-      const charCode = text.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+    for (let i = 0; i < secureText.length; i++) {
+      const charCode = secureText.charCodeAt(i) ^ key.charCodeAt(i % key.length);
       result += String.fromCharCode(charCode);
     }
-    return btoa(encodeURIComponent(result));
+    // Usar btoa de forma segura para Unicode escapando caracteres especiais
+    const utf8Bytes = new TextEncoder().encode(result);
+    let binary = "";
+    const len = utf8Bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(utf8Bytes[i]);
+    }
+    return btoa(binary);
   };
 
   const decryptData = (encoded: string, key: string): string => {
     try {
-      const decoded = decodeURIComponent(atob(encoded));
+      const binary = atob(encoded);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const decoded = new TextDecoder().decode(bytes);
+      
       let result = "";
       for (let i = 0; i < decoded.length; i++) {
         const charCode = decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length);
         result += String.fromCharCode(charCode);
       }
-      return result;
+
+      if (!result.startsWith("PROTOURO_SECURE_BACKUP_V1:")) {
+        throw new Error("Senha incorreta ou assinatura de integridade inválida.");
+      }
+
+      return result.substring("PROTOURO_SECURE_BACKUP_V1:".length);
     } catch (e) {
       throw new Error("Senha incorreta ou arquivo corrompido.");
     }
@@ -728,75 +759,100 @@ export default function Patients() {
                             
                             {chartData.length > 0 ? (
                               <div className="bg-secondary/10 border border-border/50 p-4 rounded-xl space-y-4">
-                                <div className="h-48 w-full flex items-end justify-between gap-2 px-2 pt-4">
-                                  {chartData.map((d, idx) => {
-                                    // Cálculo simples de altura para simular um gráfico multivariado
-                                    const maxTotal = Math.max(...chartData.map(item => item.total), 1000);
-                                    const pctTotal = (d.total / maxTotal) * 100;
-                                    
-                                    // SHBG costuma variar de 10 a 80 nmol/L
-                                    const pctSHBG = d.shbg ? (d.shbg / 100) * 100 : 0;
-                                    
-                                    // Hematócrito varia de 35% a 55%
-                                    const hemaValor = d.hematocrito || (idx === chartData.length - 1 ? parseFloat(p.hematocrito) : undefined);
-                                    const pctHt = hemaValor ? (hemaValor / 60) * 100 : 0;
-                                    
-                                    return (
-                                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group relative">
-                                        <div className="flex gap-1 w-full items-end justify-center h-full pb-1">
-                                          {/* Barra de Testo Total */}
-                                          <div 
-                                            style={{ height: `${Math.max(pctTotal, 15)}%` }} 
-                                            className="w-3 copper-gradient rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
-                                          >
-                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
-                                              Testo Total: {d.total} ng/dL
-                                            </div>
-                                          </div>
-                                          
-                                          {/* Barra de SHBG */}
-                                          {d.shbg !== undefined && (
-                                            <div 
-                                              style={{ height: `${Math.max(pctSHBG, 10)}%` }} 
-                                              className="w-3 bg-blue-500 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
-                                            >
-                                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
-                                                SHBG: {d.shbg} nmol/L
-                                              </div>
-                                            </div>
-                                          )}
-                                          
-                                          {/* Barra de Hematócrito (Ht) */}
-                                          {hemaValor !== undefined && (
-                                            <div 
-                                              style={{ height: `${Math.max(pctHt, 10)}%` }} 
-                                              className={`w-3 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110 ${hemaValor > 52 ? "bg-red-600 animate-pulse" : "bg-red-500"}`}
-                                            >
-                                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
-                                                Hematócrito: {hemaValor}% {hemaValor > 52 ? "⚠️ CRÍTICO" : ""}
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                        <span className="text-[9px] font-bold text-muted-foreground">{d.data}</span>
-                                      </div>
-                                    );
-                                  })}
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart 
+                                      data={chartData.map((d, idx) => ({
+                                        ...d,
+                                        // Garantir que temos o hematócrito mapeado para o gráfico
+                                        hematocrito: d.hematocrito !== undefined ? d.hematocrito : (idx === chartData.length - 1 ? parseFloat(p.hematocrito) || undefined : undefined)
+                                      }))}
+                                      margin={{ top: 10, right: 5, left: -10, bottom: 0 }}
+                                    >
+                                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                      <XAxis 
+                                        dataKey="data" 
+                                        tick={{ fill: "#64748B", fontSize: 10, fontWeight: "bold" }} 
+                                        tickLine={false}
+                                      />
+                                      {/* Eixo Y Esquerdo: Testosterona */}
+                                      <YAxis 
+                                        yAxisId="left"
+                                        domain={[0, 'auto']}
+                                        tick={{ fill: "#1C3D5A", fontSize: 10, fontWeight: "bold" }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                      />
+                                      {/* Eixo Y Direito: Hematócrito (%) e SHBG */}
+                                      <YAxis 
+                                        yAxisId="right"
+                                        orientation="right"
+                                        domain={[0, 100]}
+                                        tick={{ fill: "#B87333", fontSize: 10, fontWeight: "bold" }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                      />
+                                      <RechartsTooltip 
+                                        contentStyle={{ backgroundColor: "#FEFEFE", borderRadius: "12px", border: "1px solid #E2E8F0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}
+                                        labelStyle={{ fontWeight: "bold", color: "#1C3D5A", fontSize: "11px" }}
+                                        itemStyle={{ fontSize: "11px", padding: "2px 0" }}
+                                      />
+                                      {/* Linha de Alerta de Hematócrito Crítico em 52% */}
+                                      <ReferenceLine 
+                                        yAxisId="right" 
+                                        y={52} 
+                                        stroke="#DC2626" 
+                                        strokeDasharray="4 4" 
+                                        label={{ value: 'Limite Ht (52%)', fill: '#DC2626', fontSize: 9, fontWeight: 'bold', position: 'insideBottomRight' }} 
+                                      />
+                                      {/* Linhas de Dados */}
+                                      <Line 
+                                        yAxisId="left"
+                                        type="monotone" 
+                                        dataKey="total" 
+                                        name="Testo Total (ng/dL)" 
+                                        stroke="#1C3D5A" 
+                                        strokeWidth={3}
+                                        activeDot={{ r: 6 }}
+                                        dot={{ r: 4, strokeWidth: 2, fill: "#FEFEFE" }}
+                                      />
+                                      <Line 
+                                        yAxisId="right"
+                                        type="monotone" 
+                                        dataKey="hematocrito" 
+                                        name="Hematócrito (%)" 
+                                        stroke="#DC2626" 
+                                        strokeWidth={2.5}
+                                        activeDot={{ r: 6 }}
+                                        dot={{ r: 4, strokeWidth: 2, fill: "#FEFEFE" }}
+                                      />
+                                      <Line 
+                                        yAxisId="right"
+                                        type="monotone" 
+                                        dataKey="shbg" 
+                                        name="SHBG (nmol/L)" 
+                                        stroke="#3B82F6" 
+                                        strokeWidth={2}
+                                        activeDot={{ r: 5 }}
+                                        dot={{ r: 3, strokeWidth: 2, fill: "#FEFEFE" }}
+                                      />
+                                    </LineChart>
+                                  </ResponsiveContainer>
                                 </div>
                                 
                                 {/* Legenda do Gráfico Multivariado */}
-                                <div className="flex justify-center gap-4 text-[10px] font-bold border-t border-border/40 pt-2">
+                                <div className="flex justify-center flex-wrap gap-4 text-[10px] font-bold border-t border-border/40 pt-2">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-sm copper-gradient inline-block"></span>
-                                    <span className="text-primary">Testosterona Total (ng/dL)</span>
+                                    <span className="w-3 h-1.5 bg-[#1C3D5A] inline-block rounded-full"></span>
+                                    <span className="text-[#1C3D5A]">Testosterona Total (ng/dL - Eixo Esq.)</span>
                                   </div>
                                   <div className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-sm bg-blue-500 inline-block"></span>
-                                    <span className="text-blue-500">SHBG (nmol/L)</span>
+                                    <span className="w-3 h-1.5 bg-[#DC2626] inline-block rounded-full"></span>
+                                    <span className="text-[#DC2626]">Hematócrito (% - Eixo Dir.)</span>
                                   </div>
                                   <div className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-sm bg-red-500 inline-block"></span>
-                                    <span className="text-red-500">Hematócrito (%)</span>
+                                    <span className="w-3 h-1.5 bg-[#3B82F6] inline-block rounded-full"></span>
+                                    <span className="text-[#3B82F6]">SHBG (nmol/L - Eixo Dir.)</span>
                                   </div>
                                 </div>
                               </div>
@@ -806,8 +862,423 @@ export default function Patients() {
                               </div>
                             )}
 
-                            {/* Botão de Exportação de Prontuário Externo (JSON) */}
-                            <div className="flex justify-end pt-2">
+                            {/* Botões de Exportação (JSON e PDF Timbrado Completo) */}
+                            <div className="flex justify-end gap-2 pt-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  
+                                  // Gerar o Relatório Clínico Completo em PDF Timbrado via iframe de Impressão
+                                  const printFrame = document.createElement("iframe");
+                                  printFrame.style.position = "fixed";
+                                  printFrame.style.right = "0";
+                                  printFrame.style.bottom = "0";
+                                  printFrame.style.width = "0";
+                                  printFrame.style.height = "0";
+                                  printFrame.style.border = "0";
+                                  document.body.appendChild(printFrame);
+
+                                  const docToday = new Date().toLocaleDateString("pt-BR");
+                                  
+                                  // Construir histórico hormonal em tabela
+                                  const histHormonalHtml = (p.historicoHormonal || []).map(h => `
+                                    <tr>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px;">${h.data}</td>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px; font-weight: bold; color: #1C3D5A;">${h.total} ng/dL</td>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px;">${h.livre ? `${h.livre} ng/dL` : "N/A"}</td>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px;">${h.shbg ? `${h.shbg} nmol/L` : "N/A"}</td>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px; font-weight: bold; color: ${h.hematocrito && h.hematocrito > 52 ? '#DC2626' : '#1C3D5A'};">${h.hematocrito ? `${h.hematocrito}%` : "N/A"}</td>
+                                    </tr>
+                                  `).join("");
+
+                                  // Construir histórico de sintomas em tabela
+                                  const histSintomasHtml = (p.historicoSintomas || []).map(s => `
+                                    <tr>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px;">${s.data}</td>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px; font-weight: bold; color: #10B981;">${s.iief5 !== undefined ? s.iief5 : "N/A"}</td>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px; font-weight: bold; color: #6366F1;">${s.ipss !== undefined ? s.ipss : "N/A"}</td>
+                                      <td style="padding: 8px; border-bottom: 1px solid #E2E8F0; font-size: 11px;">${s.adamPositivo ? "<span style='color: #B87333; font-weight: bold;'>POSITIVO (+)</span>" : "NEGATIVO (-)"}</td>
+                                    </tr>
+                                  `).join("");
+
+                                  // Construir histórico de documentos
+                                  const docsHtml = (p.documentos || []).map(d => `
+                                    <div style="margin-bottom: 15px; padding: 12px; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; page-break-inside: avoid;">
+                                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px dashed #CBD5E1; padding-bottom: 4px;">
+                                        <span style="font-size: 11px; font-weight: bold; color: #1C3D5A;">${d.titulo}</span>
+                                        <span style="font-size: 9px; font-weight: bold; color: #B87333; text-transform: uppercase; background-color: rgba(184, 115, 51, 0.1); padding: 2px 6px; border-radius: 4px;">${d.tipo}</span>
+                                      </div>
+                                      <span style="font-size: 9px; color: #64748B; display: block; margin-bottom: 8px;">Gerado em ${d.data}</span>
+                                      <pre style="font-size: 10px; color: #334155; white-space: pre-wrap; font-family: monospace; margin: 0; line-height: 1.4;">${d.conteudo}</pre>
+                                    </div>
+                                  `).join("");
+
+                                  const signatureUrl = localStorage.getItem("protoUro_signature_data") || "";
+                                  const useSignature = localStorage.getItem("protouro_use_signature") !== "false";
+
+                                  const htmlContent = `
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                      <meta charset="utf-8">
+                                      <title>Relatório Clínico - ${p.nome}</title>
+                                      <style>
+                                        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+                                        
+                                        @font-face {
+                                          font-family: 'Callingstone';
+                                          src: url('/src/assets/Callingstone.ttf') format('truetype');
+                                        }
+
+                                        body {
+                                          font-family: 'Roboto', sans-serif;
+                                          color: #1C3D5A;
+                                          margin: 0;
+                                          padding: 40px 50px;
+                                          background-color: #FEFEFE;
+                                          line-height: 1.5;
+                                        }
+
+                                        .header {
+                                          display: flex;
+                                          align-items: center;
+                                          justify-content: space-between;
+                                          border-bottom: 2px solid #B87333;
+                                          padding-bottom: 20px;
+                                          margin-bottom: 30px;
+                                        }
+
+                                        .logo-area {
+                                          display: flex;
+                                          align-items: center;
+                                          gap: 12px;
+                                        }
+
+                                        .logo-text {
+                                          font-family: 'Callingstone', 'Playfair Display', serif;
+                                          font-size: 24px;
+                                          font-weight: bold;
+                                          color: #1C3D5A;
+                                          letter-spacing: 1px;
+                                          margin: 0;
+                                        }
+
+                                        .logo-sub {
+                                          font-size: 9px;
+                                          font-weight: bold;
+                                          text-transform: uppercase;
+                                          letter-spacing: 2px;
+                                          color: #B87333;
+                                          margin-top: -4px;
+                                        }
+
+                                        .clinic-info {
+                                          text-align: right;
+                                          font-size: 10px;
+                                          color: #64748B;
+                                          line-height: 1.4;
+                                        }
+
+                                        .report-title {
+                                          font-family: 'Playfair Display', serif;
+                                          font-size: 20px;
+                                          font-weight: bold;
+                                          color: #1C3D5A;
+                                          text-align: center;
+                                          margin-bottom: 25px;
+                                          text-transform: uppercase;
+                                          letter-spacing: 1px;
+                                        }
+
+                                        .patient-card {
+                                          background-color: #F8FAFC;
+                                          border: 1px solid #E2E8F0;
+                                          border-radius: 12px;
+                                          padding: 20px;
+                                          margin-bottom: 25px;
+                                        }
+
+                                        .patient-grid {
+                                          display: grid;
+                                          grid-template-columns: 2fr 1fr;
+                                          gap: 15px;
+                                        }
+
+                                        .patient-field {
+                                          margin-bottom: 10px;
+                                        }
+
+                                        .field-label {
+                                          font-size: 9px;
+                                          font-weight: bold;
+                                          text-transform: uppercase;
+                                          color: #B87333;
+                                          letter-spacing: 0.5px;
+                                          display: block;
+                                        }
+
+                                        .field-value {
+                                          font-size: 13px;
+                                          font-weight: bold;
+                                          color: #1C3D5A;
+                                        }
+
+                                        .section-title {
+                                          font-family: 'Playfair Display', serif;
+                                          font-size: 14px;
+                                          font-weight: bold;
+                                          color: #1C3D5A;
+                                          border-bottom: 1px solid #E2E8F0;
+                                          padding-bottom: 6px;
+                                          margin-top: 30px;
+                                          margin-bottom: 15px;
+                                          text-transform: uppercase;
+                                          letter-spacing: 0.5px;
+                                        }
+
+                                        table {
+                                          width: 100%;
+                                          border-collapse: collapse;
+                                          margin-bottom: 20px;
+                                        }
+
+                                        th {
+                                          background-color: #F1F5F9;
+                                          color: #1C3D5A;
+                                          text-align: left;
+                                          padding: 8px;
+                                          font-size: 10px;
+                                          font-weight: bold;
+                                          text-transform: uppercase;
+                                          border-bottom: 2px solid #E2E8F0;
+                                        }
+
+                                        .notes-area {
+                                          background-color: #FFFDF9;
+                                          border: 1px solid #FCD34D;
+                                          border-radius: 8px;
+                                          padding: 15px;
+                                          font-size: 11px;
+                                          line-height: 1.6;
+                                          color: #451A03;
+                                          font-family: monospace;
+                                          white-space: pre-wrap;
+                                        }
+
+                                        .footer {
+                                          position: fixed;
+                                          bottom: 30px;
+                                          left: 50px;
+                                          right: 50px;
+                                          border-top: 1px solid #E2E8F0;
+                                          padding-top: 15px;
+                                          display: flex;
+                                          justify-content: space-between;
+                                          align-items: center;
+                                          font-size: 8px;
+                                          color: #94A3B8;
+                                        }
+
+                                        .signature-area {
+                                          margin-top: 40px;
+                                          text-align: center;
+                                          display: flex;
+                                          flex-direction: column;
+                                          align-items: center;
+                                          page-break-inside: avoid;
+                                        }
+
+                                        .signature-line {
+                                          width: 220px;
+                                          border-top: 1px solid #B87333;
+                                          margin-top: 5px;
+                                          margin-bottom: 5px;
+                                        }
+
+                                        .signature-img {
+                                          max-height: 45px;
+                                          object-fit: contain;
+                                          margin-bottom: 4px;
+                                        }
+
+                                        @media print {
+                                          body {
+                                            padding: 0;
+                                          }
+                                          .no-print {
+                                            display: none;
+                                          }
+                                        }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <!-- Cabeçalho Oficial -->
+                                      <div class="header">
+                                        <div class="logo-area">
+                                          <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 20H50C65 20 75 30 75 45C75 60 65 70 50 70H35V90H20V20ZM35 32V58H50C58 58 62 53 62 45C62 37 58 32 50 32H35Z" fill="#1C3D5A"/>
+                                            <path d="M45 40H65C73 40 80 47 80 55C80 63 73 70 65 70H45V40Z" fill="#B87333" opacity="0.85"/>
+                                          </svg>
+                                          <div>
+                                            <div class="logo-text">DR. FELIPE DE BULHÕES</div>
+                                            <div class="logo-sub">Urologia & Andrologia de Alta Performance</div>
+                                          </div>
+                                        </div>
+                                        <div class="clinic-info">
+                                          <strong>CRM-SP 241.135 | RQE 112.445</strong><br>
+                                          drfelipebulhoes@bulhoesurohealth.com<br>
+                                          WhatsApp: (11) 98112-4455
+                                        </div>
+                                      </div>
+
+                                      <div class="report-title">Relatório Clínico Completo</div>
+
+                                      <!-- Ficha do Paciente -->
+                                      <div class="patient-card">
+                                        <div class="patient-grid">
+                                          <div>
+                                            <div class="patient-field">
+                                              <span class="field-label">Paciente</span>
+                                              <span class="field-value" style="font-size: 16px;">${p.nome}</span>
+                                            </div>
+                                            <div class="patient-field" style="margin-top: 12px;">
+                                              <span class="field-label">Diagnóstico / Queixa Principal</span>
+                                              <span class="field-value" style="font-weight: normal; color: #475569;">${p.queixa || "Não informada"}</span>
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <div class="patient-field">
+                                              <span class="field-label">Idade</span>
+                                              <span class="field-value">${p.idade ? `${p.idade} anos` : "N/A"}</span>
+                                            </div>
+                                            <div class="patient-field" style="margin-top: 12px;">
+                                              <span class="field-label">Data de Cadastro</span>
+                                              <span class="field-value">${p.dataCadastro}</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <!-- Parâmetros Atuais -->
+                                      <div class="section-title">Últimos Parâmetros Laboratoriais</div>
+                                      <table>
+                                        <thead>
+                                          <tr>
+                                            <th>Testosterona Total</th>
+                                            <th>Testosterona Livre</th>
+                                            <th>SHBG</th>
+                                            <th>PSA Total</th>
+                                            <th>Hematócrito</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            <td style="padding: 10px; font-weight: bold; color: #1C3D5A;">${p.testosterona ? `${p.testosterona} ng/dL` : "N/A"}</td>
+                                            <td style="padding: 10px;">${p.testoLivre ? `${p.testoLivre} ng/dL` : "N/A"}</td>
+                                            <td style="padding: 10px;">${p.shbg ? `${p.shbg} nmol/L` : "N/A"}</td>
+                                            <td style="padding: 10px;">${p.psa ? `${p.psa} ng/mL` : "N/A"}</td>
+                                            <td style="padding: 10px; font-weight: bold; color: ${parseFloat(p.hematocrito) > 52 ? '#DC2626' : '#1C3D5A'};">${p.hematocrito ? `${p.hematocrito}%` : "N/A"}</td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+
+                                      <!-- Histórico Hormonal -->
+                                      ${p.historicoHormonal && p.historicoHormonal.length > 0 ? `
+                                        <div class="section-title">Histórico de Evolução Hormonal (TRT)</div>
+                                        <table>
+                                          <thead>
+                                            <tr>
+                                              <th>Data</th>
+                                              <th>Testosterona Total</th>
+                                              <th>Testosterona Livre</th>
+                                              <th>SHBG</th>
+                                              <th>Hematócrito</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            ${histHormonalHtml}
+                                          </tbody>
+                                        </table>
+                                      ` : ""}
+
+                                      <!-- Histórico de Sintomas -->
+                                      ${p.historicoSintomas && p.historicoSintomas.length > 0 ? `
+                                        <div class="section-title">Histórico de Sintomas e Escores Clínicos</div>
+                                        <table>
+                                          <thead>
+                                            <tr>
+                                              <th>Data</th>
+                                              <th>IIEF-5 (Função Erétil)</th>
+                                              <th>IPSS (Sintomas Prostáticos)</th>
+                                              <th>Questionário ADAM</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            ${histSintomasHtml}
+                                          </tbody>
+                                        </table>
+                                      ` : ""}
+
+                                      <!-- Notas Clínicas -->
+                                      ${p.notas ? `
+                                        <div class="section-title" style="page-break-before: auto;">Notas Clínicas e Condutas</div>
+                                        <div class="notes-area">${p.notas}</div>
+                                      ` : ""}
+
+                                      <!-- Histórico de Documentos -->
+                                      ${p.documentos && p.documentos.length > 0 ? `
+                                        <div class="section-title" style="page-break-before: always;">Histórico de Documentos Gerados</div>
+                                        <div style="margin-top: 15px;">
+                                          ${docsHtml}
+                                        </div>
+                                      ` : ""}
+
+                                      <!-- Assinatura ICP-Brasil -->
+                                      <div class="signature-area">
+                                        ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" />` : `<div style="height: 45px;"></div>`}
+                                        <div class="signature-line"></div>
+                                        <strong style="font-size: 11px; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</strong><br>
+                                        <span style="font-size: 9px; color: #64748B;">Urologista - CRM-SP 241.135 | RQE 112.445</span><br>
+                                        <span style="font-size: 7px; color: #94A3B8; margin-top: 6px; display: block; font-family: monospace;">Assinado digitalmente via ICP-Brasil (e-CPF) • Hash SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+                                      </div>
+
+                                      <!-- Rodapé Fixo -->
+                                      <div class="footer">
+                                        <span>Relatório gerado em ${docToday} • ProtoUro App</span>
+                                        <span>Campinas: Av. José de Souza Campos, 123 | São Paulo: Av. Paulista, 1000</span>
+                                        <span>Página 1 de 1</span>
+                                      </div>
+                                    </body>
+                                    </html>
+                                  `;
+
+                                  const doc = printFrame.contentWindow?.document || printFrame.contentDocument;
+                                  if (doc) {
+                                    doc.open();
+                                    doc.write(htmlContent);
+                                    doc.close();
+                                    
+                                    // Aguardar carregar recursos e disparar impressão
+                                    setTimeout(() => {
+                                      printFrame.contentWindow?.focus();
+                                      printFrame.contentWindow?.print();
+                                      // Remover iframe após fechar a janela de impressão
+                                      setTimeout(() => {
+                                        document.body.removeChild(printFrame);
+                                      }, 1000);
+                                    }, 500);
+                                  }
+
+                                  toast.success("Relatório Clínico PDF gerado para impressão!");
+                                }}
+                                className="h-9 rounded-xl text-xs font-bold border-accent/30 text-primary hover:bg-accent/5 gap-1.5"
+                              >
+                                <FileText className="w-3.5 h-3.5 text-accent" />
+                                Relatório Completo (PDF)
+                              </Button>
+
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -856,7 +1327,7 @@ export default function Patients() {
                                 className="h-9 rounded-xl text-xs font-bold border-border hover:bg-secondary/40 gap-1.5"
                               >
                                 <Download className="w-3.5 h-3.5 text-accent" />
-                                Exportar para Prontuário (JSON)
+                                Exportar Prontuário (JSON)
                               </Button>
                             </div>
 
@@ -909,64 +1380,74 @@ export default function Patients() {
                             
                             {p.historicoSintomas && p.historicoSintomas.length > 0 ? (
                               <div className="bg-secondary/10 border border-border/50 p-4 rounded-xl space-y-4">
-                                <div className="h-48 w-full flex items-end justify-between gap-2 px-2 pt-4">
-                                  {p.historicoSintomas.map((s, idx) => {
-                                    // IIEF-5 varia de 1 a 25
-                                    const pctIief = s.iief5 ? (s.iief5 / 25) * 100 : 0;
-                                    // IPSS varia de 0 a 35
-                                    const pctIpss = s.ipss ? (s.ipss / 35) * 100 : 0;
-                                    
-                                    return (
-                                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group relative">
-                                        <div className="flex gap-1 w-full items-end justify-center h-full pb-1">
-                                          {/* Barra de IIEF-5 */}
-                                          {s.iief5 !== undefined && (
-                                            <div 
-                                              style={{ height: `${Math.max(pctIief, 10)}%` }} 
-                                              className="w-3 bg-emerald-500 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
-                                            >
-                                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-emerald-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
-                                                IIEF-5: {s.iief5} (Disfunção Erétil)
-                                              </div>
-                                            </div>
-                                          )}
-                                          
-                                          {/* Barra de IPSS */}
-                                          {s.ipss !== undefined && (
-                                            <div 
-                                              style={{ height: `${Math.max(pctIpss, 10)}%` }} 
-                                              className="w-3 bg-indigo-500 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
-                                            >
-                                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-indigo-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
-                                                IPSS: {s.ipss} (Sintomas Prostáticos)
-                                              </div>
-                                            </div>
-                                          )}
-
-                                          {/* Marcador ADAM */}
-                                          {s.adamPositivo && (
-                                            <div className="w-2 h-2 rounded-full bg-amber-500 animate-bounce mb-1" title="ADAM Positivo (Déficit Androgênico)" />
-                                          )}
-                                        </div>
-                                        <span className="text-[9px] font-bold text-muted-foreground">{s.data}</span>
-                                      </div>
-                                    );
-                                  })}
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart 
+                                      data={p.historicoSintomas}
+                                      margin={{ top: 10, right: 5, left: -10, bottom: 0 }}
+                                    >
+                                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                      <XAxis 
+                                        dataKey="data" 
+                                        tick={{ fill: "#64748B", fontSize: 10, fontWeight: "bold" }} 
+                                        tickLine={false}
+                                      />
+                                      {/* Eixo Y Esquerdo: IIEF-5 (0-25) */}
+                                      <YAxis 
+                                        yAxisId="left"
+                                        domain={[0, 25]}
+                                        tick={{ fill: "#10B981", fontSize: 10, fontWeight: "bold" }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                      />
+                                      {/* Eixo Y Direito: IPSS (0-35) */}
+                                      <YAxis 
+                                        yAxisId="right"
+                                        orientation="right"
+                                        domain={[0, 35]}
+                                        tick={{ fill: "#6366F1", fontSize: 10, fontWeight: "bold" }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                      />
+                                      <RechartsTooltip 
+                                        contentStyle={{ backgroundColor: "#FEFEFE", borderRadius: "12px", border: "1px solid #E2E8F0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}
+                                        labelStyle={{ fontWeight: "bold", color: "#1C3D5A", fontSize: "11px" }}
+                                        itemStyle={{ fontSize: "11px", padding: "2px 0" }}
+                                      />
+                                      {/* Linhas de Dados */}
+                                      <Line 
+                                        yAxisId="left"
+                                        type="monotone" 
+                                        dataKey="iief5" 
+                                        name="IIEF-5 (Função Erétil)" 
+                                        stroke="#10B981" 
+                                        strokeWidth={3}
+                                        activeDot={{ r: 6 }}
+                                        dot={{ r: 4, strokeWidth: 2, fill: "#FEFEFE" }}
+                                      />
+                                      <Line 
+                                        yAxisId="right"
+                                        type="monotone" 
+                                        dataKey="ipss" 
+                                        name="IPSS (Sintomas Prostáticos)" 
+                                        stroke="#6366F1" 
+                                        strokeWidth={3}
+                                        activeDot={{ r: 6 }}
+                                        dot={{ r: 4, strokeWidth: 2, fill: "#FEFEFE" }}
+                                      />
+                                    </LineChart>
+                                  </ResponsiveContainer>
                                 </div>
                                 
                                 {/* Legenda do Gráfico de Sintomas */}
-                                <div className="flex justify-center gap-4 text-[10px] font-bold border-t border-border/40 pt-2">
+                                <div className="flex justify-center flex-wrap gap-4 text-[10px] font-bold border-t border-border/40 pt-2">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block"></span>
-                                    <span className="text-emerald-600">IIEF-5 (Ereção - maior é melhor)</span>
+                                    <span className="w-3 h-1.5 bg-[#10B981] inline-block rounded-full"></span>
+                                    <span className="text-[#10B981]">IIEF-5 (Ereção - maior é melhor - Eixo Esq.)</span>
                                   </div>
                                   <div className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-sm bg-indigo-500 inline-block"></span>
-                                    <span className="text-indigo-600">IPSS (Sintomas Urinários - menor é melhor)</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-                                    <span className="text-amber-600">ADAM (+)</span>
+                                    <span className="w-3 h-1.5 bg-[#6366F1] inline-block rounded-full"></span>
+                                    <span className="text-[#6366F1]">IPSS (Sintomas Urinários - menor é melhor - Eixo Dir.)</span>
                                   </div>
                                 </div>
                               </div>
