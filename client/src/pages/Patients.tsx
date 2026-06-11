@@ -21,6 +21,21 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
 
+interface HormonioRegistro {
+  data: string;
+  total: number;
+  livre?: number;
+  shbg?: number;
+}
+
+interface DocumentoVinculado {
+  id: string;
+  titulo: string;
+  tipo: "receita" | "atestado" | "laudo";
+  data: string;
+  conteudo: string;
+}
+
 interface Paciente {
   id: string;
   nome: string;
@@ -31,6 +46,10 @@ interface Paciente {
   hematocrito: string;
   notas: string;
   dataCadastro: string;
+  shbg?: string;
+  testoLivre?: string;
+  historicoHormonal?: HormonioRegistro[];
+  documentos?: DocumentoVinculado[];
 }
 
 export default function Patients() {
@@ -47,6 +66,15 @@ export default function Patients() {
   const [psa, setPsa] = useState("");
   const [hematocrito, setHematocrito] = useState("");
   const [notas, setNotas] = useState("");
+  const [shbg, setShbg] = useState("");
+  const [testoLivre, setTestoLivre] = useState("");
+  const [expandedId, setEditingExpandedId] = useState<string | null>(null);
+
+  // Estados para inserção de novo ponto no gráfico
+  const [newTotal, setNewTotal] = useState("");
+  const [newLivre, setNewLivre] = useState("");
+  const [newShbg, setNewShbg] = useState("");
+  const [newDataPonto, setNewDataPonto] = useState(new Date().toLocaleDateString("pt-BR").substring(0, 5));
 
   // Carregar pacientes do LocalStorage
   useEffect(() => {
@@ -77,6 +105,17 @@ export default function Patients() {
       // Editar paciente existente
       const updated = pacientes.map(p => {
         if (p.id === editingId) {
+          // Criar registro hormonal se houver valor de testosterona
+          const hist = p.historicoHormonal || [];
+          if (testosterona && (!hist.length || hist[hist.length - 1].total !== parseFloat(testosterona))) {
+            hist.push({
+              data: new Date().toLocaleDateString("pt-BR").substring(0, 5),
+              total: parseFloat(testosterona),
+              livre: testoLivre ? parseFloat(testoLivre) : undefined,
+              shbg: shbg ? parseFloat(shbg) : undefined
+            });
+          }
+
           return {
             ...p,
             nome: nome.trim(),
@@ -85,7 +124,10 @@ export default function Patients() {
             testosterona,
             psa,
             hematocrito,
-            notas: notas.trim()
+            notas: notas.trim(),
+            shbg,
+            testoLivre,
+            historicoHormonal: hist
           };
         }
         return p;
@@ -95,6 +137,16 @@ export default function Patients() {
       setEditingId(null);
     } else {
       // Criar novo paciente
+      const hist: HormonioRegistro[] = [];
+      if (testosterona) {
+        hist.push({
+          data: new Date().toLocaleDateString("pt-BR").substring(0, 5),
+          total: parseFloat(testosterona),
+          livre: testoLivre ? parseFloat(testoLivre) : undefined,
+          shbg: shbg ? parseFloat(shbg) : undefined
+        });
+      }
+
       const novo: Paciente = {
         id: "paciente_" + Date.now(),
         nome: nome.trim(),
@@ -104,7 +156,11 @@ export default function Patients() {
         psa,
         hematocrito,
         notas: notas.trim(),
-        dataCadastro: new Date().toLocaleDateString("pt-BR")
+        shbg,
+        testoLivre,
+        dataCadastro: new Date().toLocaleDateString("pt-BR"),
+        historicoHormonal: hist,
+        documentos: []
       };
       saveToStorage([novo, ...pacientes]);
       toast.success("Paciente cadastrado com sucesso!");
@@ -115,7 +171,8 @@ export default function Patients() {
     resetForm();
   };
 
-  const handleEdit = (p: Paciente) => {
+  const handleEdit = (p: Paciente, e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar abrir expansão
     setEditingId(p.id);
     setNome(p.nome);
     setIdade(p.idade);
@@ -124,13 +181,51 @@ export default function Patients() {
     setPsi(p.psa); // Corrige atribuição de PSA
     setHematocrito(p.hematocrito);
     setNotas(p.notas);
+    setShbg(p.shbg || "");
+    setTestoLivre(p.testoLivre || "");
     setIsAdding(true);
+  };
+
+  const handleAddHormonioPonto = (pacienteId: string) => {
+    if (!newTotal) {
+      toast.error("O valor de Testosterona Total é obrigatório.");
+      return;
+    }
+    const updated = pacientes.map(p => {
+      if (p.id === pacienteId) {
+        const hist = p.historicoHormonal || [];
+        const novoPonto: HormonioRegistro = {
+          data: newDataPonto || new Date().toLocaleDateString("pt-BR").substring(0, 5),
+          total: parseFloat(newTotal),
+          livre: newLivre ? parseFloat(newLivre) : undefined,
+          shbg: newShbg ? parseFloat(newShbg) : undefined
+        };
+        return {
+          ...p,
+          testosterona: newTotal, // Atualizar valor atual
+          testoLivre: newLivre || p.testoLivre,
+          shbg: newShbg || p.shbg,
+          historicoHormonal: [...hist, novoPonto]
+        };
+      }
+      return p;
+    });
+    saveToStorage(updated);
+    toast.success("Novo ponto hormonal registrado!");
+    setNewTotal("");
+    setNewLivre("");
+    setNewShbg("");
+  };
+
+  const toggleExpand = (id: string) => {
+    setEditingExpandedId(expandedId === id ? null : id);
   };
 
   // Alias para corrigir o erro de digitação do setPsi
   const setPsi = (val: string) => setPsa(val);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar abrir expansão
     if (confirm("Deseja realmente remover este paciente do banco de dados local?")) {
       const filtered = pacientes.filter(p => p.id !== id);
       saveToStorage(filtered);
@@ -146,6 +241,8 @@ export default function Patients() {
     setPsa("");
     setHematocrito("");
     setNotas("");
+    setShbg("");
+    setTestoLivre("");
   };
 
   const handleCancel = () => {
@@ -234,15 +331,35 @@ export default function Patients() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 border-t border-border/40 pt-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 border-t border-border/40 pt-5">
                   <div className="space-y-2">
-                    <Label htmlFor="testo" className="text-xs font-bold text-primary uppercase tracking-wider">Testosterona Total (ng/dL)</Label>
+                    <Label htmlFor="testo" className="text-xs font-bold text-primary uppercase tracking-wider">Testo Total (ng/dL)</Label>
                     <Input 
                       id="testo" 
                       type="number" 
                       placeholder="Ex: 240" 
                       value={testosterona}
                       onChange={(e) => setTestosterona(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="testoLivre" className="text-xs font-bold text-primary uppercase tracking-wider">Testo Livre (ng/dL)</Label>
+                    <Input 
+                      id="testoLivre" 
+                      placeholder="Ex: 4.8" 
+                      value={testoLivre}
+                      onChange={(e) => setTestoLivre(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="shbg" className="text-xs font-bold text-primary uppercase tracking-wider">SHBG (nmol/L)</Label>
+                    <Input 
+                      id="shbg" 
+                      placeholder="Ex: 32" 
+                      value={shbg}
+                      onChange={(e) => setShbg(e.target.value)}
                       className="rounded-xl h-11"
                     />
                   </div>
@@ -307,9 +424,17 @@ export default function Patients() {
 
             {filteredPacientes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {filteredPacientes.map((p) => (
-                  <Card key={p.id} className="border-border bg-card hover:border-accent/20 hover:shadow-md transition-all duration-200">
-                    <CardContent className="p-5 space-y-4">
+                {filteredPacientes.map((p) => {
+                  const isExpanded = expandedId === p.id;
+                  const chartData = p.historicoHormonal || [];
+                  
+                  return (
+                    <Card 
+                      key={p.id} 
+                      onClick={() => toggleExpand(p.id)}
+                      className={`border-border bg-card hover:border-accent/20 hover:shadow-md transition-all duration-200 cursor-pointer md:col-span-2 ${isExpanded ? "border-accent/40 ring-1 ring-accent/10" : ""}`}
+                    >
+                      <CardContent className="p-5 space-y-4">
                       <div className="flex items-start justify-between gap-3 border-b border-border/40 pb-3">
                         <div className="space-y-1">
                           <h4 className="text-base font-serif font-bold text-primary">{p.nome}</h4>
@@ -323,7 +448,7 @@ export default function Patients() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            onClick={() => handleEdit(p)}
+                            onClick={(e) => handleEdit(p, e)}
                             className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground rounded-lg"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -331,7 +456,7 @@ export default function Patients() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            onClick={() => handleDelete(p.id)}
+                            onClick={(e) => handleDelete(p.id, e)}
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive/80 rounded-lg"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -376,9 +501,130 @@ export default function Patients() {
                           </p>
                         </div>
                       )}
+
+                      {/* Ficha Expandida do Paciente */}
+                      {isExpanded && (
+                        <div className="space-y-6 pt-4 border-t border-border/40" onClick={(e) => e.stopPropagation()}>
+                          {/* Gráfico de Evolução Hormonal */}
+                          <div className="space-y-3">
+                            <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                              <Activity className="w-4 h-4 text-accent animate-pulse" />
+                              Curva de Evolução Hormonal (Testosterona Total)
+                            </span>
+                            
+                            {chartData.length > 0 ? (
+                              <div className="bg-secondary/10 border border-border/50 p-4 rounded-xl">
+                                <div className="h-48 w-full flex items-end justify-between gap-2 px-2 pt-4">
+                                  {chartData.map((d, idx) => {
+                                    // Cálculo simples de altura para simular um gráfico de barras responsivo
+                                    const maxVal = Math.max(...chartData.map(item => item.total), 1000);
+                                    const pct = (d.total / maxVal) * 100;
+                                    
+                                    return (
+                                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+                                        <div className="text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                          {d.total}
+                                        </div>
+                                        <div 
+                                          style={{ height: `${Math.max(pct, 15)}%` }} 
+                                          className="w-full max-w-[40px] copper-gradient rounded-t-md relative shadow-sm transition-all duration-300 hover:brightness-110"
+                                        >
+                                          {/* Tooltip simples */}
+                                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
+                                            T: {d.total} {d.livre ? `| L: ${d.livre}` : ""} {d.shbg ? `| S: ${d.shbg}` : ""}
+                                          </div>
+                                        </div>
+                                        <span className="text-[9px] font-bold text-muted-foreground">{d.data}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="p-6 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
+                                Registre pelo menos um valor de testosterona para gerar o gráfico.
+                              </div>
+                            )}
+
+                            {/* Formulário rápido para adicionar ponto no gráfico */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
+                              <Input 
+                                type="number" 
+                                placeholder="Total (ng/dL)" 
+                                value={newTotal}
+                                onChange={(e) => setNewTotal(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Input 
+                                type="number" 
+                                placeholder="Livre (ng/dL)" 
+                                value={newLivre}
+                                onChange={(e) => setNewLivre(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Input 
+                                type="number" 
+                                placeholder="SHBG (nmol/L)" 
+                                value={newShbg}
+                                onChange={(e) => setNewShbg(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleAddHormonioPonto(p.id)}
+                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white"
+                              >
+                                Adicionar Ponto
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Histórico de Documentos Vinculados */}
+                          <div className="space-y-3 pt-2">
+                            <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                              <FileText className="w-4 h-4 text-accent" />
+                              Histórico de Documentos Vinculados
+                            </span>
+                            
+                            {p.documentos && p.documentos.length > 0 ? (
+                              <div className="space-y-2.5">
+                                {p.documentos.map((doc) => (
+                                  <div key={doc.id} className="bg-secondary/10 border border-border/50 p-3 rounded-xl flex items-center justify-between gap-4">
+                                    <div className="space-y-1 text-left">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold text-primary">{doc.titulo}</span>
+                                        <Badge variant="outline" className="text-[8px] font-bold uppercase py-0 px-1.5 border-accent/20 text-accent bg-accent/5">
+                                          {doc.tipo}
+                                        </Badge>
+                                      </div>
+                                      <span className="text-[10px] text-muted-foreground block">Gerado em {doc.data}</span>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(doc.conteudo);
+                                        toast.success("Documento copiado do histórico!");
+                                      }}
+                                      className="h-8 rounded-lg text-xs font-semibold text-accent hover:text-accent/80 hover:bg-accent/5 shrink-0"
+                                    >
+                                      Copiar Texto
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="p-6 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
+                                Nenhum documento (receita, atestado ou laudo) foi gerado para este paciente ainda.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
-                ))}
+                );
+              })}
               </div>
             ) : (
               <div className="border border-dashed border-border/80 rounded-2xl flex flex-col items-center justify-center p-12 text-center bg-secondary/[0.05]">

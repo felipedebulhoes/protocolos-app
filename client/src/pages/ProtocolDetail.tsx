@@ -189,7 +189,59 @@ export default function ProtocolDetail() {
     navigator.clipboard.writeText(cleanText);
     setCopiedText(sectionTitle);
     toast.success(`${sectionTitle} copiado para a área de transferência!`);
+    
+    if (isPrescription && patientName.trim()) {
+      vincularDocumentoAoPaciente(protocol.title + " - " + sectionTitle, "receita", cleanText);
+    }
+
     setTimeout(() => setCopiedText(null), 2000);
+  };
+
+  // Função para vincular um documento gerado ao paciente ativo no LocalStorage
+  const vincularDocumentoAoPaciente = (titulo: string, tipo: "receita" | "atestado" | "laudo", conteudo: string) => {
+    if (!patientName.trim()) return;
+    const cleanName = patientName.trim();
+    
+    const stored = localStorage.getItem("protouro_pacientes_db");
+    if (stored) {
+      try {
+        const pacientesList = JSON.parse(stored);
+        // Buscar paciente pelo nome (case insensitive) ou criar se não existir
+        let paciente = pacientesList.find((p: any) => p.nome.toLowerCase() === cleanName.toLowerCase());
+        
+        if (!paciente) {
+          // Se não achar o paciente, cria um novo na hora para vincular o documento
+          paciente = {
+            id: "paciente_" + Date.now(),
+            nome: cleanName,
+            idade: "",
+            queixa: protocol.title,
+            testosterona: "",
+            psa: "",
+            hematocrito: "",
+            notas: "Cadastrado automaticamente via geração de documento.",
+            dataCadastro: new Date().toLocaleDateString("pt-BR"),
+            documentos: []
+          };
+          pacientesList.unshift(paciente);
+        }
+
+        const novosDocs = paciente.documentos || [];
+        novosDocs.unshift({
+          id: "doc_" + Date.now(),
+          titulo: titulo,
+          tipo: tipo,
+          data: new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR").substring(0, 5),
+          conteudo: conteudo
+        });
+
+        paciente.documentos = novosDocs;
+        localStorage.setItem("protouro_pacientes_db", JSON.stringify(pacientesList));
+        toast.success(`Documento salvo no histórico do paciente "${cleanName}"!`);
+      } catch (e) {
+        console.error("Erro ao vincular documento ao paciente:", e);
+      }
+    }
   };
 
   const handleCopyCertificado = (modelo: string, index: number, isLaudo: boolean = false) => {
@@ -208,10 +260,12 @@ export default function ProtocolDetail() {
     if (isLaudo) {
       setLaudoCopied(index);
       toast.success("Laudo médico copiado com sucesso!");
+      vincularDocumentoAoPaciente(protocol.title + " - Laudo Médico", "laudo", textToCopy);
       setTimeout(() => setLaudoCopied(null), 2000);
     } else {
       setCertCopied(index);
       toast.success("Atestado de afastamento copiado com sucesso!");
+      vincularDocumentoAoPaciente(protocol.title + " - Atestado Médico", "atestado", textToCopy);
       setTimeout(() => setCertCopied(null), 2000);
     }
   };
@@ -236,6 +290,18 @@ export default function ProtocolDetail() {
     // Gerar um QR Code dinâmico para validação do documento usando a API pública do QR Server
     const verificationUrl = `https://www.felipebulhoes.com/validar?doc=${encodeURIComponent(title)}&paciente=${encodeURIComponent(pName)}&data=${dToday}&id=${Date.now()}`;
     const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`;
+
+    // Salvar o documento impresso no histórico do paciente ativo
+    if (patientName.trim()) {
+      const docType = isPrescription ? "receita" : (title.toLowerCase().includes("atestado") ? "atestado" : "laudo");
+      let fullContentText = formattedContent;
+      if (isPrescription) {
+        fullContentText = `--------------------------------------------------\nDR. FELIPE DE BULHÕES - UROLOGISTA & CIRURGIÃO GERAL\nRECEITUÁRIO MÉDICO\n\nPaciente: ${pName}\nData: ${dToday}\n--------------------------------------------------\n\n` + formattedContent;
+      } else {
+        fullContentText = `--------------------------------------------------\nDR. FELIPE DE BULHÕES - UROLOGISTA & CIRURGIÃO GERAL\nDOCUMENTO MÉDICO OFICIAL\n--------------------------------------------------\n\n${formattedContent}\n\n___________________________________\nDr. Felipe de Bulhões Ojeda\nUrologista - CRM-SP`;
+      }
+      vincularDocumentoAoPaciente(protocol.title + " - " + title, docType, fullContentText);
+    }
 
     // Criar um iframe oculto de impressão para evitar bloqueios de popups
     const printFrame = document.createElement("iframe");
