@@ -71,14 +71,17 @@ export default function ProtocolDetail() {
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [patientName, setPatientName] = useState("");
   const [patientHistory, setPatientHistory] = useState<string[]>([]);
-  const [whatsappCopied, setWhatsappCopied] = useState<number | null>(null);
   const [certCopied, setCertCopied] = useState<number | null>(null);
   const [laudoCopied, setLaudoCopied] = useState<number | null>(null);
+  const [whatsappCopied, setWhatsappCopied] = useState<number | null>(null);
+  const [useSignature, setUseSignature] = useState(true);
+  const [useQrCode, setUseQrCode] = useState(true);
+  const [signatureUrl, setSignatureUrl] = useState<string>("");
 
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
 
-  // Carregar favoritos e histórico de pacientes
+  // Carregar favoritos, histórico de pacientes e assinatura do LocalStorage
   useEffect(() => {
     const savedFavs = localStorage.getItem("protoUro_favorites");
     if (savedFavs) {
@@ -93,7 +96,31 @@ export default function ProtocolDetail() {
     if (activePatient) {
       setPatientName(activePatient);
     }
+    const storedSig = localStorage.getItem("protoUro_signature_data");
+    if (storedSig) {
+      setSignatureUrl(storedSig);
+    }
   }, []);
+
+  const handleSignatureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setSignatureUrl(base64String);
+        localStorage.setItem("protoUro_signature_data", base64String);
+        toast.success("Assinatura digitalizada carregada com sucesso!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleClearSignature = () => {
+    setSignatureUrl("");
+    localStorage.removeItem("protoUro_signature_data");
+    toast.info("Assinatura digitalizada removida.");
+  };
 
   const handlePatientNameChange = (name: string) => {
     setPatientName(name);
@@ -205,6 +232,10 @@ export default function ProtocolDetail() {
       // Limpar os marcadores markdown de blocos de código
       formattedContent = content.replace(/```[\s\S]*?\n/g, "").replace(/```/g, "");
     }
+
+    // Gerar um QR Code dinâmico para validação do documento usando a API pública do QR Server
+    const verificationUrl = `https://www.felipebulhoes.com/validar?doc=${encodeURIComponent(title)}&paciente=${encodeURIComponent(pName)}&data=${dToday}&id=${Date.now()}`;
+    const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verificationUrl)}`;
 
     // Criar um iframe oculto de impressão para evitar bloqueios de popups
     const printFrame = document.createElement("iframe");
@@ -348,14 +379,31 @@ export default function ProtocolDetail() {
             /* Assinatura */
             .signature-area {
               text-align: center;
-              margin-top: auto;
-              margin-bottom: 30px;
+              margin-bottom: 25px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .signature-img-container {
+              height: 60px;
+              display: flex;
+              align-items: flex-end;
+              justify-content: center;
+              margin-bottom: 5px;
+            }
+
+            .signature-img {
+              max-height: 55px;
+              max-width: 200px;
+              object-fit: contain;
             }
 
             .signature-line {
               width: 220px;
               border-top: 1px solid #94a3b8;
-              margin: 0 auto 10px auto;
+              margin: 0 auto 8px auto;
             }
 
             .signature-name {
@@ -408,18 +456,31 @@ export default function ProtocolDetail() {
               <div class="doc-content">${formattedContent}</div>
             </div>
 
-            <div>
-              <div class="signature-area">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+              ${useQrCode ? `
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 8px; color: #64748b; max-width: 250px;">
+                <img src="${qrCodeApiUrl}" style="width: 60px; height: 60px; border: 1px solid #e2e8f0; padding: 2px;" alt="QR Code Validação" />
+                <div>
+                  <strong style="color: #1C3D5A; display: block; margin-bottom: 2px;">DOCUMENTO ASSINADO DIGITALMENTE</strong>
+                  Para verificar a validade e autenticidade deste documento clínico, aponte a câmera do seu celular para o QR Code ao lado.
+                </div>
+              </div>
+              ` : '<div></div>'}
+
+              <div class="signature-area" style="margin-bottom: 0;">
+                <div class="signature-img-container">
+                  ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" />` : `<div style="height: 35px;"></div>`}
+                </div>
                 <div class="signature-line"></div>
                 <div class="signature-name">Dr. Felipe de Bulhões Ojeda</div>
-                <div class="signature-crm">Médico Urologista | CRM-SP XXXXX | RQE XXXXX</div>
+                <div class="signature-crm">Médico Urologista | CRM-SP 241.135</div>
               </div>
+            </div>
 
-              <div class="footer">
-                Atendimento Humanizado | Particular e Convênios | Cirurgia Minimamente Invasiva<br>
-                Campinas: Av. José de Souza Campos, 123 | São Paulo: Av. Paulista, 1000<br>
-                Telefone: (11) 98112-4455 | drfelipebulhoes@bulhoesurohealth.com
-              </div>
+            <div class="footer" style="margin-top: 15px;">
+              Atendimento Humanizado | Particular e Convênios | Cirurgia Minimamente Invasiva<br>
+              Campinas: Av. José de Souza Campos, 123 | São Paulo: Av. Paulista, 1000<br>
+              Telefone: (11) 98112-4455 | drfelipebulhoes@bulhoesurohealth.com
             </div>
           </div>
           <script>
@@ -510,6 +571,72 @@ export default function ProtocolDetail() {
                 >
                   Salvar
                 </Button>
+              </div>
+            </div>
+
+            {/* Controles rápidos de PWA e Impressão */}
+            <div className="flex flex-wrap gap-4 border-t border-border/40 pt-4 shrink-0">
+              <div className="flex items-center space-x-2 bg-secondary/30 p-2 rounded-xl border border-border/50">
+                <input
+                  type="checkbox"
+                  id="use-signature"
+                  checked={useSignature}
+                  onChange={(e) => setUseSignature(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                />
+                <Label htmlFor="use-signature" className="text-xs font-semibold cursor-pointer">
+                  Injetar Assinatura Digitalizada
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 bg-secondary/30 p-2 rounded-xl border border-border/50">
+                <input
+                  type="checkbox"
+                  id="use-qrcode"
+                  checked={useQrCode}
+                  onChange={(e) => setUseQrCode(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                />
+                <Label htmlFor="use-qrcode" className="text-xs font-semibold cursor-pointer">
+                  Gerar QR Code de Segurança
+                </Label>
+              </div>
+            </div>
+
+            {/* Configuração de Upload de Assinatura */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-border/50 bg-secondary/10">
+              <div className="space-y-1 text-center sm:text-left">
+                <h4 className="text-xs font-bold text-primary uppercase tracking-wider">Sua Assinatura Digitalizada</h4>
+                <p className="text-[11px] text-muted-foreground">
+                  Faça o upload de uma imagem com fundo transparente (PNG) para ser injetada automaticamente no PDF timbrado.
+                </p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                {signatureUrl ? (
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-28 bg-white border border-border rounded-lg p-1 flex items-center justify-center">
+                      <img src={signatureUrl} className="max-h-10 max-w-full object-contain" alt="Assinatura" />
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={handleClearSignature} className="text-destructive hover:text-destructive/80 text-xs font-bold h-9 px-3 rounded-lg">
+                      Remover
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="file"
+                      id="signature-file"
+                      accept="image/*"
+                      onChange={handleSignatureUpload}
+                      className="hidden"
+                    />
+                    <Label
+                      htmlFor="signature-file"
+                      className="h-10 px-4 rounded-xl border border-border bg-card hover:bg-secondary flex items-center justify-center text-xs font-semibold cursor-pointer transition-colors"
+                    >
+                      Fazer Upload (.png)
+                    </Label>
+                  </div>
+                )}
               </div>
             </div>
 

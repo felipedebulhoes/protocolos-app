@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import ProtocolDetail from "./pages/ProtocolDetail";
 import Favorites from "./pages/Favorites";
 import Calculators from "./pages/Calculators";
+import Patients from "./pages/Patients";
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/protocolo/:id" component={ProtocolDetail} />
       <Route path="/favoritos" component={Favorites} />
       <Route path="/calculadoras" component={Calculators} />
+      <Route path="/pacientes" component={Patients} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

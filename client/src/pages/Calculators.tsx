@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calculator, ClipboardList, Scale, Info, Check, RefreshCw } from "lucide-react";
+import { Calculator, ClipboardList, Scale, Info, Check, RefreshCw, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -231,6 +231,90 @@ export default function Calculators() {
     setReimbursementResult(null);
   };
 
+  // --- ESTADO CALCULADORA DE TRT ---
+  const [trtType, setTrtType] = useState("gel");
+  const [trtSerumTesto, setTrtSerumTesto] = useState("");
+  const [trtTargetTesto, setTrtTargetTesto] = useState("600");
+  const [trtResult, setTrtResult] = useState<{
+    currentDose: string;
+    suggestedDose: string;
+    frequency: string;
+    clinicalTip: string;
+    followUp: string;
+  } | null>(null);
+
+  const calculateTRT = () => {
+    const serum = parseFloat(trtSerumTesto);
+    const target = parseFloat(trtTargetTesto);
+
+    if (isNaN(serum) || serum <= 0) {
+      alert("Por favor, insira um valor válido de Testosterona Total sérica.");
+      return;
+    }
+
+    let currentDose = "";
+    let suggestedDose = "";
+    let frequency = "";
+    let clinicalTip = "";
+    let followUp = "Realizar nova coleta de Testosterona Total, Livre, SHBG, Estradiol, Prolactina e Hemograma completo em 6 semanas.";
+
+    if (trtType === "gel") {
+      currentDose = "Gel Transdérmico 5% (50mg/g)";
+      frequency = "Aplicação diária pela manhã nos ombros/braços ou abdômen.";
+      if (serum < 350) {
+        suggestedDose = "Gel 5% - 2 pumps (50mg de testosterona) por dia";
+        clinicalTip = "Nível sérico abaixo da meta fisiológica. Recomenda-se aumentar a dose para 2 pumps diários (ou 1g de gel a 5%). Certificar-se de que o paciente está aplicando na pele limpa e seca, sem tomar banho por pelo menos 6 horas após a aplicação.";
+      } else if (serum > 900) {
+        suggestedDose = "Gel 5% - Reduzir para 1 pump (25mg de testosterona) por dia";
+        clinicalTip = "Níveis séricos supra-fisiológicos. Recomenda-se redução de dose para evitar efeitos colaterais como policitemia (elevação do hematócrito) ou aromatização excessiva (estradiol elevado).";
+      } else {
+        suggestedDose = "Gel 5% - Manter dose atual (1 pump ou 2 pumps)";
+        clinicalTip = "Paciente está dentro da faixa terapêutica fisiológica ideal (350-900 ng/dL). Manter a aplicação diária regular e monitorar a resposta clínica de libido, disposição e cognição.";
+      }
+    } else if (trtType === "cipionato") {
+      currentDose = "Cipionato de Testosterona (Deposteron 200mg/2mL)";
+      if (serum < 400) {
+        suggestedDose = "Deposteron 200mg (1 ampola) a cada 10 ou 12 dias";
+        frequency = "Injeção intramuscular profunda.";
+        clinicalTip = "Nível de vale (pré-dose) muito baixo. Pacientes frequentemente queixam-se de flutuação de humor e libido no final do intervalo. Recomenda-se encurtar o intervalo de aplicação de 14 para 10 ou 12 dias em vez de aumentar a dose única.";
+      } else if (serum > 1000) {
+        suggestedDose = "Deposteron 200mg (1 ampola) a cada 14 ou 18 dias";
+        frequency = "Injeção intramuscular profunda.";
+        clinicalTip = "Nível sérico de vale está supra-fisiológico ou no limite superior. Risco aumentado de hematócrito > 54% e ginecomastia. Recomenda-se aumentar o intervalo de aplicação ou fracionar a dose (ex: 100mg por semana).";
+      } else {
+        suggestedDose = "Deposteron 200mg (1 ampola) a cada 14 dias";
+        frequency = "Injeção intramuscular profunda.";
+        clinicalTip = "Nível sérico estável e na faixa terapêutica ideal de vale (400-800 ng/dL). Excelente estabilidade clínica. Monitorar hematócrito e PSA anualmente.";
+      }
+    } else if (trtType === "undecanato") {
+      currentDose = "Undecanato de Testosterona (Nebido / Hormus 1000mg/4mL)";
+      frequency = "Injeção intramuscular profunda ultra-lenta (durante 2 minutos).";
+      if (serum < 350) {
+        suggestedDose = "Nebido 1000mg a cada 10 semanas (antecipar o intervalo)";
+        clinicalTip = "Nível de vale está abaixo do esperado para testosterona de ação lenta. Recomenda-se encurtar o intervalo regular de 12 semanas para 10 semanas para estabilizar os níveis e evitar a queda de performance no final do ciclo.";
+      } else if (serum > 850) {
+        suggestedDose = "Nebido 1000mg a cada 14 semanas (postergar o intervalo)";
+        clinicalTip = "Nível de vale excelente, no limite superior. Nebido possui uma meia-vida longa de ~90 dias. É seguro estender o intervalo de aplicação para 14 semanas para monitoramento seguro e manutenção da faixa terapêutica.";
+      } else {
+        suggestedDose = "Nebido 1000mg a cada 12 semanas (manter intervalo padrão)";
+        clinicalTip = "Níveis de vale altamente estáveis (geralmente entre 400-700 ng/dL). Esta é a terapia mais estável em termos de flutuações hormonais. Manter a aplicação a cada 12 semanas e monitorar exames de segurança.";
+      }
+    }
+
+    setTrtResult({
+      currentDose,
+      suggestedDose,
+      frequency,
+      clinicalTip,
+      followUp
+    });
+  };
+
+  const resetTRT = () => {
+    setTrtSerumTesto("");
+    setTrtResult(null);
+  };
+
   return (
     <Layout>
       <div className="space-y-8 max-w-3xl mx-auto">
@@ -243,22 +327,26 @@ export default function Calculators() {
         </div>
 
         <Tabs defaultValue="iief" className="space-y-6">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 bg-secondary rounded-xl p-1 h-auto gap-1">
-            <TabsTrigger value="iief" className="rounded-lg py-2.5 text-xs font-semibold gap-1.5 w-full">
-              <Calculator className="w-3.5 h-3.5" />
+          <TabsList className="grid grid-cols-2 md:grid-cols-5 bg-secondary rounded-xl p-1 h-auto gap-1">
+            <TabsTrigger value="iief" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+              <Calculator className="w-3.5 h-3.5 shrink-0" />
               IIEF-5 (Ereção)
             </TabsTrigger>
-            <TabsTrigger value="adam" className="rounded-lg py-2.5 text-xs font-semibold gap-1.5 w-full">
-              <Scale className="w-3.5 h-3.5" />
-              ADAM (Testosterona)
+            <TabsTrigger value="adam" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+              <Scale className="w-3.5 h-3.5 shrink-0" />
+              ADAM (Rastreio)
             </TabsTrigger>
-            <TabsTrigger value="padtest" className="rounded-lg py-2.5 text-xs font-semibold gap-1.5 w-full">
-              <Scale className="w-3.5 h-3.5" />
-              Pad Test 24h (Fuga)
+            <TabsTrigger value="trt" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+              <Activity className="w-3.5 h-3.5 shrink-0" />
+              TRT (Ajuste)
             </TabsTrigger>
-            <TabsTrigger value="reimbursement" className="rounded-lg py-2.5 text-xs font-semibold gap-1.5 w-full">
-              <ClipboardList className="w-3.5 h-3.5" />
-              Simulador Reembolso
+            <TabsTrigger value="padtest" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+              <Scale className="w-3.5 h-3.5 shrink-0" />
+              Pad Test 24h
+            </TabsTrigger>
+            <TabsTrigger value="reimbursement" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+              <ClipboardList className="w-3.5 h-3.5 shrink-0" />
+              Reembolso
             </TabsTrigger>
           </TabsList>
 
@@ -312,6 +400,148 @@ export default function Calculators() {
                     Calcular Escore IIEF-5
                   </Button>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ABA CALCULADORA DE TRT */}
+          <TabsContent value="trt" className="space-y-6">
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-6 pb-4 border-b border-border/40">
+                <CardTitle className="text-lg font-serif font-bold text-primary">Calculadora de Ajuste de TRT</CardTitle>
+                <CardDescription className="text-xs">
+                  Apoio clínico para ajuste de dosagem e intervalos de Terapia de Reposição de Testosterona com base nos níveis séricos medidos (vale/vale pré-dose).
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-primary uppercase tracking-wider">Tipo de Testosterona Utilizada</Label>
+                      <RadioGroup value={trtType} onValueChange={setTrtType} className="grid grid-cols-1 gap-2">
+                        <div className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value="gel" id="trt-gel" />
+                          <Label htmlFor="trt-gel" className="text-xs font-medium cursor-pointer w-full">
+                            Gel Transdérmico 5% (pumps diários)
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value="cipionato" id="trt-cipionato" />
+                          <Label htmlFor="trt-cipionato" className="text-xs font-medium cursor-pointer w-full">
+                            Cipionato (Deposteron 200mg - ação média)
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value="undecanato" id="trt-undecanato" />
+                          <Label htmlFor="trt-undecanato" className="text-xs font-medium cursor-pointer w-full">
+                            Undecanato (Nebido / Hormus 1000mg - ação lenta)
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="trt-serum" className="text-xs font-bold text-primary uppercase tracking-wider">
+                        Testosterona Total Sérica Medida (ng/dL)
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="trt-serum"
+                          type="number"
+                          placeholder="Ex: 280"
+                          value={trtSerumTesto}
+                          onChange={(e) => setTrtSerumTesto(e.target.value)}
+                          className="pr-16 h-11 rounded-xl"
+                        />
+                        <span className="absolute right-4 top-3 text-xs font-bold text-muted-foreground">ng/dL</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground leading-snug">
+                        *Para injetáveis, coletar preferencialmente no dia da próxima aplicação (nível de vale).
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="trt-target" className="text-xs font-bold text-primary uppercase tracking-wider">
+                        Meta Terapêutica Alvo (ng/dL)
+                      </Label>
+                      <select
+                        id="trt-target"
+                        value={trtTargetTesto}
+                        onChange={(e) => setTrtTargetTesto(e.target.value)}
+                        className="w-full h-11 px-3 rounded-xl border border-border bg-card text-xs font-medium"
+                      >
+                        <option value="500">Fisiológica Moderada (~500 ng/dL)</option>
+                        <option value="600">Fisiológica Ideal (~600 ng/dL)</option>
+                        <option value="800">Fisiológica Alta (~800 ng/dL)</option>
+                      </select>
+                    </div>
+
+                    {!trtResult && (
+                      <Button onClick={calculateTRT} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md shadow-accent/15">
+                        Analisar Ajuste de TRT
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    {trtResult ? (
+                      <div className="bg-secondary/10 border border-border/60 rounded-2xl p-5 space-y-4">
+                        <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                          <h4 className="text-sm font-serif font-bold text-primary">Análise e Conduta Sugerida</h4>
+                          <Badge variant="outline" className="border-accent/20 text-accent bg-accent/5 text-[10px] font-bold">
+                            TRT Clin-Guide
+                          </Badge>
+                        </div>
+
+                        <div className="space-y-3 text-xs">
+                          <div>
+                            <span className="font-bold text-primary block">Terapia Atual:</span>
+                            <p className="text-foreground/80">{trtResult.currentDose}</p>
+                          </div>
+
+                          <div>
+                            <span className="font-bold text-[#B87333] block">Conduta / Dose Sugerida:</span>
+                            <p className="text-foreground font-semibold bg-accent/5 p-2.5 rounded-lg border border-accent/10">
+                              {trtResult.suggestedDose}
+                            </p>
+                          </div>
+
+                          <div>
+                            <span className="font-bold text-primary block">Frequência e Via:</span>
+                            <p className="text-foreground/80">{trtResult.frequency}</p>
+                          </div>
+
+                          <div>
+                            <span className="font-bold text-primary block">Diretriz e Dica Clínica:</span>
+                            <p className="text-foreground/80 leading-relaxed bg-card p-3 rounded-lg border border-border/40 text-justify">
+                              {trtResult.clinicalTip}
+                            </p>
+                          </div>
+
+                          <div className="pt-2 border-t border-border/40">
+                            <span className="font-bold text-muted-foreground block text-[10px] uppercase tracking-wider">Próximos Passos de Segurança:</span>
+                            <p className="text-muted-foreground leading-relaxed text-[11px] mt-1">
+                              {trtResult.followUp}
+                            </p>
+                          </div>
+                        </div>
+
+                        <Button variant="outline" size="sm" onClick={resetTRT} className="w-full gap-2 border-border hover:bg-secondary rounded-xl mt-2">
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Limpar e Nova Análise
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="h-full min-h-[250px] border border-dashed border-border/80 rounded-2xl flex flex-col items-center justify-center p-6 text-center bg-secondary/[0.05]">
+                        <Activity className="w-8 h-8 text-muted-foreground/60 mb-3" />
+                        <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Aguardando Dados</h4>
+                        <p className="text-xs text-muted-foreground max-w-[240px] leading-relaxed">
+                          Insira o nível de testosterona sérica medida e selecione a via terapêutica para receber a conduta sugerida.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
