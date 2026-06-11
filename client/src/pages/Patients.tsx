@@ -257,6 +257,113 @@ export default function Patients() {
     p.queixa.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Função para criptografar/descriptografar simples (XOR ou Base64 com salt para fins de portabilidade e facilidade de uso local)
+  const encryptData = (text: string, key: string): string => {
+    let result = "";
+    for (let i = 0; i < text.length; i++) {
+      const charCode = text.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+      result += String.fromCharCode(charCode);
+    }
+    return btoa(encodeURIComponent(result));
+  };
+
+  const decryptData = (encoded: string, key: string): string => {
+    try {
+      const decoded = decodeURIComponent(atob(encoded));
+      let result = "";
+      for (let i = 0; i < decoded.length; i++) {
+        const charCode = decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+        result += String.fromCharCode(charCode);
+      }
+      return result;
+    } catch (e) {
+      throw new Error("Senha incorreta ou arquivo corrompido.");
+    }
+  };
+
+  const handleExportBackup = () => {
+    const password = prompt("Defina uma senha forte para criptografar o arquivo de backup:");
+    if (!password) {
+      toast.error("Exportação cancelada. A senha é obrigatória para segurança dos dados.");
+      return;
+    }
+
+    try {
+      const dbData = {
+        pacientes: pacientes,
+        assinatura: localStorage.getItem("protouro_signature_url") || "",
+        useSignature: localStorage.getItem("protouro_use_signature") || "false"
+      };
+
+      const jsonStr = JSON.stringify(dbData);
+      const encrypted = encryptData(jsonStr, password);
+      
+      const blob = new Blob([encrypted], { type: "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup_protouro_${new Date().toISOString().split("T")[0]}.enc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success("Backup criptografado exportado com sucesso!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao gerar backup.");
+    }
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const password = prompt("Digite a senha do arquivo de backup para descriptografar:");
+    if (!password) {
+      toast.error("Importação cancelada. A senha é obrigatória.");
+      // Limpar input
+      e.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const encrypted = event.target?.result as string;
+        const decrypted = decryptData(encrypted, password);
+        const parsed = JSON.parse(decrypted);
+
+        if (parsed && Array.isArray(parsed.pacientes)) {
+          if (confirm(`Deseja realmente importar ${parsed.pacientes.length} pacientes? Isso irá mesclar com seus pacientes atuais.`)) {
+            // Mesclar pacientes evitando duplicados por ID
+            const existentesMap = new Map(pacientes.map(p => [p.id, p]));
+            parsed.pacientes.forEach((p: Paciente) => {
+              existentesMap.set(p.id, p);
+            });
+            const novosPacientes = Array.from(existentesMap.values());
+            saveToStorage(novosPacientes);
+
+            // Importar assinatura se houver
+            if (parsed.assinatura) {
+              localStorage.setItem("protouro_signature_url", parsed.assinatura);
+              localStorage.setItem("protouro_use_signature", parsed.useSignature || "true");
+            }
+
+            toast.success("Backup importado e mesclado com sucesso!");
+          }
+        } else {
+          toast.error("Formato de arquivo inválido.");
+        }
+      } catch (err) {
+        toast.error("Senha incorreta ou arquivo de backup corrompido.");
+      }
+      // Limpar input
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <Layout>
       <div className="space-y-8 max-w-4xl mx-auto">
@@ -271,15 +378,37 @@ export default function Patients() {
               Banco de dados clínico local para acompanhamento rápido de parâmetros e histórico.
             </p>
           </div>
-          {!isAdding && (
-            <Button 
-              onClick={() => setIsAdding(true)} 
-              className="copper-gradient text-white rounded-xl font-semibold flex items-center gap-2 self-start sm:self-center shadow-md shadow-accent/10"
+          <div className="flex flex-wrap gap-2 self-start sm:self-center">
+            <Button
+              onClick={handleExportBackup}
+              variant="outline"
+              className="border-accent/30 text-primary hover:bg-accent/5 rounded-xl font-semibold flex items-center gap-2"
             >
-              <UserPlus className="w-4 h-4" />
-              Cadastrar Paciente
+              <Download className="w-4 h-4 text-[#B87333]" />
+              Exportar Backup
             </Button>
-          )}
+            <label className="cursor-pointer">
+              <span className="inline-flex items-center gap-2 justify-center px-4 h-10 border border-dashed border-accent/30 hover:bg-accent/5 rounded-xl text-sm font-semibold text-primary">
+                <Users className="w-4 h-4 text-[#B87333]" />
+                Importar Backup
+              </span>
+              <input
+                type="file"
+                accept=".enc"
+                onChange={handleImportBackup}
+                className="hidden"
+              />
+            </label>
+            {!isAdding && (
+              <Button 
+                onClick={() => setIsAdding(true)} 
+                className="copper-gradient text-white rounded-xl font-semibold flex items-center gap-2 shadow-md shadow-accent/10"
+              >
+                <UserPlus className="w-4 h-4" />
+                Cadastrar Paciente
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Formulário de Cadastro / Edição */}
@@ -514,31 +643,76 @@ export default function Patients() {
                             </span>
                             
                             {chartData.length > 0 ? (
-                              <div className="bg-secondary/10 border border-border/50 p-4 rounded-xl">
+                              <div className="bg-secondary/10 border border-border/50 p-4 rounded-xl space-y-4">
                                 <div className="h-48 w-full flex items-end justify-between gap-2 px-2 pt-4">
                                   {chartData.map((d, idx) => {
-                                    // Cálculo simples de altura para simular um gráfico de barras responsivo
-                                    const maxVal = Math.max(...chartData.map(item => item.total), 1000);
-                                    const pct = (d.total / maxVal) * 100;
+                                    // Cálculo simples de altura para simular um gráfico multivariado
+                                    const maxTotal = Math.max(...chartData.map(item => item.total), 1000);
+                                    const pctTotal = (d.total / maxTotal) * 100;
+                                    
+                                    // SHBG costuma variar de 10 a 80 nmol/L
+                                    const pctSHBG = d.shbg ? (d.shbg / 100) * 100 : 0;
+                                    
+                                    // Hematócrito varia de 35% a 55%
+                                    const pctHt = p.hematocrito ? (parseFloat(p.hematocrito) / 60) * 100 : 0;
                                     
                                     return (
-                                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                                        <div className="text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                          {d.total}
-                                        </div>
-                                        <div 
-                                          style={{ height: `${Math.max(pct, 15)}%` }} 
-                                          className="w-full max-w-[40px] copper-gradient rounded-t-md relative shadow-sm transition-all duration-300 hover:brightness-110"
-                                        >
-                                          {/* Tooltip simples */}
-                                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
-                                            T: {d.total} {d.livre ? `| L: ${d.livre}` : ""} {d.shbg ? `| S: ${d.shbg}` : ""}
+                                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group relative">
+                                        <div className="flex gap-1 w-full items-end justify-center h-full pb-1">
+                                          {/* Barra de Testo Total */}
+                                          <div 
+                                            style={{ height: `${Math.max(pctTotal, 15)}%` }} 
+                                            className="w-3 copper-gradient rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
+                                          >
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
+                                              Testo Total: {d.total} ng/dL
+                                            </div>
                                           </div>
+                                          
+                                          {/* Barra de SHBG */}
+                                          {d.shbg !== undefined && (
+                                            <div 
+                                              style={{ height: `${Math.max(pctSHBG, 10)}%` }} 
+                                              className="w-3 bg-blue-500 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
+                                            >
+                                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
+                                                SHBG: {d.shbg} nmol/L
+                                              </div>
+                                            </div>
+                                          )}
+                                          
+                                          {/* Barra de Hematócrito (Ht) */}
+                                          {pctHt > 0 && idx === chartData.length - 1 && (
+                                            <div 
+                                              style={{ height: `${Math.max(pctHt, 10)}%` }} 
+                                              className="w-3 bg-red-500 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
+                                            >
+                                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
+                                                Hematócrito: {p.hematocrito}%
+                                              </div>
+                                            </div>
+                                          )}
                                         </div>
                                         <span className="text-[9px] font-bold text-muted-foreground">{d.data}</span>
                                       </div>
                                     );
                                   })}
+                                </div>
+                                
+                                {/* Legenda do Gráfico Multivariado */}
+                                <div className="flex justify-center gap-4 text-[10px] font-bold border-t border-border/40 pt-2">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-3 rounded-sm copper-gradient inline-block"></span>
+                                    <span className="text-primary">Testosterona Total (ng/dL)</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-3 rounded-sm bg-blue-500 inline-block"></span>
+                                    <span className="text-blue-500">SHBG (nmol/L)</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-3 rounded-sm bg-red-500 inline-block"></span>
+                                    <span className="text-red-500">Hematócrito (%)</span>
+                                  </div>
                                 </div>
                               </div>
                             ) : (

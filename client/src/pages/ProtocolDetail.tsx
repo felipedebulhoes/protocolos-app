@@ -355,7 +355,7 @@ export default function ProtocolDetail() {
     }
   };
 
-  const handlePrintDocument = (title: string, content: string, isPrescription: boolean = false) => {
+  const handlePrintDocument = (title: string, content: string, isPrescription: boolean = false, isControlEspecial: boolean = false) => {
     const pName = patientName.trim() || "___________________________________";
     const dToday = new Date().toLocaleDateString("pt-BR");
     
@@ -381,7 +381,7 @@ export default function ProtocolDetail() {
       const docType = isPrescription ? "receita" : (title.toLowerCase().includes("atestado") ? "atestado" : "laudo");
       let fullContentText = formattedContent;
       if (isPrescription) {
-        fullContentText = `--------------------------------------------------\nDR. FELIPE DE BULHÕES - UROLOGISTA & CIRURGIÃO GERAL\nRECEITUÁRIO MÉDICO\n\nPaciente: ${pName}\nData: ${dToday}\n--------------------------------------------------\n\n` + formattedContent;
+        fullContentText = `--------------------------------------------------\nDR. FELIPE DE BULHÕES - UROLOGISTA & CIRURGIÃO GERAL\nRECEITUÁRIO MÉDICO${isControlEspecial ? " (CONTROLE ESPECIAL)" : ""}\n\nPaciente: ${pName}\nData: ${dToday}\n--------------------------------------------------\n\n` + formattedContent;
       } else {
         fullContentText = `--------------------------------------------------\nDR. FELIPE DE BULHÕES - UROLOGISTA & CIRURGIÃO GERAL\nDOCUMENTO MÉDICO OFICIAL\n--------------------------------------------------\n\n${formattedContent}\n\n___________________________________\nDr. Felipe de Bulhões Ojeda\nUrologista - CRM-SP`;
       }
@@ -411,13 +411,13 @@ export default function ProtocolDetail() {
             
             @page {
               size: A4;
-              margin: 20mm;
+              margin: 15mm;
             }
             
             body {
               font-family: 'Roboto', sans-serif;
               color: #1C3D5A;
-              line-height: 1.6;
+              line-height: 1.5;
               margin: 0;
               padding: 0;
               background-color: #ffffff;
@@ -427,8 +427,66 @@ export default function ProtocolDetail() {
               display: flex;
               flex-direction: column;
               height: 100%;
-              min-height: 250mm;
+              min-height: 260mm;
               justify-content: space-between;
+            }
+
+            /* Estilos específicos para Controle Especial (Portaria 344/98) */
+            .controle-especial-box {
+              border: 2px solid #1C3D5A;
+              border-radius: 12px;
+              padding: 15px;
+              margin-bottom: 20px;
+              background-color: #f8fafc;
+            }
+
+            .controle-especial-header {
+              text-align: center;
+              font-weight: bold;
+              font-size: 14px;
+              border-bottom: 2px solid #1C3D5A;
+              padding-bottom: 8px;
+              margin-bottom: 12px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              color: #1C3D5A;
+            }
+
+            .controle-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 15px;
+              font-size: 11px;
+              margin-top: 10px;
+              border-top: 1px dashed #1C3D5A;
+              padding-top: 10px;
+            }
+
+            .controle-field {
+              border-bottom: 1px solid #94a3b8;
+              height: 20px;
+              margin-top: 5px;
+            }
+
+            .via-divider {
+              border-top: 2px dashed #B87333;
+              margin: 30px 0;
+              position: relative;
+              text-align: center;
+            }
+
+            .via-badge {
+              position: absolute;
+              top: -10px;
+              left: 50%;
+              transform: translateX(-50%);
+              background-color: #ffffff;
+              padding: 0 15px;
+              font-size: 10px;
+              font-weight: bold;
+              color: #B87333;
+              text-transform: uppercase;
+              letter-spacing: 1px;
             }
 
             /* Cabeçalho Timbrado */
@@ -597,14 +655,59 @@ export default function ProtocolDetail() {
                 </div>
               </div>
 
-              <div class="doc-title">${title}</div>
+              ${isControlEspecial ? `
+                <!-- PRIMEIRA VIA - FARMÁCIA -->
+                <div class="controle-especial-box">
+                  <div class="controle-especial-header">RECEITUÁRIO DE CONTROLE ESPECIAL (PORTARIA 344/98) - 1ª VIA (RETENÇÃO DA FARMÁCIA)</div>
+                  
+                  <div class="patient-box" style="margin-bottom: 15px;">
+                    <div><span class="patient-label">Paciente:</span> ${pName}</div>
+                    <div><span class="patient-label">Data:</span> ${dToday}</div>
+                  </div>
 
-              <div class="patient-box">
-                <div><span class="patient-label">Paciente:</span> ${pName}</div>
-                <div><span class="patient-label">Data:</span> ${dToday}</div>
-              </div>
+                  <div class="doc-content" style="margin-bottom: 20px; min-height: auto;">${formattedContent}</div>
 
-              <div class="doc-content">${formattedContent}</div>
+                  <div class="controle-grid">
+                    <div>
+                      <strong>IDENTIFICAÇÃO DO COMPRADOR</strong>
+                      <div style="margin-top: 8px;">Nome: <div class="controle-field"></div></div>
+                      <div style="margin-top: 8px;">RG / Órgão Emissor: <div class="controle-field"></div></div>
+                      <div style="margin-top: 8px;">Telefone: <div class="controle-field"></div></div>
+                    </div>
+                    <div>
+                      <strong>IDENTIFICAÇÃO DO FORNECEDOR</strong>
+                      <div style="margin-top: 8px;">Assinatura do Farmacêutico: <div class="controle-field" style="margin-top: 15px;"></div></div>
+                      <div style="margin-top: 8px;">Data de Dispensação: <div class="controle-field"></div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DIVISOR DE VIA -->
+                <div class="via-divider">
+                  <span class="via-badge">Destaque aqui</span>
+                </div>
+
+                <!-- SEGUNDA VIA - PACIENTE -->
+                <div class="controle-especial-box" style="background-color: #ffffff; border-color: #B87333;">
+                  <div class="controle-especial-header" style="border-bottom-color: #B87333; color: #B87333;">RECEITUÁRIO DE CONTROLE ESPECIAL - 2ª VIA (ORIENTAÇÃO DO PACIENTE)</div>
+                  
+                  <div class="patient-box" style="margin-bottom: 15px;">
+                    <div><span class="patient-label">Paciente:</span> ${pName}</div>
+                    <div><span class="patient-label">Data:</span> ${dToday}</div>
+                  </div>
+
+                  <div class="doc-content" style="margin-bottom: 15px; min-height: auto;">${formattedContent}</div>
+                </div>
+              ` : `
+                <div class="doc-title">${title}</div>
+
+                <div class="patient-box">
+                  <div><span class="patient-label">Paciente:</span> ${pName}</div>
+                  <div><span class="patient-label">Data:</span> ${dToday}</div>
+                </div>
+
+                <div class="doc-content">${formattedContent}</div>
+              `}
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e2e8f0; padding-top: 15px;">
@@ -1214,15 +1317,27 @@ export default function ProtocolDetail() {
                           )}
                         </Button>
                         {isPrescription && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePrintDocument("Prescrição Médica", section.content, true)}
-                            className="h-8 gap-1.5 rounded-lg text-xs font-medium text-accent hover:text-accent/80 hover:bg-accent/5"
-                          >
-                            <Printer className="w-3.5 h-3.5" />
-                            Imprimir
-                          </Button>
+                          <div className="flex items-center gap-1.5">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePrintDocument("Prescrição Médica", section.content, true, false)}
+                              className="h-8 gap-1.5 rounded-lg text-xs font-medium text-accent hover:text-accent/80 hover:bg-accent/5"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                              Imprimir Receita
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePrintDocument("Receita de Controle Especial", section.content, true, true)}
+                              className="h-8 gap-1.5 rounded-lg text-xs font-medium text-[#B87333] hover:text-[#B87333]/80 hover:bg-[#B87333]/5 border border-[#B87333]/10"
+                              title="Imprimir no formato de Receita de Controle Especial (Portaria 344/98) com 1ª e 2ª via"
+                            >
+                              <Printer className="w-3.5 h-3.5 text-[#B87333]" />
+                              Controle Especial (C1)
+                            </Button>
+                          </div>
                         )}
                       </div>
 	                    </div>
