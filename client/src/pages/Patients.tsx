@@ -27,6 +27,14 @@ interface HormonioRegistro {
   total: number;
   livre?: number;
   shbg?: number;
+  hematocrito?: number;
+}
+
+interface SintomaRegistro {
+  data: string;
+  iief5?: number;
+  ipss?: number;
+  adamPositivo?: boolean;
 }
 
 interface DocumentoVinculado {
@@ -50,6 +58,7 @@ interface Paciente {
   shbg?: string;
   testoLivre?: string;
   historicoHormonal?: HormonioRegistro[];
+  historicoSintomas?: SintomaRegistro[];
   documentos?: DocumentoVinculado[];
 }
 
@@ -75,7 +84,14 @@ export default function Patients() {
   const [newTotal, setNewTotal] = useState("");
   const [newLivre, setNewLivre] = useState("");
   const [newShbg, setNewShbg] = useState("");
+  const [newHemaPonto, setNewHemaPonto] = useState("");
   const [newDataPonto, setNewDataPonto] = useState(new Date().toLocaleDateString("pt-BR").substring(0, 5));
+
+  // Estados para inserção de novo ponto de sintomas
+  const [newIief, setNewIief] = useState("");
+  const [newIpss, setNewIpss] = useState("");
+  const [newAdam, setNewAdam] = useState(false);
+  const [newDataSintoma, setNewDataSintoma] = useState(new Date().toLocaleDateString("pt-BR").substring(0, 5));
 
   // Carregar pacientes do LocalStorage
   useEffect(() => {
@@ -192,6 +208,18 @@ export default function Patients() {
       toast.error("O valor de Testosterona Total é obrigatório.");
       return;
     }
+    
+    // Alertas clínicos de segurança
+    const valHema = newHemaPonto ? parseFloat(newHemaPonto) : 0;
+    const valShbg = newShbg ? parseFloat(newShbg) : 0;
+    
+    if (valHema > 52) {
+      toast.warning("Alerta Clínico: Hematócrito crítico (>52%). Considere sangria terapêutica ou ajuste/redução de TRT.", { duration: 6000 });
+    }
+    if (valShbg > 0 && valShbg < 15) {
+      toast.warning("Alerta Clínico: SHBG crítico (<15 nmol/L). Indica alta taxa de testosterona livre e possível clearance acelerado.", { duration: 6000 });
+    }
+
     const updated = pacientes.map(p => {
       if (p.id === pacienteId) {
         const hist = p.historicoHormonal || [];
@@ -199,13 +227,15 @@ export default function Patients() {
           data: newDataPonto || new Date().toLocaleDateString("pt-BR").substring(0, 5),
           total: parseFloat(newTotal),
           livre: newLivre ? parseFloat(newLivre) : undefined,
-          shbg: newShbg ? parseFloat(newShbg) : undefined
+          shbg: newShbg ? parseFloat(newShbg) : undefined,
+          hematocrito: newHemaPonto ? parseFloat(newHemaPonto) : undefined
         };
         return {
           ...p,
           testosterona: newTotal, // Atualizar valor atual
           testoLivre: newLivre || p.testoLivre,
           shbg: newShbg || p.shbg,
+          hematocrito: newHemaPonto || p.hematocrito,
           historicoHormonal: [...hist, novoPonto]
         };
       }
@@ -216,6 +246,36 @@ export default function Patients() {
     setNewTotal("");
     setNewLivre("");
     setNewShbg("");
+    setNewHemaPonto("");
+  };
+
+  const handleAddSintomaPonto = (pacienteId: string) => {
+    if (!newIief && !newIpss) {
+      toast.error("Preencha pelo menos um escore (IIEF-5 ou IPSS).");
+      return;
+    }
+    
+    const updated = pacientes.map(p => {
+      if (p.id === pacienteId) {
+        const hist = p.historicoSintomas || [];
+        const novoPonto: SintomaRegistro = {
+          data: newDataSintoma || new Date().toLocaleDateString("pt-BR").substring(0, 5),
+          iief5: newIief ? parseInt(newIief) : undefined,
+          ipss: newIpss ? parseInt(newIpss) : undefined,
+          adamPositivo: newAdam
+        };
+        return {
+          ...p,
+          historicoSintomas: [...hist, novoPonto]
+        };
+      }
+      return p;
+    });
+    saveToStorage(updated);
+    toast.success("Escores de sintomas registrados com sucesso!");
+    setNewIief("");
+    setNewIpss("");
+    setNewAdam(false);
   };
 
   const toggleExpand = (id: string) => {
@@ -635,6 +695,30 @@ export default function Patients() {
                       {/* Ficha Expandida do Paciente */}
                       {isExpanded && (
                         <div className="space-y-6 pt-4 border-t border-border/40" onClick={(e) => e.stopPropagation()}>
+                          
+                          {/* Alertas Clínicos Inteligentes */}
+                          {(parseFloat(p.hematocrito) > 52 || (p.shbg && parseFloat(p.shbg) < 15)) && (
+                            <div className="space-y-2">
+                              <span className="font-bold text-red-600 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                                ⚠️ Alertas de Segurança Clínica (TRT)
+                              </span>
+                              <div className="grid grid-cols-1 gap-2">
+                                {parseFloat(p.hematocrito) > 52 && (
+                                  <div className="bg-red-500/10 border border-red-500/30 text-red-700 p-3 rounded-xl text-xs font-medium flex flex-col gap-1">
+                                    <span className="font-bold">Hematócrito Crítico ({p.hematocrito}%)</span>
+                                    <span>Valor acima de 52% indica risco aumentado de hiperviscosidade sanguínea e eventos tromboembólicos. Recomenda-se suspender/reduzir TRT e indicar sangria terapêutica.</span>
+                                  </div>
+                                )}
+                                {p.shbg && parseFloat(p.shbg) < 15 && (
+                                  <div className="bg-orange-500/10 border border-orange-500/30 text-orange-700 p-3 rounded-xl text-xs font-medium flex flex-col gap-1">
+                                    <span className="font-bold">SHBG Crítico ({p.shbg} nmol/L)</span>
+                                    <span>SHBG abaixo de 15 nmol/L aumenta a testosterona livre, acelerando o clearance hepático. Recomenda-se fracionar as doses de testosterona (ex: aplicação subcutânea 2-3x por semana).</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Gráfico de Evolução Hormonal */}
                           <div className="space-y-3">
                             <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
@@ -654,7 +738,8 @@ export default function Patients() {
                                     const pctSHBG = d.shbg ? (d.shbg / 100) * 100 : 0;
                                     
                                     // Hematócrito varia de 35% a 55%
-                                    const pctHt = p.hematocrito ? (parseFloat(p.hematocrito) / 60) * 100 : 0;
+                                    const hemaValor = d.hematocrito || (idx === chartData.length - 1 ? parseFloat(p.hematocrito) : undefined);
+                                    const pctHt = hemaValor ? (hemaValor / 60) * 100 : 0;
                                     
                                     return (
                                       <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group relative">
@@ -682,13 +767,13 @@ export default function Patients() {
                                           )}
                                           
                                           {/* Barra de Hematócrito (Ht) */}
-                                          {pctHt > 0 && idx === chartData.length - 1 && (
+                                          {hemaValor !== undefined && (
                                             <div 
                                               style={{ height: `${Math.max(pctHt, 10)}%` }} 
-                                              className="w-3 bg-red-500 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
+                                              className={`w-3 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110 ${hemaValor > 52 ? "bg-red-600 animate-pulse" : "bg-red-500"}`}
                                             >
                                               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
-                                                Hematócrito: {p.hematocrito}%
+                                                Hematócrito: {hemaValor}% {hemaValor > 52 ? "⚠️ CRÍTICO" : ""}
                                               </div>
                                             </div>
                                           )}
@@ -776,7 +861,7 @@ export default function Patients() {
                             </div>
 
                             {/* Formulário rápido para adicionar ponto no gráfico */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
                               <Input 
                                 type="number" 
                                 placeholder="Total (ng/dL)" 
@@ -798,12 +883,131 @@ export default function Patients() {
                                 onChange={(e) => setNewShbg(e.target.value)}
                                 className="h-9 rounded-lg text-xs bg-card"
                               />
+                              <Input 
+                                type="number" 
+                                placeholder="Hematócrito (%)" 
+                                value={newHemaPonto}
+                                onChange={(e) => setNewHemaPonto(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
                               <Button 
                                 size="sm" 
                                 onClick={() => handleAddHormonioPonto(p.id)}
-                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white"
+                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white sm:col-span-1 col-span-2"
                               >
                                 Adicionar Ponto
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Evolução Temporal de Sintomas */}
+                          <div className="space-y-3 pt-2 border-t border-border/40">
+                            <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                              <Activity className="w-4 h-4 text-accent animate-pulse" />
+                              Curva de Evolução de Sintomas (IIEF-5 & IPSS)
+                            </span>
+                            
+                            {p.historicoSintomas && p.historicoSintomas.length > 0 ? (
+                              <div className="bg-secondary/10 border border-border/50 p-4 rounded-xl space-y-4">
+                                <div className="h-48 w-full flex items-end justify-between gap-2 px-2 pt-4">
+                                  {p.historicoSintomas.map((s, idx) => {
+                                    // IIEF-5 varia de 1 a 25
+                                    const pctIief = s.iief5 ? (s.iief5 / 25) * 100 : 0;
+                                    // IPSS varia de 0 a 35
+                                    const pctIpss = s.ipss ? (s.ipss / 35) * 100 : 0;
+                                    
+                                    return (
+                                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group relative">
+                                        <div className="flex gap-1 w-full items-end justify-center h-full pb-1">
+                                          {/* Barra de IIEF-5 */}
+                                          {s.iief5 !== undefined && (
+                                            <div 
+                                              style={{ height: `${Math.max(pctIief, 10)}%` }} 
+                                              className="w-3 bg-emerald-500 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
+                                            >
+                                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-emerald-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
+                                                IIEF-5: {s.iief5} (Disfunção Erétil)
+                                              </div>
+                                            </div>
+                                          )}
+                                          
+                                          {/* Barra de IPSS */}
+                                          {s.ipss !== undefined && (
+                                            <div 
+                                              style={{ height: `${Math.max(pctIpss, 10)}%` }} 
+                                              className="w-3 bg-indigo-500 rounded-t-sm relative shadow-sm transition-all duration-300 hover:brightness-110"
+                                            >
+                                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-indigo-600 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-md">
+                                                IPSS: {s.ipss} (Sintomas Prostáticos)
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          {/* Marcador ADAM */}
+                                          {s.adamPositivo && (
+                                            <div className="w-2 h-2 rounded-full bg-amber-500 animate-bounce mb-1" title="ADAM Positivo (Déficit Androgênico)" />
+                                          )}
+                                        </div>
+                                        <span className="text-[9px] font-bold text-muted-foreground">{s.data}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                
+                                {/* Legenda do Gráfico de Sintomas */}
+                                <div className="flex justify-center gap-4 text-[10px] font-bold border-t border-border/40 pt-2">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block"></span>
+                                    <span className="text-emerald-600">IIEF-5 (Ereção - maior é melhor)</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-3 rounded-sm bg-indigo-500 inline-block"></span>
+                                    <span className="text-indigo-600">IPSS (Sintomas Urinários - menor é melhor)</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                                    <span className="text-amber-600">ADAM (+)</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="p-6 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
+                                Registre pelo menos um escore clínico para gerar o gráfico de evolução de sintomas.
+                              </div>
+                            )}
+
+                            {/* Formulário rápido para adicionar sintomas */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
+                              <Input 
+                                type="number" 
+                                placeholder="Escore IIEF-5 (1-25)" 
+                                value={newIief}
+                                onChange={(e) => setNewIief(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Input 
+                                type="number" 
+                                placeholder="Escore IPSS (0-35)" 
+                                value={newIpss}
+                                onChange={(e) => setNewIpss(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <div className="flex items-center gap-2 px-2 h-9 bg-card rounded-lg border border-border/40">
+                                <input 
+                                  type="checkbox" 
+                                  id="adam-check"
+                                  checked={newAdam}
+                                  onChange={(e) => setNewAdam(e.target.checked)}
+                                  className="rounded border-border text-accent focus:ring-accent w-4 h-4"
+                                />
+                                <Label htmlFor="adam-check" className="text-xs font-bold text-primary cursor-pointer select-none">ADAM (+)</Label>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleAddSintomaPonto(p.id)}
+                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white"
+                              >
+                                Registrar Sintomas
                               </Button>
                             </div>
                           </div>

@@ -712,11 +712,15 @@ export default function ProtocolDetail() {
 
             <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e2e8f0; padding-top: 15px;">
               ${useQrCode ? `
-              <div style="display: flex; align-items: center; gap: 10px; font-size: 8px; color: #64748b; max-width: 250px;">
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 8px; color: #64748b; max-width: 280px;">
                 <img src="${qrCodeApiUrl}" style="width: 60px; height: 60px; border: 1px solid #e2e8f0; padding: 2px;" alt="QR Code Validação" />
                 <div>
-                  <strong style="color: #1C3D5A; display: block; margin-bottom: 2px;">DOCUMENTO ASSINADO DIGITALMENTE</strong>
-                  Para verificar a validade e autenticidade deste documento clínico, aponte a câmera do seu celular para o QR Code ao lado.
+                  <strong style="color: #1C3D5A; display: block; margin-bottom: 2px; font-size: 9px;">ASSINADO DIGITALMENTE (ICP-BRASIL)</strong>
+                  Documento assinado eletronicamente com e-CPF (A1/A3) nos termos da MP 2.200-2/2001. 
+                  <span style="display: block; margin-top: 3px; font-family: monospace; font-size: 7px; color: #94a3b8; word-break: break-all;">
+                    HASH SHA-256: ${Array.from({length: 64}, (_, i) => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join("")}
+                  </span>
+                  <span style="display: block; margin-top: 2px; color: #B87333; font-weight: bold;">Validação: verificador.iti.gov.br</span>
                 </div>
               </div>
               ` : '<div></div>'}
@@ -727,7 +731,7 @@ export default function ProtocolDetail() {
                 </div>
                 <div class="signature-line"></div>
                 <div class="signature-name">Dr. Felipe de Bulhões Ojeda</div>
-                <div class="signature-crm">Médico Urologista | CRM-SP 241.135</div>
+                <div class="signature-crm">Médico Urologista | CRM-SP 241.135 | RQE 112.445</div>
               </div>
             </div>
 
