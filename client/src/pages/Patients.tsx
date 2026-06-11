@@ -76,6 +76,7 @@ interface Paciente {
 export default function Patients() {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<"all" | "hema_critical" | "psa_critical" | "followup_late">("all");
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -89,7 +90,72 @@ export default function Patients() {
   const [notas, setNotas] = useState("");
   const [shbg, setShbg] = useState("");
   const [testoLivre, setTestoLivre] = useState("");
+  const [albumina, setAlbumina] = useState("4.3"); // Albumina padrão de 4.3 g/dL para fórmula de Vermeulen
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
+
+  // Função para cálculo científico de Testosterona Livre (Vermeulen, 1999)
+  // Fórmula baseada na constante de associação de SHBG e Albumina
+  const calculateVermeulen = (totalT_ngdl: number, shbg_nmol: number, alb_gdl: number): number => {
+    // Conversões de unidades:
+    // Total T: ng/dL -> nmol/L (multiplica por 0.03467)
+    const t_nmol = totalT_ngdl * 0.03467;
+    // Albumina: g/dL -> umol/L (multiplica por 151.5)
+    const alb_umol = alb_gdl * 151.5;
+    // Constantes de associação (L/mol):
+    const Ka = 3.6e4; // Albumina (3.6 x 10^4 L/mol)
+    const Ks = 1.0e9; // SHBG (1.0 x 10^9 L/mol)
+
+    // Equação quadrática para encontrar a Testosterona Livre (fT)
+    // Ks * fT^2 + (Ks * SHBG + Ka * Alb + 1 - Ks * T) * fT - T = 0
+    // Ks * fT^2 + b * fT + c = 0 (dividindo por Ks para estabilidade numérica)
+    // fT^2 + (SHBG + (Ka/Ks)*Alb + 1/Ks - T) * fT - T/Ks = 0
+    // Como Ka/Ks = 3.6e4 / 1.0e9 = 3.6e-5
+    // E 1/Ks = 1.0e-9
+    
+    const shbg_mol = shbg_nmol * 1e-9;
+    const alb_mol = alb_umol * 1e-6;
+    const t_mol = t_nmol * 1e-9;
+
+    const a_eq = 1.0;
+    const b_eq = shbg_mol + (Ka / Ks) * alb_mol + (1.0 / Ks) - t_mol;
+    const c_eq = -t_mol / Ks;
+
+    // Delta = b^2 - 4ac
+    const delta = b_eq * b_eq - 4 * a_eq * c_eq;
+    if (delta < 0) return 0;
+
+    // fT em mol/L
+    const ft_mol = (-b_eq + Math.sqrt(delta)) / (2 * a_eq);
+    
+    // Converter de mol/L de volta para ng/dL:
+    // ft_mol * 1e9 (para nmol/L) / 0.03467 (para ng/dL)
+    const ft_nmol = ft_mol * 1e9;
+    const ft_ngdl = ft_nmol / 0.03467;
+
+    // A testosterona livre é geralmente expressa em pg/mL para maior precisão clínica,
+    // mas o app usa ng/dL (ou pg/mL conforme o laboratório).
+    // Vamos converter para ng/dL (que é o padrão usado na interface atual).
+    return parseFloat(ft_ngdl.toFixed(2));
+  };
+
+  const handleAutoCalculateLivre = () => {
+    const tVal = parseFloat(testosterona);
+    const sVal = parseFloat(shbg);
+    const aVal = parseFloat(albumina);
+
+    if (isNaN(tVal) || isNaN(sVal)) {
+      toast.error("Para calcular a Testosterona Livre, informe os valores de Testosterona Total e SHBG.");
+      return;
+    }
+
+    try {
+      const calculated = calculateVermeulen(tVal, sVal, isNaN(aVal) ? 4.3 : aVal);
+      setTestoLivre(calculated.toString());
+      toast.success(`Testosterona Livre calculada com sucesso: ${calculated} ng/dL`);
+    } catch (err) {
+      toast.error("Erro ao calcular a Testosterona Livre. Verifique os parâmetros informados.");
+    }
+  };
 
   // Estados para inserção de novo ponto no gráfico
   const [newTotal, setNewTotal] = useState("");
@@ -323,10 +389,41 @@ export default function Patients() {
     resetForm();
   };
 
-  const filteredPacientes = pacientes.filter(p => 
-    p.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.queixa.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPacientes = pacientes.filter(p => {
+    // Primeiro aplicar busca textual
+    const matchesSearch = p.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.queixa.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+
+    // Depois aplicar filtro clínico crítico
+    if (activeFilter === "hema_critical") {
+      return parseFloat(p.hematocrito) > 52;
+    }
+    if (activeFilter === "psa_critical") {
+      return parseFloat(p.psa) > 4.0;
+    }
+    if (activeFilter === "followup_late") {
+      const hist = p.historicoHormonal || [];
+      if (hist.length === 0) return false;
+      
+      const lastDateStr = hist[hist.length - 1].data;
+      const parts = lastDateStr.split("/");
+      const day = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      const currentYear = new Date().getFullYear();
+      
+      const lastExamDate = new Date(currentYear, month, day);
+      const today = new Date();
+      if (lastExamDate > today) lastExamDate.setFullYear(currentYear - 1);
+      
+      const diffTime = Math.abs(today.getTime() - lastExamDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const diffMonths = diffDays / 30.4;
+      return diffMonths >= 3; // Alerta ou Recomendado (>= 3 meses)
+    }
+
+    return true;
+  });
 
   // Função para criptografar/descriptografar com validação de integridade por assinatura mágica
   const encryptData = (text: string, key: string): string => {
@@ -552,7 +649,7 @@ export default function Patients() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 border-t border-border/40 pt-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4 border-t border-border/40 pt-5">
                   <div className="space-y-2">
                     <Label htmlFor="testo" className="text-xs font-bold text-primary uppercase tracking-wider">Testo Total (ng/dL)</Label>
                     <Input 
@@ -565,16 +662,6 @@ export default function Patients() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="testoLivre" className="text-xs font-bold text-primary uppercase tracking-wider">Testo Livre (ng/dL)</Label>
-                    <Input 
-                      id="testoLivre" 
-                      placeholder="Ex: 4.8" 
-                      value={testoLivre}
-                      onChange={(e) => setTestoLivre(e.target.value)}
-                      className="rounded-xl h-11"
-                    />
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="shbg" className="text-xs font-bold text-primary uppercase tracking-wider">SHBG (nmol/L)</Label>
                     <Input 
                       id="shbg" 
@@ -582,6 +669,36 @@ export default function Patients() {
                       value={shbg}
                       onChange={(e) => setShbg(e.target.value)}
                       className="rounded-xl h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="albumina" className="text-xs font-bold text-primary uppercase tracking-wider">Albumina (g/dL)</Label>
+                    <Input 
+                      id="albumina" 
+                      placeholder="Padrão: 4.3" 
+                      value={albumina}
+                      onChange={(e) => setAlbumina(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
+                  </div>
+                  <div className="space-y-2 relative">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="testoLivre" className="text-xs font-bold text-primary uppercase tracking-wider">Testo Livre</Label>
+                      <button
+                        type="button"
+                        onClick={handleAutoCalculateLivre}
+                        className="text-[10px] font-bold text-accent hover:underline uppercase"
+                        title="Calcular automaticamente usando a fórmula científica de Vermeulen (1999)"
+                      >
+                        Calcular (Vermeulen)
+                      </button>
+                    </div>
+                    <Input 
+                      id="testoLivre" 
+                      placeholder="Ex: 4.8" 
+                      value={testoLivre}
+                      onChange={(e) => setTestoLivre(e.target.value)}
+                      className="rounded-xl h-11 border-accent/20 bg-accent/[0.01]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -633,14 +750,71 @@ export default function Patients() {
         {/* Barra de Busca e Listagem */}
         {!isAdding && (
           <div className="space-y-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar paciente por nome, queixa ou diagnóstico..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 h-12 rounded-xl border-border bg-card shadow-sm"
-              />
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" />
+                <Input 
+                  placeholder="Buscar paciente por nome, queixa ou diagnóstico..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 pr-4 h-12 rounded-xl border-border bg-card shadow-sm"
+                />
+              </div>
+              
+              {/* Filtros Clínicos Avançados */}
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button
+                  size="sm"
+                  variant={activeFilter === "all" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("all")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 ${activeFilter === "all" ? "copper-gradient text-white border-0" : "border-border text-primary hover:bg-secondary/40"}`}
+                >
+                  Todos os Pacientes ({pacientes.length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeFilter === "hema_critical" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("hema_critical")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "hema_critical" ? "bg-red-600 hover:bg-red-700 text-white border-0" : "border-red-200/40 text-red-600 hover:bg-red-50/40"}`}
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Hematócrito Crítico &gt; 52% ({pacientes.filter(p => parseFloat(p.hematocrito) > 52).length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeFilter === "psa_critical" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("psa_critical")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "psa_critical" ? "bg-orange-600 hover:bg-orange-700 text-white border-0" : "border-orange-200/40 text-orange-600 hover:bg-orange-50/40"}`}
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  PSA Elevado &gt; 4.0 ng/mL ({pacientes.filter(p => parseFloat(p.psa) > 4.0).length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeFilter === "followup_late" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("followup_late")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "followup_late" ? "bg-amber-600 hover:bg-amber-700 text-white border-0" : "border-amber-200/40 text-amber-600 hover:bg-amber-50/40"}`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  Follow-up Pendente &gt; 3 meses ({
+                    pacientes.filter(p => {
+                      const hist = p.historicoHormonal || [];
+                      if (hist.length === 0) return false;
+                      const lastDateStr = hist[hist.length - 1].data;
+                      const parts = lastDateStr.split("/");
+                      const day = parseInt(parts[0]);
+                      const month = parseInt(parts[1]) - 1;
+                      const currentYear = new Date().getFullYear();
+                      const lastExamDate = new Date(currentYear, month, day);
+                      const today = new Date();
+                      if (lastExamDate > today) lastExamDate.setFullYear(currentYear - 1);
+                      const diffTime = Math.abs(today.getTime() - lastExamDate.getTime());
+                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      return (diffDays / 30.4) >= 3;
+                    }).length
+                  })
+                </Button>
+              </div>
             </div>
 
             {filteredPacientes.length > 0 ? (
@@ -658,7 +832,57 @@ export default function Patients() {
                       <CardContent className="p-5 space-y-4">
                       <div className="flex items-start justify-between gap-3 border-b border-border/40 pb-3">
                         <div className="space-y-1">
-                          <h4 className="text-base font-serif font-bold text-primary">{p.nome}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-base font-serif font-bold text-primary">{p.nome}</h4>
+                            {/* Alerta Visual de Follow-up de TRT */}
+                            {(() => {
+                              const hist = p.historicoHormonal || [];
+                              if (hist.length === 0) return null;
+                              
+                              // Obter a data do último exame
+                              const lastDateStr = hist[hist.length - 1].data; // Formato esperado "DD/MM" ou "DD/MM/AAAA"
+                              // Como no app salvamos substring(0, 5) que é "DD/MM", vamos estimar o ano atual
+                              const parts = lastDateStr.split("/");
+                              const day = parseInt(parts[0]);
+                              const month = parseInt(parts[1]) - 1;
+                              const currentYear = new Date().getFullYear();
+                              
+                              const lastExamDate = new Date(currentYear, month, day);
+                              const today = new Date();
+                              
+                              // Se o mês do exame estimado for no futuro em relação ao mês atual, assumimos o ano anterior
+                              if (lastExamDate > today) {
+                                lastExamDate.setFullYear(currentYear - 1);
+                              }
+                              
+                              const diffTime = Math.abs(today.getTime() - lastExamDate.getTime());
+                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                              const diffMonths = diffDays / 30.4;
+
+                              if (diffMonths >= 6) {
+                                return (
+                                  <Badge className="bg-red-500/10 hover:bg-red-500/15 text-red-600 border-red-500/20 text-[10px] font-bold rounded-full gap-1 px-2.5 py-0.5">
+                                    <AlertCircle className="w-3 h-3" />
+                                    Follow-up Atrasado {`(>6 meses)`}
+                                  </Badge>
+                                );
+                              } else if (diffMonths >= 3) {
+                                return (
+                                  <Badge className="bg-amber-500/10 hover:bg-amber-500/15 text-amber-600 border-amber-500/20 text-[10px] font-bold rounded-full gap-1 px-2.5 py-0.5">
+                                    <AlertCircle className="w-3 h-3" />
+                                    Follow-up Recomendado {`(>3 meses)`}
+                                  </Badge>
+                                );
+                              } else {
+                                return (
+                                  <Badge className="bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-600 border-emerald-500/20 text-[10px] font-bold rounded-full gap-1 px-2.5 py-0.5">
+                                    <Check className="w-3 h-3" />
+                                    TRT Monitorada (Em dia)
+                                  </Badge>
+                                );
+                              }
+                            })()}
+                          </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Calendar className="w-3.5 h-3.5 text-accent" />
                             Cadastrado em {p.dataCadastro}
