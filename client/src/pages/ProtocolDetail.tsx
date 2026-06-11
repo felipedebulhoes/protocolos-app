@@ -33,7 +33,9 @@ import {
   Gem, 
   Droplets,
   Bookmark,
-  Share2
+  Share2,
+  PhoneCall,
+  Image as ImageIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -150,86 +152,128 @@ export default function ProtocolDetail() {
           </div>
         </div>
 
-        {/* Seções Colapsáveis (Accordion) */}
-        <div className="space-y-4">
-          <Accordion type="multiple" defaultValue={protocol.sections.map((_, i) => `section-${i}`)} className="space-y-4">
-            {protocol.sections.map((section, index) => {
-              const isPrescription = section.is_prescription;
-              const isMev = section.is_mev;
-              const isReferences = section.is_references;
+	        {/* Seção de Imagens de Atlas Cirúrgico (se disponível para o protocolo) */}
+	        {protocol.images && protocol.images.length > 0 && (
+	          <div className="space-y-4">
+	            <div className="flex items-center gap-2 border-b border-border pb-2">
+	              <ImageIcon className="w-5 h-5 text-accent" />
+	              <h3 className="text-lg font-serif font-bold text-primary">Passo a Passo Cirúrgico Ilustrado (Atlas & Artigos)</h3>
+	            </div>
+	            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+	              {protocol.images.map((img: any, i: number) => (
+	                <Card key={i} className="overflow-hidden border border-border bg-card shadow-sm hover:shadow-md transition-shadow duration-200">
+	                  <div className="aspect-[4/3] relative overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-2">
+	                    <img 
+	                      src={img.path} 
+	                      alt={img.caption} 
+	                      className="max-h-full max-w-full object-contain rounded-lg"
+	                    />
+	                  </div>
+	                  <CardContent className="p-4 bg-secondary/10 border-t border-border/40">
+	                    <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+	                      <span className="font-bold text-accent">Figura {i + 1}:</span> {img.caption}
+	                    </p>
+	                  </CardContent>
+	                </Card>
+	              ))}
+	            </div>
+	          </div>
+	        )}
 
-              return (
-                <AccordionItem 
-                  key={index} 
-                  value={`section-${index}`}
-                  className={`
-                    border rounded-xl overflow-hidden bg-card shadow-sm transition-all duration-200
-                    ${isPrescription ? "border-accent/30" : "border-border"}
-                    ${isMev ? "border-emerald-500/20" : ""}
-                  `}
-                >
-                  <div className={`
-                    flex items-center justify-between px-5 py-3 border-b border-border/40
-                    ${isPrescription ? "bg-accent/5" : "bg-secondary/30"}
-                    ${isMev ? "bg-emerald-500/5" : ""}
-                  `}>
-                    <AccordionTrigger className="flex-1 hover:no-underline py-1 text-left">
-                      <span className={`
-                        text-base font-serif font-bold leading-normal
-                        ${isPrescription ? "text-accent" : "text-primary"}
-                        ${isMev ? "text-emerald-600" : ""}
-                      `}>
-                        {section.title}
-                      </span>
-                    </AccordionTrigger>
+	        {/* Seções Colapsáveis (Accordion) */}
+	        <div className="space-y-4">
+	          <Accordion type="multiple" defaultValue={protocol.sections.map((_, i) => `section-${i}`)} className="space-y-4">
+	            {protocol.sections.map((section: any, index: number) => {
+	              const isPrescription = section.is_prescription;
+	              const isMev = section.is_mev;
+	              const isReferences = section.is_references;
+	              const isSecretary = section.is_secretary;
 
-                    {/* Botão de cópia para prescrições ou conteúdo clínico */}
-                    <div className="flex items-center gap-2 ml-4">
-                      {isPrescription && (
-                        <Badge variant="outline" className="border-accent/30 text-accent bg-accent/5 font-semibold text-[10px] uppercase tracking-wider">
-                          Prescrição Modelo
-                        </Badge>
-                      )}
-                      {isMev && (
-                        <Badge variant="outline" className="border-emerald-500/20 text-emerald-600 bg-emerald-500/5 font-semibold text-[10px] uppercase tracking-wider">
-                          Medicina de Estilo de Vida
-                        </Badge>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(section.content, section.title)}
-                        className="h-8 gap-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground"
-                      >
-                        {copiedText === section.title ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-500" />
-                            Copiado
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            Copiar
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+	              return (
+	                <AccordionItem 
+	                  key={index} 
+	                  value={`section-${index}`}
+	                  className={`
+	                    border rounded-xl overflow-hidden bg-card shadow-sm transition-all duration-200
+	                    ${isPrescription ? "border-accent/30" : "border-border"}
+	                    ${isMev ? "border-emerald-500/20" : ""}
+	                    ${isSecretary ? "border-amber-500/20" : ""}
+	                  `}
+	                >
+	                  <div className={`
+	                    flex items-center justify-between px-5 py-3 border-b border-border/40
+	                    ${isPrescription ? "bg-accent/5" : "bg-secondary/30"}
+	                    ${isMev ? "bg-emerald-500/5" : ""}
+	                    ${isSecretary ? "bg-amber-500/5" : ""}
+	                  `}>
+	                    <AccordionTrigger className="flex-1 hover:no-underline py-1 text-left">
+	                      <span className={`
+	                        text-base font-serif font-bold leading-normal
+	                        ${isPrescription ? "text-accent" : "text-primary"}
+	                        ${isMev ? "text-emerald-600" : ""}
+	                        ${isSecretary ? "text-amber-600" : ""}
+	                      `}>
+	                        {section.title}
+	                      </span>
+	                    </AccordionTrigger>
 
-                  <AccordionContent className="p-5 pt-4 text-sm leading-relaxed text-foreground/90 prose dark:prose-invert max-w-none">
-                    {isPrescription ? (
-                      <div className="bg-secondary/50 dark:bg-secondary/20 p-4 rounded-lg border border-border/60 font-mono text-xs overflow-x-auto whitespace-pre-wrap">
-                        {section.content.replace(/```/g, "")}
-                      </div>
-                    ) : (
-                      <Streamdown>{section.content}</Streamdown>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              );
-            })}
-          </Accordion>
-        </div>
+	                    {/* Botão de cópia para prescrições ou conteúdo clínico */}
+	                    <div className="flex items-center gap-2 ml-4">
+	                      {isPrescription && (
+	                        <Badge variant="outline" className="border-accent/30 text-accent bg-accent/5 font-semibold text-[10px] uppercase tracking-wider">
+	                          Prescrição Modelo
+	                        </Badge>
+	                      )}
+	                      {isMev && (
+	                        <Badge variant="outline" className="border-emerald-500/20 text-emerald-600 bg-emerald-500/5 font-semibold text-[10px] uppercase tracking-wider">
+	                          Medicina de Estilo de Vida
+	                        </Badge>
+	                      )}
+	                      {isSecretary && (
+	                        <Badge variant="outline" className="border-amber-500/20 text-amber-600 bg-amber-500/5 font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1">
+	                          <PhoneCall className="w-2.5 h-2.5" />
+	                          Comunicação & Vendas
+	                        </Badge>
+	                      )}
+	                      <Button
+	                        variant="ghost"
+	                        size="sm"
+	                        onClick={() => copyToClipboard(section.content, section.title)}
+	                        className="h-8 gap-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground"
+	                      >
+	                        {copiedText === section.title ? (
+	                          <>
+	                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+	                            Copiado
+	                          </>
+	                        ) : (
+	                          <>
+	                            <Copy className="w-3.5 h-3.5" />
+	                            Copiar
+	                          </>
+	                        )}
+	                      </Button>
+	                    </div>
+	                  </div>
+
+	                  <AccordionContent className="p-5 pt-4 text-sm leading-relaxed text-foreground/90 prose dark:prose-invert max-w-none">
+	                    {isPrescription ? (
+	                      <div className="bg-secondary/50 dark:bg-secondary/20 p-4 rounded-lg border border-border/60 font-mono text-xs overflow-x-auto whitespace-pre-wrap">
+	                        {section.content.replace(/```/g, "")}
+	                      </div>
+	                    ) : isSecretary ? (
+	                      <div className="bg-amber-500/[0.02] dark:bg-amber-500/[0.05] p-5 rounded-xl border border-amber-500/10 space-y-2">
+	                        <Streamdown>{section.content}</Streamdown>
+	                      </div>
+	                    ) : (
+	                      <Streamdown>{section.content}</Streamdown>
+	                    )}
+	                  </AccordionContent>
+	                </AccordionItem>
+	              );
+	            })}
+	          </Accordion>
+	        </div>
       </div>
     </Layout>
   );
