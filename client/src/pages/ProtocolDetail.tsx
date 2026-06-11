@@ -39,7 +39,8 @@ import {
   Image as ImageIcon,
   MessageSquare,
   PlayCircle,
-  Video
+  Video,
+  Printer
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -188,6 +189,257 @@ export default function ProtocolDetail() {
     }
   };
 
+  const handlePrintDocument = (title: string, content: string, isPrescription: boolean = false) => {
+    const pName = patientName.trim() || "___________________________________";
+    const dToday = new Date().toLocaleDateString("pt-BR");
+    
+    // Preparar o conteúdo formatado
+    let formattedContent = content;
+    if (!isPrescription) {
+      formattedContent = content
+        .replace(/{paciente}/g, pName)
+        .replace(/{data}/g, dToday)
+        .replace(/{titulo}/g, protocol.title)
+        .replace(/{cid}/g, "N/A");
+    } else {
+      // Limpar os marcadores markdown de blocos de código
+      formattedContent = content.replace(/```[\s\S]*?\n/g, "").replace(/```/g, "");
+    }
+
+    // Criar um iframe oculto de impressão para evitar bloqueios de popups
+    const printFrame = document.createElement("iframe");
+    printFrame.style.position = "fixed";
+    printFrame.style.right = "0";
+    printFrame.style.bottom = "0";
+    printFrame.style.width = "0";
+    printFrame.style.height = "0";
+    printFrame.style.border = "0";
+    document.body.appendChild(printFrame);
+
+    const doc = printFrame.contentWindow?.document || printFrame.contentDocument;
+    if (!doc) return;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${title} - Dr. Felipe de Bulhões</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500;700&display=swap');
+            
+            @page {
+              size: A4;
+              margin: 20mm;
+            }
+            
+            body {
+              font-family: 'Roboto', sans-serif;
+              color: #1C3D5A;
+              line-height: 1.6;
+              margin: 0;
+              padding: 0;
+              background-color: #ffffff;
+            }
+
+            .container {
+              display: flex;
+              flex-direction: column;
+              height: 100%;
+              min-height: 250mm;
+              justify-content: space-between;
+            }
+
+            /* Cabeçalho Timbrado */
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 2px solid #B87333;
+              padding-bottom: 15px;
+              margin-bottom: 30px;
+            }
+
+            .logo-area {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            }
+
+            .logo-monograma {
+              font-family: 'Playfair Display', serif;
+              font-size: 32px;
+              font-weight: bold;
+              color: #1C3D5A;
+              border: 2px solid #B87333;
+              width: 50px;
+              height: 50px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 8px;
+            }
+
+            .logo-text {
+              display: flex;
+              flex-direction: column;
+            }
+
+            .logo-name {
+              font-family: 'Playfair Display', serif;
+              font-size: 18px;
+              font-weight: bold;
+              letter-spacing: 0.5px;
+              color: #1C3D5A;
+            }
+
+            .logo-sub {
+              font-size: 10px;
+              text-transform: uppercase;
+              letter-spacing: 1.5px;
+              color: #B87333;
+              font-weight: bold;
+            }
+
+            .header-info {
+              text-align: right;
+              font-size: 10px;
+              color: #64748b;
+              line-height: 1.4;
+            }
+
+            /* Título do Documento */
+            .doc-title {
+              font-family: 'Playfair Display', serif;
+              font-size: 20px;
+              font-weight: bold;
+              text-align: center;
+              color: #1C3D5A;
+              margin-bottom: 35px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+            }
+
+            /* Dados do Paciente */
+            .patient-box {
+              background-color: #f8fafc;
+              border-left: 3px solid #B87333;
+              padding: 12px 18px;
+              margin-bottom: 30px;
+              font-size: 13px;
+              display: flex;
+              justify-content: space-between;
+            }
+
+            .patient-label {
+              font-weight: bold;
+              color: #1C3D5A;
+            }
+
+            /* Conteúdo Principal */
+            .doc-content {
+              font-size: 14px;
+              color: #334155;
+              text-align: justify;
+              white-space: pre-wrap;
+              flex-grow: 1;
+              margin-bottom: 50px;
+            }
+
+            /* Assinatura */
+            .signature-area {
+              text-align: center;
+              margin-top: auto;
+              margin-bottom: 30px;
+            }
+
+            .signature-line {
+              width: 220px;
+              border-top: 1px solid #94a3b8;
+              margin: 0 auto 10px auto;
+            }
+
+            .signature-name {
+              font-weight: bold;
+              font-size: 13px;
+              color: #1C3D5A;
+            }
+
+            .signature-crm {
+              font-size: 11px;
+              color: #64748b;
+            }
+
+            /* Rodapé */
+            .footer {
+              border-top: 1px solid #e2e8f0;
+              padding-top: 10px;
+              text-align: center;
+              font-size: 9px;
+              color: #94a3b8;
+              line-height: 1.4;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div>
+              <div class="header">
+                <div class="logo-area">
+                  <div class="logo-monograma">FB</div>
+                  <div class="logo-text">
+                    <span class="logo-name">Dr. Felipe de Bulhões</span>
+                    <span class="logo-sub">Urologista & Andrologista</span>
+                  </div>
+                </div>
+                <div class="header-info">
+                  Urologista formado pelo IDOR<br>
+                  Cirurgião Geral TCBC<br>
+                  Campinas - SP | São Paulo - SP
+                </div>
+              </div>
+
+              <div class="doc-title">${title}</div>
+
+              <div class="patient-box">
+                <div><span class="patient-label">Paciente:</span> ${pName}</div>
+                <div><span class="patient-label">Data:</span> ${dToday}</div>
+              </div>
+
+              <div class="doc-content">${formattedContent}</div>
+            </div>
+
+            <div>
+              <div class="signature-area">
+                <div class="signature-line"></div>
+                <div class="signature-name">Dr. Felipe de Bulhões Ojeda</div>
+                <div class="signature-crm">Médico Urologista | CRM-SP XXXXX | RQE XXXXX</div>
+              </div>
+
+              <div class="footer">
+                Atendimento Humanizado | Particular e Convênios | Cirurgia Minimamente Invasiva<br>
+                Campinas: Av. José de Souza Campos, 123 | São Paulo: Av. Paulista, 1000<br>
+                Telefone: (11) 98112-4455 | drfelipebulhoes@bulhoesurohealth.com
+              </div>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() {
+                window.parent.document.body.removeChild(window.frameElement);
+              }, 100);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+    toast.success(`Preparando impressão de: ${title}`);
+  };
+
   return (
     <Layout>
       <div className="space-y-6 max-w-4xl mx-auto">
@@ -293,8 +545,8 @@ export default function ProtocolDetail() {
           </CardContent>
         </Card>
 
-		        {/* Seção de Vídeos Clínicos e Animações 3D Oficiais */}
-		        {(protocol.id === "13_hpb_manejo_completo" || protocol.id === "14_reabilitacao_pos_prostatectomia" || protocol.id === "1_implante_protese_peniana") && (
+			        {/* Seção de Vídeos Clínicos e Animações 3D Oficiais */}
+			        {(protocol.id === "13_hpb_manejo_completo" || protocol.id === "20_reabilitacao_peniana_pos_prostatectomia" || protocol.id === "1_implante_protese_peniana") && (
 		          <div className="space-y-4">
 		            <div className="flex items-center gap-2 border-b border-border pb-2">
 		              <Video className="w-5 h-5 text-accent" />
@@ -479,24 +731,35 @@ export default function ProtocolDetail() {
 		                            <div key={idx} className="border border-border/60 rounded-xl p-4 bg-secondary/10 space-y-3">
 		                              <div className="flex items-center justify-between gap-2">
 		                                <span className="text-xs font-bold text-primary font-serif truncate">{atestando.titulo}</span>
-		                                <Button 
-		                                  variant="ghost" 
-		                                  size="sm" 
-		                                  onClick={() => handleCopyCertificado(atestando.modelo, idx, false)}
-		                                  className="h-7 px-2 rounded-lg text-[10px] font-semibold text-muted-foreground hover:text-foreground shrink-0"
-		                                >
-		                                  {certCopied === idx ? (
-		                                    <>
-		                                      <Check className="w-3 h-3 text-emerald-500" />
-		                                      Copiado
-		                                    </>
-		                                  ) : (
-		                                    <>
-		                                      <Copy className="w-3 h-3" />
-		                                      Copiar
-		                                    </>
-		                                  )}
-		                                </Button>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleCopyCertificado(atestando.modelo, idx, false)}
+                                    className="h-7 px-2 rounded-lg text-[10px] font-semibold text-muted-foreground hover:text-foreground"
+                                  >
+                                    {certCopied === idx ? (
+                                      <>
+                                        <Check className="w-3 h-3 text-emerald-500" />
+                                        Copiado
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-3 h-3" />
+                                        Copiar
+                                      </>
+                                    )}
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handlePrintDocument(atestando.titulo || "Atestado Médico", atestando.modelo, false)}
+                                    className="h-7 px-2 rounded-lg text-[10px] font-semibold text-accent hover:text-accent/80 hover:bg-accent/5"
+                                  >
+                                    <Printer className="w-3 h-3" />
+                                    Imprimir
+                                  </Button>
+                                </div>
 		                              </div>
 		                              <p className="text-xs text-foreground/80 leading-relaxed font-mono whitespace-pre-wrap bg-card p-3 rounded-lg border border-border/40">
 		                                {formattedText}
@@ -527,24 +790,35 @@ export default function ProtocolDetail() {
 		                            <div key={idx} className="border border-border/60 rounded-xl p-4 bg-secondary/10 space-y-3">
 		                              <div className="flex items-center justify-between gap-2">
 		                                <span className="text-xs font-bold text-primary font-serif truncate">{laudando.titulo}</span>
-		                                <Button 
-		                                  variant="ghost" 
-		                                  size="sm" 
-		                                  onClick={() => handleCopyCertificado(laudando.modelo, idx, true)}
-		                                  className="h-7 px-2 rounded-lg text-[10px] font-semibold text-muted-foreground hover:text-foreground shrink-0"
-		                                >
-		                                  {laudoCopied === idx ? (
-		                                    <>
-		                                      <Check className="w-3 h-3 text-emerald-500" />
-		                                      Copiado
-		                                    </>
-		                                  ) : (
-		                                    <>
-		                                      <Copy className="w-3 h-3" />
-		                                      Copiar
-		                                    </>
-		                                  )}
-		                                </Button>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleCopyCertificado(laudando.modelo, idx, true)}
+                                    className="h-7 px-2 rounded-lg text-[10px] font-semibold text-muted-foreground hover:text-foreground"
+                                  >
+                                    {laudoCopied === idx ? (
+                                      <>
+                                        <Check className="w-3 h-3 text-emerald-500" />
+                                        Copiado
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-3 h-3" />
+                                        Copiar
+                                      </>
+                                    )}
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handlePrintDocument(laudando.titulo || "Laudo Médico", laudando.modelo, false)}
+                                    className="h-7 px-2 rounded-lg text-[10px] font-semibold text-accent hover:text-accent/80 hover:bg-accent/5"
+                                  >
+                                    <Printer className="w-3 h-3" />
+                                    Imprimir
+                                  </Button>
+                                </div>
 		                              </div>
 		                              <p className="text-xs text-foreground/80 leading-relaxed font-mono whitespace-pre-wrap bg-card p-3 rounded-lg border border-border/40">
 		                                {formattedText}
@@ -611,24 +885,37 @@ export default function ProtocolDetail() {
 	                          Comunicação & Vendas
 	                        </Badge>
 	                      )}
-	                      <Button
-	                        variant="ghost"
-	                        size="sm"
-	                        onClick={() => copyToClipboard(section.content, section.title, isPrescription)}
-	                        className="h-8 gap-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground"
-	                      >
-	                        {copiedText === section.title ? (
-	                          <>
-	                            <Check className="w-3.5 h-3.5 text-emerald-500" />
-	                            Copiado
-	                          </>
-	                        ) : (
-	                          <>
-	                            <Copy className="w-3.5 h-3.5" />
-	                            Copiar
-	                          </>
-	                        )}
-	                      </Button>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(section.content, section.title, isPrescription)}
+                          className="h-8 gap-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground"
+                        >
+                          {copiedText === section.title ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              Copiado
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              Copiar
+                            </>
+                          )}
+                        </Button>
+                        {isPrescription && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePrintDocument("Prescrição Médica", section.content, true)}
+                            className="h-8 gap-1.5 rounded-lg text-xs font-medium text-accent hover:text-accent/80 hover:bg-accent/5"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            Imprimir
+                          </Button>
+                        )}
+                      </div>
 	                    </div>
 	                  </div>
 

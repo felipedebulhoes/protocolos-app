@@ -100,6 +100,60 @@ export default function Calculators() {
     setIiefResult(null);
   };
 
+  // --- ESTADO QUESTIONÁRIO ADAM ---
+  const [adamAnswers, setAdamAnswers] = useState<Record<number, boolean>>({});
+  const [adamResult, setAdamResult] = useState<{ positive: boolean; severity: string; color: string } | null>(null);
+
+  const adamQuestions = [
+    { id: 1, q: "Você notou diminuição do desejo sexual (libido)?" },
+    { id: 2, q: "Você notou falta de energia ou fadiga constante?" },
+    { id: 3, q: "Você notou diminuição da força muscular ou da resistência física?" },
+    { id: 4, q: "Você perdeu altura (está ficando mais baixo)?" },
+    { id: 5, q: "Você notou uma diminuição da sua 'alegria de viver' ou se sente triste/rabugento?" },
+    { id: 6, q: "Suas ereções estão menos rígidas ou menos frequentes?" },
+    { id: 7, q: "Você notou uma piora recente no seu desempenho esportivo ou atividades físicas?" },
+    { id: 8, q: "Você costuma dormir logo após o jantar?" },
+    { id: 9, q: "Você notou uma piora recente no seu desempenho no trabalho ou concentração?" },
+    { id: 10, q: "Você se sente mais cansado ou sonolento durante o dia?" }
+  ];
+
+  const calculateADAM = () => {
+    const answeredCount = Object.keys(adamAnswers).length;
+    if (answeredCount < 10) {
+      alert("Por favor, responda a todas as 10 perguntas.");
+      return;
+    }
+
+    // Critério positivo de ADAM:
+    // - Resposta SIM para a pergunta 1 (libido) OU pergunta 6 (ereção)
+    // - OU resposta SIM para quaisquer outras 3 perguntas
+    const yes1 = adamAnswers[1] === true;
+    const yes6 = adamAnswers[6] === true;
+    
+    const otherYesCount = Object.entries(adamAnswers)
+      .filter(([id, val]) => id !== "1" && id !== "6" && val === true)
+      .length;
+
+    const positive = yes1 || yes6 || otherYesCount >= 3;
+    let severity = "";
+    let color = "";
+
+    if (positive) {
+      severity = "Rastreamento Positivo para Deficiência Androgênica (DAEM)";
+      color = "bg-orange-500/10 text-orange-600 border-orange-500/20";
+    } else {
+      severity = "Rastreamento Negativo para Deficiência Androgênica";
+      color = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    }
+
+    setAdamResult({ positive, severity, color });
+  };
+
+  const resetADAM = () => {
+    setAdamAnswers({});
+    setAdamResult(null);
+  };
+
   // --- ESTADO PAD TEST 24H ---
   const [dryWeight, setDryWeight] = useState("");
   const [wetWeight, setDryWetWeight] = useState("");
@@ -189,18 +243,22 @@ export default function Calculators() {
         </div>
 
         <Tabs defaultValue="iief" className="space-y-6">
-          <TabsList className="grid grid-cols-3 bg-secondary rounded-xl p-1">
-            <TabsTrigger value="iief" className="rounded-lg py-2.5 text-xs font-semibold gap-2">
-              <Calculator className="w-4 h-4" />
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 bg-secondary rounded-xl p-1 h-auto gap-1">
+            <TabsTrigger value="iief" className="rounded-lg py-2.5 text-xs font-semibold gap-1.5 w-full">
+              <Calculator className="w-3.5 h-3.5" />
               IIEF-5 (Ereção)
             </TabsTrigger>
-            <TabsTrigger value="padtest" className="rounded-lg py-2.5 text-xs font-semibold gap-2">
-              <Scale className="w-4 h-4" />
+            <TabsTrigger value="adam" className="rounded-lg py-2.5 text-xs font-semibold gap-1.5 w-full">
+              <Scale className="w-3.5 h-3.5" />
+              ADAM (Testosterona)
+            </TabsTrigger>
+            <TabsTrigger value="padtest" className="rounded-lg py-2.5 text-xs font-semibold gap-1.5 w-full">
+              <Scale className="w-3.5 h-3.5" />
               Pad Test 24h (Fuga)
             </TabsTrigger>
-            <TabsTrigger value="reimbursement" className="rounded-lg py-2.5 text-xs font-semibold gap-2">
-              <ClipboardList className="w-4 h-4" />
-              Simulador de Reembolso
+            <TabsTrigger value="reimbursement" className="rounded-lg py-2.5 text-xs font-semibold gap-1.5 w-full">
+              <ClipboardList className="w-3.5 h-3.5" />
+              Simulador Reembolso
             </TabsTrigger>
           </TabsList>
 
@@ -254,6 +312,89 @@ export default function Calculators() {
                     Calcular Escore IIEF-5
                   </Button>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ABA QUESTIONÁRIO ADAM */}
+          <TabsContent value="adam" className="space-y-6">
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-6 pb-4 border-b border-border/40">
+                <CardTitle className="text-lg font-serif font-bold text-primary">Questionário ADAM (Androgen Deficiency in the Aging Male)</CardTitle>
+                <CardDescription className="text-xs">Triagem clínica rápida de sintomas de deficiência androgênica (DAEM / Distúrbio Androgênico do Envelhecimento Masculino).</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-4">
+                  {adamQuestions.map((q) => (
+                    <div key={q.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4 last:border-0 last:pb-0">
+                      <Label className="text-xs font-semibold text-foreground leading-snug max-w-xl">
+                        {q.id}. {q.q}
+                      </Label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant={adamAnswers[q.id] === true ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setAdamAnswers({ ...adamAnswers, [q.id]: true })}
+                          className={`h-8 w-16 rounded-lg text-xs font-bold transition-all ${
+                            adamAnswers[q.id] === true 
+                              ? "bg-[#B87333] text-white hover:bg-[#B87333]/90" 
+                              : "border-border text-muted-foreground hover:bg-secondary"
+                          }`}
+                        >
+                          Sim
+                        </Button>
+                        <Button
+                          variant={adamAnswers[q.id] === false ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setAdamAnswers({ ...adamAnswers, [q.id]: false })}
+                          className={`h-8 w-16 rounded-lg text-xs font-bold transition-all ${
+                            adamAnswers[q.id] === false 
+                              ? "bg-[#1C3D5A] text-white hover:bg-[#1C3D5A]/90" 
+                              : "border-border text-muted-foreground hover:bg-secondary"
+                          }`}
+                        >
+                          Não
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Resultado ADAM */}
+                {adamResult && (
+                  <div className={`p-5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 ${adamResult.color}`}>
+                    <div className="space-y-1.5 text-center md:text-left max-w-lg">
+                      <p className="text-[10px] font-bold uppercase tracking-wider opacity-80">Resultado do Rastreamento</p>
+                      <h4 className="text-base font-serif font-bold leading-snug">{adamResult.severity}</h4>
+                      <p className="text-xs opacity-90 leading-relaxed">
+                        {adamResult.positive 
+                          ? "O questionário sugere a presença de sintomas relacionados à queda de testosterona. Recomenda-se prosseguir com a investigação laboratorial solicitando Testosterona Total, Livre e SHBG colhidos em jejum pela manhã." 
+                          : "O rastreamento clínico não sugere deficiência androgênica significativa com base nos sintomas relatados."}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={resetADAM} className="gap-2 border-current/20 hover:bg-black/5 rounded-xl shrink-0">
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Refazer
+                    </Button>
+                  </div>
+                )}
+
+                {!adamResult && (
+                  <Button onClick={calculateADAM} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md shadow-accent/15">
+                    Analisar Questionário ADAM
+                  </Button>
+                )}
+
+                {/* Critério de Positividade */}
+                <div className="p-4 bg-secondary/30 rounded-xl border border-border/50 space-y-2">
+                  <div className="flex items-center gap-2 text-primary">
+                    <Info className="w-4 h-4 text-[#B87333]" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#B87333]">Critério de Positividade (ADAM)</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    O teste é considerado positivo se houver resposta <strong>Sim</strong> para a pergunta <strong>1 (Libido)</strong> ou <strong>6 (Ereção)</strong>, ou resposta <strong>Sim</strong> para quaisquer outras <strong>3 perguntas</strong> do questionário.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -381,12 +381,28 @@
       {
         "titulo": "Atestado Médico de Comparecimento / Consulta",
         "modelo": "Atesto, para os devidos fins de direito, que o(a) Sr(a). {paciente} esteve sob cuidados médicos neste consultório na data de {data}, no período das 14:00 às 16:00 horas, para realização de consulta urológica especializada e exames de acompanhamento clínico, estando apto(a) a retornar às suas atividades normais após este período.\n\nCID-10: Z01.9 (Exame médico especial não especificado)."
+      },
+      {
+        "titulo": "Atestado de Repouso Pós-Doppler Dinâmico",
+        "modelo": "Atesto, para os devidos fins, que o(a) Sr(a). {paciente} foi submetido(a) a exame de Ultrassonografia Doppler Peniano Dinâmico com Fármaco-Indução (Alprostadil 10mcg) nesta data. Por recomendação médica, necessita de repouso relativo e observação clínica nas próximas 4 (quatro) horas para prevenção e monitoramento de episódios de priapismo ou hipotensão pós-procedimento.\n\nCID-10: Z01.9 (Exame médico especial não especificado)."
       }
     ],
     "laudos": [
       {
         "titulo": "Laudo de Parecer Clínico Urológico Especializado",
         "modelo": "Paciente: {paciente}\nData da Avaliação: {data}\n\nLAUDO DE PARECER UROLÓGICO ESPECIALIZADO\n\nDeclaro que o(a) paciente acima citado(a) encontra-se em acompanhamento urológico ambulatorial regular neste serviço para investigação e controle clínico de {titulo} (CID-10: {cid}). Ao exame físico e laboratorial atual, apresenta-se estável, sem evidências de complicações agudas ou sinais de urgência cirúrgica. Segue em tratamento clínico otimizado conforme diretrizes científicas atuais da Sociedade Brasileira de Urologia (SBU) e Associação Europeia de Urologia (EAU). Recomenda-se retorno ambulatorial em 3 a 6 meses para reavaliação periódica."
+      },
+      {
+        "titulo": "Laudo de Doppler Peniano Dinâmico - Função Vascular Normal",
+        "modelo": "Paciente: {paciente}\nData do Exame: {data}\n\nLAUDO DE ULTRASSONOGRAFIA DOPPLER PENIANO DINÂMICO COM FÁRMACO-INDUÇÃO\n\nTÉCNICA:\nExame realizado com transdutor linear de alta frequência (12 MHz). Avaliação morfológica em modo B seguida de fármaco-indução intracavernosa com Alprostadil (PGE1) na dose de 10 mcg. Avaliação dinâmica sequencial do fluxo das artérias cavernosas direita e esquerda aos 5, 10, 15 e 20 minutos pós-injeção.\n\nRESULTADOS:\n- Modo B: Tecido erétil homogêneo, sem placas fibróticas calcificadas ou desvios de septo. Espessura do envelope albugíneo preservada.\n- Resposta erétil: Erection Hardness Score (EHS) Grau 4 (ereção plena e rígida aos 15 minutos).\n\nPARÂMETROS HEMODINÂMICOS (Pós-injeção):\n- Artéria Cavernosa Direita: VPS pico: 38 cm/s | VDF final: 0 cm/s | IR (Índice de Resistência): 1.0\n- Artéria Cavernosa Esquerda: VPS pico: 41 cm/s | VDF final: 0 cm/s | IR (Índice de Resistência): 1.0\n\nCONCLUSÃO:\nEstudo hemodinâmico peniano dinâmico dentro dos limites da normalidade. Ausência de sinais de insuficiência arterial (VPS > 30 cm/s) ou de mecanismo de escape veno-oclusivo (VDF = 0 cm/s com IR = 1.0)."
+      },
+      {
+        "titulo": "Laudo de Doppler Peniano Dinâmico - Insuficiência Arterial",
+        "modelo": "Paciente: {paciente}\nData do Exame: {data}\n\nLAUDO DE ULTRASSONOGRAFIA DOPPLER PENIANO DINÂMICO COM FÁRMACO-INDUÇÃO\n\nTÉCNICA:\nExame realizado com transdutor linear de alta frequência (12 MHz). Avaliação morfológica em modo B seguida de fármaco-indução intracavernosa com Alprostadil (PGE1) na dose de 10 mcg. Avaliação dinâmica sequencial do fluxo das artérias cavernosas direita e esquerda aos 5, 10, 15 e 20 minutos pós-injeção.\n\nRESULTADOS:\n- Modo B: Ausência de placas fibróticas ou calcificações grosseiras.\n- Resposta erétil: Erection Hardness Score (EHS) Grau 2 (ereção insuficiente para penetração).\n\nPARÂMETROS HEMODINÂMICOS (Pós-injeção):\n- Artéria Cavernosa Direita: VPS pico: 18 cm/s | VDF final: 2 cm/s | IR: 0.88\n- Artéria Cavernosa Esquerda: VPS pico: 21 cm/s | VDF final: 1.5 cm/s | IR: 0.92\n\nCONCLUSÃO:\nEstudo hemodinâmico dinâmico compatível com Insuficiência Arterial Peniana Bilateral. Fluxo arterial cavernoso reduzido, com velocidades sistólicas de pico (VPS) abaixo do valor de referência de normalidade (VPS < 25 cm/s sugere disfunção arterial grave; entre 25 e 30 cm/s sugere disfunção limítrofe)."
+      },
+      {
+        "titulo": "Laudo de Doppler Peniano Dinâmico - Escape Veno-Oclusivo",
+        "modelo": "Paciente: {paciente}\nData do Exame: {data}\n\nLAUDO DE ULTRASSONOGRAFIA DOPPLER PENIANO DINÂMICO COM FÁRMACO-INDUÇÃO\n\nTÉCNICA:\nExame realizado com transdutor linear de alta frequência (12 MHz). Avaliação morfológica em modo B seguida de fármaco-indução intracavernosa com Alprostadil (PGE1) na dose de 10 mcg. Avaliação dinâmica sequencial do fluxo das artérias cavernosas direita e esquerda aos 5, 10, 15 e 20 minutos pós-injeção.\n\nRESULTADOS:\n- Modo B: Albugínea íntegra, corpos cavernosos simétricos.\n- Resposta erétil: Erection Hardness Score (EHS) Grau 3 (ereção suficiente para penetração, mas sem rigidez plena, com perda rápida de tumescência).\n\nPARÂMETROS HEMODINÂMICOS (Pós-injeção):\n- Artéria Cavernosa Direita: VPS pico: 36 cm/s | VDF final: 7 cm/s | IR: 0.80\n- Artéria Cavernosa Esquerda: VPS pico: 38 cm/s | VDF final: 6.5 cm/s | IR: 0.82\n\nCONCLUSÃO:\nEstudo hemodinâmico compatível com Disfunção Veno-Oclusiva Peniana (Escape Venoso). Embora haja bom aporte arterial (VPS > 30 cm/s), observa-se persistência de velocidades diastólicas finais elevadas (VDF > 5 cm/s) e queda do Índice de Resistência (IR < 0.85) na fase de rigidez máxima."
       }
     ]
   },
