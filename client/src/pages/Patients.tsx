@@ -123,6 +123,7 @@ export default function Patients() {
   const [proximoContato, setProximoContato] = useState(""); // Data agendada para o próximo contato (AAAA-MM-DD)
   const [activeView, setActiveView] = useState<"list" | "crm">("list"); // Visualização ativa (Lista vs CRM Kanban)
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
+  const [periodoFiltro, setPeriodoFiltro] = useState<"30_dias" | "90_dias" | "todos">("todos"); // Filtro de Período do CRM e Relatório
 
   // Função para cálculo científico de Testosterona Livre (Vermeulen, 1999)
   // Fórmula baseada na constante de associação de SHBG e Albumina
@@ -305,6 +306,11 @@ export default function Patients() {
             });
           }
 
+          const stageChanged = p.leadStage !== leadStage;
+          const updatedHist = stageChanged 
+            ? logStageChange(p, p.leadStage || "lead", leadStage)
+            : p.comercialHist;
+
           return {
             ...p,
             nome: nome.trim(),
@@ -320,7 +326,8 @@ export default function Patients() {
             historicoHormonal: hist,
             leadStage: leadStage,
             origem: origem,
-            proximoContato: proximoContato
+            proximoContato: proximoContato,
+            comercialHist: updatedHist
           };
         }
         return p;
@@ -529,29 +536,66 @@ export default function Patients() {
     resetForm();
   };
 
+  const logStageChange = (pac: Paciente, anterior: string, novo: string): ContatoRegistro[] => {
+    const formatStage = (st: string) => {
+      const map: Record<string, string> = {
+        lead: "Lead (Instagram/Google Ads)",
+        agendado: "Consulta Agendada",
+        realizado: "Consulta Realizada",
+        proposto: "Cirurgia Proposta",
+        operado: "Cirurgia Realizada"
+      };
+      return map[st] || st;
+    };
+
+    const novoRegistro: ContatoRegistro = {
+      id: "contato_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+      data: new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      tipo: "retorno",
+      notas: `Estágio do funil alterado de [${formatStage(anterior)}] para [${formatStage(novo)}]`
+    };
+
+    return [novoRegistro, ...(pac.comercialHist || [])];
+  };
+
   const handlePrintCommercialReport = () => {
-    if (pacientes.length === 0) {
-      toast.error("Nenhum paciente cadastrado para gerar o relatório comercial.");
+    // Usar a lista de pacientes filtrada de acordo com o período selecionado para o relatório comercial
+    const pacientesNoPeriodo = pacientes.filter(p => {
+      if (periodoFiltro === "todos") return true;
+      const parts = p.dataCadastro.split("/");
+      if (parts.length === 3) {
+        const cadDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        const today = new Date();
+        const diffTime = Math.abs(today.getTime() - cadDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (periodoFiltro === "30_dias" && diffDays > 30) return false;
+        if (periodoFiltro === "90_dias" && diffDays > 90) return false;
+      }
+      return true;
+    });
+
+    if (pacientesNoPeriodo.length === 0) {
+      toast.error("Nenhum paciente cadastrado no período selecionado para gerar o relatório comercial.");
       return;
     }
 
     // Cálculos de métricas do CRM
-    const totalLeads = pacientes.length;
-    const leads = pacientes.filter(p => p.leadStage === "lead").length;
-    const agendados = pacientes.filter(p => p.leadStage === "agendado").length;
-    const realizados = pacientes.filter(p => p.leadStage === "realizado").length;
-    const propostos = pacientes.filter(p => p.leadStage === "proposto").length;
-    const operados = pacientes.filter(p => p.leadStage === "operado").length;
+    const totalLeads = pacientesNoPeriodo.length;
+    const leads = pacientesNoPeriodo.filter(p => p.leadStage === "lead").length;
+    const agendados = pacientesNoPeriodo.filter(p => p.leadStage === "agendado").length;
+    const realizados = pacientesNoPeriodo.filter(p => p.leadStage === "realizado").length;
+    const propostos = pacientesNoPeriodo.filter(p => p.leadStage === "proposto").length;
+    const operados = pacientesNoPeriodo.filter(p => p.leadStage === "operado").length;
 
     // Taxa de conversão geral: operados / total
     const taxaConversaoGeral = totalLeads > 0 ? ((operados / totalLeads) * 100).toFixed(1) : "0.0";
     
     // Distribuição por Origem
     const origens = {
-      instagram: pacientes.filter(p => p.origem === "instagram").length,
-      google_ads: pacientes.filter(p => p.origem === "google_ads").length,
-      indicacao: pacientes.filter(p => p.origem === "indicacao").length,
-      outros: pacientes.filter(p => p.origem === "outros" || !p.origem).length,
+      instagram: pacientesNoPeriodo.filter(p => p.origem === "instagram").length,
+      google_ads: pacientesNoPeriodo.filter(p => p.origem === "google_ads").length,
+      indicacao: pacientesNoPeriodo.filter(p => p.origem === "indicacao").length,
+      outros: pacientesNoPeriodo.filter(p => p.origem === "outros" || !p.origem).length,
     };
 
     // Faturamento Estimado (Valores padrão de urologia particular premium)
@@ -568,7 +612,7 @@ export default function Patients() {
     // Tempo Médio de Conversão (simulado com base no histórico comercial, ou padrão de 14 dias se vazio)
     let totalDias = 0;
     let totalContatos = 0;
-    pacientes.forEach(p => {
+    pacientesNoPeriodo.forEach(p => {
       const hist = p.comercialHist || [];
       if (hist.length > 0) {
         totalContatos += hist.length;
@@ -950,14 +994,12 @@ export default function Patients() {
                           p.queixa.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
 
-    // Depois aplicar filtro clínico crítico
+    // Segundo aplicar filtro clínico crítico
     if (activeFilter === "hema_critical") {
-      return parseFloat(p.hematocrito) > 52;
-    }
-    if (activeFilter === "psa_critical") {
-      return parseFloat(p.psa) > 4.0;
-    }
-    if (activeFilter === "followup_late") {
+      if (!(parseFloat(p.hematocrito) > 52)) return false;
+    } else if (activeFilter === "psa_critical") {
+      if (!(parseFloat(p.psa) > 4.0)) return false;
+    } else if (activeFilter === "followup_late") {
       const hist = p.historicoHormonal || [];
       if (hist.length === 0) return false;
       
@@ -974,21 +1016,32 @@ export default function Patients() {
       const diffTime = Math.abs(today.getTime() - lastExamDate.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       const diffMonths = diffDays / 30.4;
-      return diffMonths >= 3; // Alerta ou Recomendado (>= 3 meses)
-    }
-    if (activeFilter === "contact_overdue") {
+      if (diffMonths < 3) return false;
+    } else if (activeFilter === "contact_overdue") {
       if (!p.proximoContato) return false;
       const todayStr = new Date().toISOString().split("T")[0];
-      return p.proximoContato <= todayStr;
+      if (p.proximoContato > todayStr) return false;
+    } else if (activeFilter === "origin_instagram") {
+      if (p.origem !== "instagram") return false;
+    } else if (activeFilter === "origin_google") {
+      if (p.origem !== "google_ads") return false;
+    } else if (activeFilter === "origin_indicacao") {
+      if (p.origem !== "indicacao") return false;
     }
-    if (activeFilter === "origin_instagram") {
-      return p.origem === "instagram";
-    }
-    if (activeFilter === "origin_google") {
-      return p.origem === "google_ads";
-    }
-    if (activeFilter === "origin_indicacao") {
-      return p.origem === "indicacao";
+
+    // Terceiro aplicar filtro de período (com base na data de cadastro)
+    if (periodoFiltro !== "todos") {
+      // Formato dataCadastro: "DD/MM/AAAA"
+      const parts = p.dataCadastro.split("/");
+      if (parts.length === 3) {
+        const cadDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        const today = new Date();
+        const diffTime = Math.abs(today.getTime() - cadDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (periodoFiltro === "30_dias" && diffDays > 30) return false;
+        if (periodoFiltro === "90_dias" && diffDays > 90) return false;
+      }
     }
 
     return true;
@@ -1413,6 +1466,26 @@ export default function Patients() {
                 />
               </div>
               
+              {/* Seletor de Período de Desempenho CRM */}
+              <div className="flex items-center gap-2 bg-secondary/20 p-1.5 rounded-xl border border-border/40 w-fit">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1.5 pr-1">Período CRM:</span>
+                {[
+                  { id: "todos", label: "Todo o Período" },
+                  { id: "30_dias", label: "Últimos 30 Dias" },
+                  { id: "90_dias", label: "Último Trimestre" }
+                ].map((p_filtro) => (
+                  <Button
+                    key={p_filtro.id}
+                    size="sm"
+                    variant={periodoFiltro === p_filtro.id ? "default" : "ghost"}
+                    onClick={() => setPeriodoFiltro(p_filtro.id as any)}
+                    className={`h-7 px-3 rounded-lg text-[10px] font-bold ${periodoFiltro === p_filtro.id ? "copper-gradient text-white border-0 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {p_filtro.label}
+                  </Button>
+                ))}
+              </div>
+
               {/* Filtros Clínicos Avançados */}
               <div className="flex flex-wrap gap-2 pt-1">
                 <Button
@@ -1774,7 +1847,15 @@ export default function Patients() {
                                     const stages: Array<"lead" | "agendado" | "realizado" | "proposto" | "operado"> = ["lead", "agendado", "realizado", "proposto", "operado"];
                                     const currIdx = stages.indexOf(col.id as any);
                                     if (currIdx > 0) {
-                                      const updated = pacientes.map(pac => p.id === pac.id ? { ...pac, leadStage: stages[currIdx - 1] } : pac);
+                                      const updated = pacientes.map(pac => {
+                                        if (p.id === pac.id) {
+                                          const prevStage = stages[currIdx];
+                                          const nextStage = stages[currIdx - 1];
+                                          const updatedHist = logStageChange(pac, prevStage, nextStage);
+                                          return { ...pac, leadStage: nextStage, comercialHist: updatedHist };
+                                        }
+                                        return pac;
+                                      });
                                       saveToStorage(updated);
                                       toast.info("Estágio recuado!");
                                     }
@@ -1790,7 +1871,15 @@ export default function Patients() {
                                     const stages: Array<"lead" | "agendado" | "realizado" | "proposto" | "operado"> = ["lead", "agendado", "realizado", "proposto", "operado"];
                                     const currIdx = stages.indexOf(col.id as any);
                                     if (currIdx < stages.length - 1) {
-                                      const updated = pacientes.map(pac => p.id === pac.id ? { ...pac, leadStage: stages[currIdx + 1] } : pac);
+                                      const updated = pacientes.map(pac => {
+                                        if (p.id === pac.id) {
+                                          const prevStage = stages[currIdx];
+                                          const nextStage = stages[currIdx + 1];
+                                          const updatedHist = logStageChange(pac, prevStage, nextStage);
+                                          return { ...pac, leadStage: nextStage, comercialHist: updatedHist };
+                                        }
+                                        return pac;
+                                      });
                                       saveToStorage(updated);
                                       toast.success("Estágio avançado com sucesso!");
                                     }
@@ -2905,6 +2994,54 @@ export default function Patients() {
                                     "Nenhum lembrete programado. Defina uma data para receber alertas visuais no painel."
                                   )}
                                 </span>
+                              </div>
+                            </div>
+
+                            {/* Gerador de Links de Pagamento (Pix & Stripe) */}
+                            <div className="bg-primary/5 border border-primary/20 rounded-xl p-3.5 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                                  💳 Gerador de Links de Pagamento (Pix / Cartão)
+                                </span>
+                                <Badge variant="outline" className="text-[8px] font-bold border-primary/20 text-primary bg-primary/5 rounded-full">
+                                  Faturamento Imediato
+                                </Badge>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {[
+                                  { label: "Consulta Particular", valor: 800, desc: "Consulta Particular de Urologia / Andrologia" },
+                                  { label: "Ondas de Choque (Sessão)", valor: 1500, desc: "Sessão de Terapia por Ondas de Choque Extracorpórea (Li-ESWT)" },
+                                  { label: "Cirurgia Peyronie", valor: 18000, desc: "Honorários Cirúrgicos - Correção de Peyronie (Reconstrução)" },
+                                  { label: "Prótese Inflável", valor: 45000, desc: "Honorários Cirúrgicos - Implante de Prótese Peniana Inflável de 3 Volumes" }
+                                ].map((item, idx) => (
+                                  <Button
+                                    key={`pay_${idx}`}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      // Gerar chave Pix estática simulada com o valor e descrição
+                                      const chavePix = "drfelipebulhoes@bulhoesurohealth.com";
+                                      const payloadPix = `00020101021126580014br.gov.bcb.pix0126${chavePix}520400005303986540${item.valor.toFixed(2)}5802BR5917DR_FELIPE_BULHOES6009SAO_PAULO62070503***6304`;
+                                      
+                                      const msgStripe = `https://checkout.stripe.com/pay/cs_live_bulhoes_${Math.random().toString(36).substring(2, 10)}`;
+                                      
+                                      const textoMensagem = `Prezado ${p.nome}, segue o link de pagamento referente a [${item.desc}]:\n\n` +
+                                        `💰 Valor: R$ ${item.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}\n\n` +
+                                        `🔑 Chave Pix (E-mail): ${chavePix}\n` +
+                                        `📋 Pix Copia e Cola:\n\`${payloadPix}\`\n\n` +
+                                        `💳 Pagamento via Cartão de Crédito (até 12x):\n${msgStripe}\n\n` +
+                                        `Ficamos à total disposição para confirmar o seu agendamento após o envio do comprovante!`;
+                                        
+                                      setNewContatoNotas(textoMensagem);
+                                      setNewContatoTipo("whatsapp");
+                                      toast.success(`Link de pagamento para "${item.label}" gerado!`);
+                                    }}
+                                    className="h-8 rounded-lg text-[10px] font-bold border-border/60 hover:bg-card text-primary hover:text-accent truncate px-2"
+                                  >
+                                    {item.label} (R$ {item.valor >= 1000 ? `${item.valor/1000}k` : item.valor})
+                                  </Button>
+                                ))}
                               </div>
                             </div>
 

@@ -146,6 +146,68 @@ const SCENARIOS = [
         correct: false
       }
     ]
+  },
+  {
+    id: "trt_seguranca",
+    title: "Terapia de Reposição de Testosterona (TRT) & Próstata",
+    specialty: "Andrologia & Endocrinologia",
+    description: "Paciente com sintomas de andropausa, mas extremamente receoso de iniciar a TRT por medo de desenvolver câncer de próstata.",
+    difficulty: "Alta",
+    objection: "Paciente: 'Tenho muito interesse em fazer a reposição de testosterona porque ando muito cansado e sem libido, mas tenho pavor de ter câncer de próstata. Meu pai teve a doença. É seguro?'",
+    options: [
+      {
+        id: "opt_a",
+        text: "O senhor não deve fazer de jeito nenhum, já que seu pai teve câncer. É contraindicado por segurança.",
+        score: 30,
+        feedback: "Incorreto. Ter histórico familiar de câncer de próstata exige cautela e monitoramento rígido, mas não é uma contraindicação absoluta para TRT hoje. O CPP ensina a tranquilizar o paciente com base em evidências modernas.",
+        correct: false
+      },
+      {
+        id: "opt_b",
+        text: "A reposição de testosterona não causa câncer de próstata. Esse é um mito antigo de mais de 80 anos que já foi totalmente derrubado pela ciência urológica moderna. O Dr. Felipe realiza uma triagem minuciosa de segurança com PSA, toque retal e ultrassonografia antes de iniciar, e monitora o senhor a cada 3 meses. Inclusive, normalizar a testosterona pode melhorar a saúde metabólica e geral. Vamos agendar uma consulta para o Dr. Felipe analisar o seu caso com total segurança?",
+        score: 100,
+        feedback: "Excelente! Você usou a quebra ativa de objeções científica do CPP, explicou que o risco de induzir câncer é um mito superado, destacou o protocolo de segurança rigoroso do Dr. Felipe (PSA, toque, ultrassom) e gerou confiança imediata.",
+        correct: true
+      },
+      {
+        id: "opt_c",
+        text: "É seguro sim, pode tomar tranquilo. Se der algum problema na próstata a gente trata depois.",
+        score: 20,
+        feedback: "Incorreto. Resposta extremamente negligente e amadora. Minimizar a preocupação de saúde do paciente com deboche ou falta de seriedade destrói qualquer chance de agendamento premium.",
+        correct: false
+      }
+    ]
+  },
+  {
+    id: "preenchimento_seguranca",
+    title: "Engrossamento Peniano (Preenchimento com Ácido Hialurônico)",
+    specialty: "Estética Andrológica Premium",
+    description: "Paciente interessado em estética peniana, mas com receio de rejeição do biomaterial ou deformidades estéticas.",
+    difficulty: "Alta",
+    objection: "Paciente: 'Quero muito fazer o preenchimento peniano para engrossar, mas morro de medo de dar alguma deformidade, rejeição ou ficar feio. É um material seguro?'",
+    options: [
+      {
+        id: "opt_a",
+        text: "É super seguro, usamos PMMA que é permanente e nunca dá problema. Pode fazer sem medo.",
+        score: 10,
+        feedback: "Incorreto e Perigoso. O uso de PMMA (polimetilmetacrilato) na genitália é altamente contraindicado por riscos de deformidades e rejeição tardia. O Dr. Felipe utiliza exclusivamente Ácido Hialurônico de alta densidade, que é um biomaterial biocompatível e reversível.",
+        correct: false
+      },
+      {
+        id: "opt_b",
+        text: "O senhor tem toda razão em buscar segurança para um procedimento tão delicado. O Dr. Felipe utiliza exclusivamente o Ácido Hialurônico de altíssima densidade e pureza, que é um material naturalmente presente no nosso corpo, sendo 100% biocompatível, sem risco de rejeição e totalmente reversível com uma enzima chamada hialuronidase, caso necessário. O procedimento é realizado com cânulas de ponta romba em ambiente estéril para garantir simetria milimétrica e aspecto natural. Vamos agendar a sua avaliação?",
+        score: 100,
+        feedback: "Perfeito! Você validou a preocupação do paciente, explicou a segurança e a biocompatibilidade do Ácido Hialurônico (reversibilidade com hialuronidase) e destacou a técnica refinada e estéril do Dr. Felipe (uso de cânulas rombas, simetria milimétrica) para garantir a integridade do pênis.",
+        correct: true
+      },
+      {
+        id: "opt_c",
+        text: "Olha, ficar feio não fica, mas se der rejeição a gente retira no hospital. Quer agendar?",
+        score: 30,
+        feedback: "Inadequado. Falar em 'retirar no hospital' de forma simplista gera pânico no paciente e afasta o agendamento de um procedimento estético eletivo de alto ticket.",
+        correct: false
+      }
+    ]
   }
 ];
 
