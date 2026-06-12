@@ -268,6 +268,33 @@ export default function Patients() {
       obs: "Procedimento minimamente invasivo sob sedação leve para tratamento de Bexiga Hiperativa refratária ou Incontinência Urinária de Urgência. Consiste na injeção endoscópica (cistoscopia) de Toxina Botulínica diretamente no músculo detrusor."
     },
     {
+      id: "botox_feminino_hiperativa",
+      nome: "Aplicação de Toxina Botulínica (Botox) Intravesical Feminina - Bexiga Hiperativa Premium",
+      honorarios: "6500",
+      hospital: "4500",
+      materiais: "3200",
+      acompanhamento: "1800",
+      obs: "Tratamento de alto padrão específico para Bexiga Hiperativa Refratária Feminina e Urgência Miccional Grave. Injeção endoscópica de 100U a 200U de Botox (Allergan) diretamente no músculo detrusor, sob cistoscopia e sedação leve. Restaura a capacidade de armazenamento vesical e devolve a qualidade de vida social."
+    },
+    {
+      id: "neuromodulacao_sacral",
+      nome: "Neuromodulação Sacral (Implante de Marcapasso Vesical) para Incontinência e Bexiga Hiperativa",
+      honorarios: "24000",
+      hospital: "18000",
+      materiais: "85000",
+      acompanhamento: "4500",
+      obs: "Tratamento cirúrgico de altíssima tecnologia (All-Inclusive ou Honorários) para Bexiga Hiperativa refratária grave e incontinência de urgência. Consiste no implante de eletrodo sacral e gerador de impulsos elétricos (Medtronic) para modular as vias nervosas da micção."
+    },
+    {
+      id: "fisioterapia_pelvica_premium",
+      nome: "Programa de Reabilitação e Fisioterapia Pélvica Premium com Biofeedback",
+      honorarios: "4800",
+      hospital: "0",
+      materiais: "0",
+      acompanhamento: "1200",
+      obs: "Protocolo completo de 10 sessões individuais de Fisioterapia Pélvica de Alta Performance para Incontinência Urinária de Esforço leve/moderada ou Bexiga Hiperativa. Inclui biofeedback eletromiográfico, eletroestimulação transcutânea e treinamento muscular personalizado do assoalho pélvico."
+    },
+    {
       id: "sling_uretral_masculino",
       nome: "Sling Uretral Masculino para Incontinência Urinária Pós-Prostatectomia",
       honorarios: "16000",
@@ -3928,7 +3955,7 @@ export default function Patients() {
 
           <div className="space-y-4 my-4">
             {/* Seletor de Tipo de Orçamento e Procedimento do Catálogo */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-primary uppercase tracking-wider">Tipo de Orçamento:</Label>
                 <div className="flex gap-2">
@@ -3939,7 +3966,7 @@ export default function Patients() {
                     onClick={() => setOrcamentoTipo("honorarios")}
                     className={`flex-1 h-9 rounded-xl text-xs font-bold ${orcamentoTipo === "honorarios" ? "copper-gradient text-white border-0" : "border-border text-primary hover:bg-secondary/40"}`}
                   >
-                    Apenas Honorários Médicos
+                    Apenas Honorários
                   </Button>
                   <Button
                     type="button"
@@ -3970,10 +3997,74 @@ export default function Patients() {
                   }}
                   className="w-full h-9 px-3 rounded-xl border border-border bg-card text-xs font-medium focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none"
                 >
-                  <option value="">-- Selecione do Catálogo para Autopreencher --</option>
+                  <option value="">-- Selecione do Catálogo --</option>
                   {procedimentosCatalogo.map(p => (
                     <option key={p.id} value={p.id}>{p.nome}</option>
                   ))}
+                </select>
+              </div>
+
+              {/* Novo Seletor de Orçamentos de Modelo (Templates de Sucesso CPP) */}
+              <div className="space-y-1.5">
+                <Label htmlFor="orcamento-modelo" className="text-xs font-bold text-[#B87333] uppercase tracking-wider">Modelos Pré-Preenchidos (Orçamentos Prontos):</Label>
+                <select
+                  id="orcamento-modelo"
+                  onChange={(e) => {
+                    const modelId = e.target.value;
+                    if (!modelId) return;
+
+                    // Aplicar modelo pré-configurado
+                    if (modelId === "model_botox_premium") {
+                      setOrcamentoProcedimento("Aplicação de Toxina Botulínica (Botox) Intravesical Feminina - Bexiga Hiperativa Premium");
+                      setOrcamentoTipo("particular_total");
+                      setOrcamentoValorHonorarios("6500");
+                      setOrcamentoValorHospital("4500");
+                      setOrcamentoValorHospitalMateriais("3200");
+                      setOrcamentoValorAcompanhamento("1800");
+                      setOrcamentoObs("Modelo Premium All-Inclusive para tratamento de Bexiga Hiperativa refratária. Inclui 100U de Toxina Botulínica Allergan, cistoscopia rígida, taxas de sala de cirurgia, anestesia e acompanhamento pós-operatório por 6 meses.");
+                    } else if (modelId === "model_sling_feminino") {
+                      setOrcamentoProcedimento("Sling Suburetral Feminino (Mini-Sling) para Incontinência de Esforço");
+                      setOrcamentoTipo("particular_total");
+                      setOrcamentoValorHonorarios("9000");
+                      setOrcamentoValorHospital("8000");
+                      setOrcamentoValorHospitalMateriais("6000");
+                      setOrcamentoValorAcompanhamento("2000");
+                      setOrcamentoObs("Modelo All-Inclusive para correção cirúrgica padrão-ouro de incontinência urinária de esforço feminina. Inclui mini-tela sintética importada de última geração, internação em apartamento, equipe de anestesia e 6 meses de suporte.");
+                    } else if (modelId === "model_neuromodulacao") {
+                      setOrcamentoProcedimento("Neuromodulação Sacral (Implante de Marcapasso Vesical) para Incontinência e Bexiga Hiperativa");
+                      setOrcamentoTipo("particular_total");
+                      setOrcamentoValorHonorarios("24000");
+                      setOrcamentoValorHospital("18000");
+                      setOrcamentoValorHospitalMateriais("85000");
+                      setOrcamentoValorAcompanhamento("4500");
+                      setOrcamentoObs("Modelo All-Inclusive de altíssima tecnologia para implante de marcapasso vesical Medtronic. Inclui gerador de impulsos, eletrodos sacrais de estimulação, taxas hospitalares, equipe de anestesia e acompanhamento pós-operatório especializado.");
+                    } else if (modelId === "model_fisioterapia") {
+                      setOrcamentoProcedimento("Programa de Reabilitação e Fisioterapia Pélvica Premium com Biofeedback");
+                      setOrcamentoTipo("honorarios");
+                      setOrcamentoValorHonorarios("4800");
+                      setOrcamentoValorHospital("0");
+                      setOrcamentoValorHospitalMateriais("0");
+                      setOrcamentoValorAcompanhamento("1200");
+                      setOrcamentoObs("Modelo de reabilitação pélvica conservadora. Inclui 10 sessões individuais de fisioterapia de alta performance com biofeedback eletromiográfico e treinamento muscular guiado para incontinência e bexiga hiperativa.");
+                    } else if (modelId === "model_holep_completo") {
+                      setOrcamentoProcedimento("HoLEP (Enucleação da Próstata com Holmium Laser) para HPB");
+                      setOrcamentoTipo("particular_total");
+                      setOrcamentoValorHonorarios("22000");
+                      setOrcamentoValorHospital("18000");
+                      setOrcamentoValorHospitalMateriais("12000");
+                      setOrcamentoValorAcompanhamento("4000");
+                      setOrcamentoObs("Modelo Premium All-Inclusive para cirurgia de próstata a laser de Holmium. Inclui equipe cirúrgica completa, internação, anestesia, uso de morcelador de tecidos e acompanhamento pós-operatório por 6 meses.");
+                    }
+                    toast.success("Modelo de orçamento carregado com sucesso!");
+                  }}
+                  className="w-full h-9 px-3 rounded-xl border border-[#B87333]/30 bg-[#B87333]/5 text-xs font-bold text-primary focus:ring-2 focus:ring-[#B87333]/20 focus:border-[#B87333] outline-none"
+                >
+                  <option value="">-- Escolha um Modelo Pronto --</option>
+                  <option value="model_botox_premium">🌸 Botox Feminino Premium (All-Inclusive)</option>
+                  <option value="model_sling_feminino">🎗️ Sling Feminino Premium (All-Inclusive)</option>
+                  <option value="model_neuromodulacao">⚡ Neuromodulação Sacral (All-Inclusive)</option>
+                  <option value="model_fisioterapia">🧘 Fisioterapia Pélvica Premium</option>
+                  <option value="model_holep_completo">🔥 HoLEP Próstata Premium (All-Inclusive)</option>
                 </select>
               </div>
             </div>
