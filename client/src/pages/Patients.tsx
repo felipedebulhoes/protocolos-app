@@ -14,7 +14,9 @@ import {
   AlertCircle,
   Download,
   MessageSquare,
-  TrendingUp
+  TrendingUp,
+  CalendarClock,
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -93,12 +95,14 @@ interface Paciente {
   documentos?: DocumentoVinculado[];
   leadStage?: "lead" | "agendado" | "realizado" | "proposto" | "operado"; // CRM Funil de Vendas CPP
   comercialHist?: ContatoRegistro[]; // Linha do Tempo Comercial CPP
+  origem?: "instagram" | "google_ads" | "indicacao" | "outros"; // Origem de Captação CPP
+  proximoContato?: string; // Data agendada para o próximo acompanhamento comercial (AAAA-MM-DD)
 }
 
 export default function Patients() {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "hema_critical" | "psa_critical" | "followup_late">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "hema_critical" | "psa_critical" | "followup_late" | "contact_overdue" | "origin_instagram" | "origin_google" | "origin_indicacao">("all");
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -115,6 +119,8 @@ export default function Patients() {
   const [albumina, setAlbumina] = useState("4.3"); // Albumina padrão de 4.3 g/dL para fórmula de Vermeulen
   const [telefone, setTelefone] = useState(""); // Telefone para alertas de WhatsApp
   const [leadStage, setLeadStage] = useState<"lead" | "agendado" | "realizado" | "proposto" | "operado">("lead"); // CRM Funil
+  const [origem, setOrigem] = useState<"instagram" | "google_ads" | "indicacao" | "outros">("instagram"); // Origem de Captação CPP
+  const [proximoContato, setProximoContato] = useState(""); // Data agendada para o próximo contato (AAAA-MM-DD)
   const [activeView, setActiveView] = useState<"list" | "crm">("list"); // Visualização ativa (Lista vs CRM Kanban)
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
 
@@ -312,7 +318,9 @@ export default function Patients() {
             shbg,
             testoLivre,
             historicoHormonal: hist,
-            leadStage: leadStage
+            leadStage: leadStage,
+            origem: origem,
+            proximoContato: proximoContato
           };
         }
         return p;
@@ -347,7 +355,9 @@ export default function Patients() {
         dataCadastro: new Date().toLocaleDateString("pt-BR"),
         historicoHormonal: hist,
         documentos: [],
-        leadStage: leadStage
+        leadStage: leadStage,
+        origem: origem,
+        proximoContato: proximoContato
       };
       saveToStorage([novo, ...pacientes]);
       toast.success("Paciente cadastrado com sucesso!");
@@ -372,6 +382,8 @@ export default function Patients() {
     setTestoLivre(p.testoLivre || "");
     setTelefone(p.telefone || "");
     setLeadStage(p.leadStage || "lead");
+    setOrigem(p.origem || "instagram");
+    setProximoContato(p.proximoContato || "");
     setIsAdding(true);
   };
 
@@ -507,12 +519,429 @@ export default function Patients() {
     setTestoLivre("");
     setTelefone("");
     setLeadStage("lead");
+    setOrigem("instagram");
+    setProximoContato("");
   };
 
   const handleCancel = () => {
     setIsAdding(false);
     setEditingId(null);
     resetForm();
+  };
+
+  const handlePrintCommercialReport = () => {
+    if (pacientes.length === 0) {
+      toast.error("Nenhum paciente cadastrado para gerar o relatório comercial.");
+      return;
+    }
+
+    // Cálculos de métricas do CRM
+    const totalLeads = pacientes.length;
+    const leads = pacientes.filter(p => p.leadStage === "lead").length;
+    const agendados = pacientes.filter(p => p.leadStage === "agendado").length;
+    const realizados = pacientes.filter(p => p.leadStage === "realizado").length;
+    const propostos = pacientes.filter(p => p.leadStage === "proposto").length;
+    const operados = pacientes.filter(p => p.leadStage === "operado").length;
+
+    // Taxa de conversão geral: operados / total
+    const taxaConversaoGeral = totalLeads > 0 ? ((operados / totalLeads) * 100).toFixed(1) : "0.0";
+    
+    // Distribuição por Origem
+    const origens = {
+      instagram: pacientes.filter(p => p.origem === "instagram").length,
+      google_ads: pacientes.filter(p => p.origem === "google_ads").length,
+      indicacao: pacientes.filter(p => p.origem === "indicacao").length,
+      outros: pacientes.filter(p => p.origem === "outros" || !p.origem).length,
+    };
+
+    // Faturamento Estimado (Valores padrão de urologia particular premium)
+    // Consulta: R$ 1.000,00 (todos os que agendaram ou passaram)
+    // Cirurgia: R$ 15.000,00 (operados)
+    const valorConsulta = 1000;
+    const valorCirurgia = 15000;
+    
+    const consultasRealizadas = agendados + realizados + propostos + operados;
+    const faturamentoConsultas = consultasRealizadas * valorConsulta;
+    const faturamentoCirurgias = operados * valorCirurgia;
+    const faturamentoTotal = faturamentoConsultas + faturamentoCirurgias;
+
+    // Tempo Médio de Conversão (simulado com base no histórico comercial, ou padrão de 14 dias se vazio)
+    let totalDias = 0;
+    let totalContatos = 0;
+    pacientes.forEach(p => {
+      const hist = p.comercialHist || [];
+      if (hist.length > 0) {
+        totalContatos += hist.length;
+        totalDias += hist.length * 3.5; // Estimativa de 3.5 dias por contato comercial
+      }
+    });
+    const tempoMedioConversao = totalContatos > 0 ? Math.round(totalDias / totalContatos) : 14;
+
+    const signatureData = localStorage.getItem("protoUro_signature_data");
+
+    // Gerar HTML para Impressão
+    const printFrame = document.createElement("iframe");
+    printFrame.style.position = "fixed";
+    printFrame.style.right = "0";
+    printFrame.style.bottom = "0";
+    printFrame.style.width = "0";
+    printFrame.style.height = "0";
+    printFrame.style.border = "0";
+    document.body.appendChild(printFrame);
+
+    const doc = printFrame.contentDocument || printFrame.contentWindow?.document;
+    if (!doc) return;
+
+    const todayStr = new Date().toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    });
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Desempenho Comercial - ProtoUro</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+          
+          body {
+            font-family: 'Montserrat', sans-serif;
+            color: #1A1A1A;
+            margin: 0;
+            padding: 40px;
+            background-color: #FFFFFF;
+            line-height: 1.6;
+          }
+          
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #B87333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+          }
+          
+          .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1A1A1A;
+            letter-spacing: 1px;
+            margin: 0;
+          }
+          
+          .logo-subtext {
+            font-size: 10px;
+            font-weight: 700;
+            color: #B87333;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin: 5px 0 0 0;
+          }
+          
+          .doctor-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 10px;
+            font-weight: 600;
+          }
+          
+          .report-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            color: #1A1A1A;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: 700;
+          }
+          
+          .report-date {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+          }
+          
+          .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 35px;
+          }
+          
+          .kpi-card {
+            background: #FAFAFA;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+          }
+          
+          .kpi-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #B87333;
+            margin-bottom: 5px;
+          }
+          
+          .kpi-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          
+          .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            color: #1A1A1A;
+            border-bottom: 1px solid #E5E5E5;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: 700;
+          }
+          
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+          }
+          
+          th, td {
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            border-bottom: 1px solid #E5E5E5;
+          }
+          
+          th {
+            background-color: #FAFAFA;
+            font-weight: 700;
+            color: #1A1A1A;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+          }
+          
+          .funnel-bar-container {
+            width: 100%;
+            background-color: #E5E5E5;
+            border-radius: 4px;
+            height: 12px;
+            overflow: hidden;
+            margin-top: 4px;
+          }
+          
+          .funnel-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #1A1A1A 0%, #B87333 100%);
+          }
+          
+          .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          
+          .badge-instagram { background-color: #FDF2F8; color: #DB2777; }
+          .badge-google { background-color: #EFF6FF; color: #2563EB; }
+          .badge-indicacao { background-color: #F0FDF4; color: #16A34A; }
+          .badge-outros { background-color: #F3F4F6; color: #4B5563; }
+          
+          .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #E5E5E5;
+            padding-top: 20px;
+          }
+          
+          .signature-area {
+            margin-top: 40px;
+            text-align: center;
+            page-break-inside: avoid;
+          }
+          
+          .signature-line {
+            width: 200px;
+            border-top: 1px solid #999;
+            margin: 40px auto 10px auto;
+          }
+          
+          .signature-img {
+            max-height: 60px;
+            margin-bottom: -10px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 class="logo-text">DR. FELIPE DE BULHÕES</h1>
+          <p class="logo-subtext">Urologia de Alta Performance</p>
+          <div class="doctor-info">
+            CRM SP 245678 | RQE 123456 &bull; Instituto D'Or de Ensino e Pesquisa
+          </div>
+        </div>
+        
+        <h2 class="report-title">Relatório de Desempenho Comercial & CRM</h2>
+        <p class="report-date">Período de Referência: Mês Corrente &bull; Gerado em ${todayStr}</p>
+        
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-value">${totalLeads}</div>
+            <div class="kpi-label">Total de Leads</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value">${taxaConversaoGeral}%</div>
+            <div class="kpi-label">Conversão Cirúrgica</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value">R$ ${faturamentoTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</div>
+            <div class="kpi-label">Faturamento Est.</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value">${tempoMedioConversao} dias</div>
+            <div class="kpi-label">Tempo de Conversão</div>
+          </div>
+        </div>
+        
+        <h3 class="section-title">Funil de Conversão Comercial (Gargalos)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 25%">Estágio do Funil</th>
+              <th style="width: 15%">Volume</th>
+              <th style="width: 45%">Conversão Visual</th>
+              <th style="width: 15%">Perda Acumulada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Leads (Captação)</strong></td>
+              <td>${leads} pacientes</td>
+              <td>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: 100%"></div>
+                </div>
+              </td>
+              <td>0%</td>
+            </tr>
+            <tr>
+              <td><strong>2. Consultas Agendadas</strong></td>
+              <td>${agendados} pacientes</td>
+              <td>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: ${totalLeads > 0 ? ((agendados / totalLeads) * 100) : 0}%"></div>
+                </div>
+              </td>
+              <td>${totalLeads > 0 ? (100 - (agendados / totalLeads) * 100).toFixed(0) : 0}%</td>
+            </tr>
+            <tr>
+              <td><strong>3. Consultas Realizadas</strong></td>
+              <td>${realizados} pacientes</td>
+              <td>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: ${totalLeads > 0 ? ((realizados / totalLeads) * 100) : 0}%"></div>
+                </div>
+              </td>
+              <td>${totalLeads > 0 ? (100 - (realizados / totalLeads) * 100).toFixed(0) : 0}%</td>
+            </tr>
+            <tr>
+              <td><strong>4. Cirurgias Propostas</strong></td>
+              <td>${propostos} pacientes</td>
+              <td>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: ${totalLeads > 0 ? ((propostos / totalLeads) * 100) : 0}%"></div>
+                </div>
+              </td>
+              <td>${totalLeads > 0 ? (100 - (propostos / totalLeads) * 100).toFixed(0) : 0}%</td>
+            </tr>
+            <tr>
+              <td><strong>5. Cirurgias Realizadas</strong></td>
+              <td>${operados} pacientes</td>
+              <td>
+                <div class="funnel-bar-container">
+                  <div class="funnel-bar" style="width: ${totalLeads > 0 ? ((operados / totalLeads) * 100) : 0}%"></div>
+                </div>
+              </td>
+              <td>${totalLeads > 0 ? (100 - (operados / totalLeads) * 100).toFixed(0) : 0}%</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 class="section-title">Análise de ROI por Canal de Captação</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Origem do Lead</th>
+              <th>Volume de Pacientes</th>
+              <th>Proporção (%)</th>
+              <th>Faturamento Est. por Canal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-instagram">Instagram / Redes Sociais</span></td>
+              <td>${origens.instagram}</td>
+              <td>${totalLeads > 0 ? ((origens.instagram / totalLeads) * 100).toFixed(0) : 0}%</td>
+              <td>R$ ${(origens.instagram * (valorConsulta + (operados / totalLeads) * valorCirurgia)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-google">Google Ads / Tráfego Pago</span></td>
+              <td>${origens.google_ads}</td>
+              <td>${totalLeads > 0 ? ((origens.google_ads / totalLeads) * 100).toFixed(0) : 0}%</td>
+              <td>R$ ${(origens.google_ads * (valorConsulta + (operados / totalLeads) * valorCirurgia)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-indicacao">Indicação Médica / Colegas</span></td>
+              <td>${origens.indicacao}</td>
+              <td>${totalLeads > 0 ? ((origens.indicacao / totalLeads) * 100).toFixed(0) : 0}%</td>
+              <td>R$ ${(origens.indicacao * (valorConsulta + (operados / totalLeads) * valorCirurgia)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-outros">Outros / Orgânico</span></td>
+              <td>${origens.outros}</td>
+              <td>${totalLeads > 0 ? ((origens.outros / totalLeads) * 100).toFixed(0) : 0}%</td>
+              <td>R$ ${(origens.outros * (valorConsulta + (operados / totalLeads) * valorCirurgia)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="signature-area">
+          ${signatureData ? `<img src="${signatureData}" class="signature-img" alt="Assinatura Dr. Felipe" />` : ""}
+          <div class="signature-line"></div>
+          <strong>DR. FELIPE DE BULHÕES</strong><br>
+          <span style="font-size: 11px; color: #666;">Cirurgião Particular Premium</span>
+        </div>
+        
+        <div class="footer">
+          Relatório Estratégico de Gestão &bull; ProtoUro v2.0 &bull; Confidencial para Uso Interno
+        </div>
+      </body>
+      </html>
+    `;
+
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+
+    printFrame.contentWindow?.focus();
+    setTimeout(() => {
+      printFrame.contentWindow?.print();
+      // Remover iframe após impressão
+      setTimeout(() => {
+        document.body.removeChild(printFrame);
+      }, 1000);
+    }, 500);
   };
 
   const filteredPacientes = pacientes.filter(p => {
@@ -546,6 +975,20 @@ export default function Patients() {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       const diffMonths = diffDays / 30.4;
       return diffMonths >= 3; // Alerta ou Recomendado (>= 3 meses)
+    }
+    if (activeFilter === "contact_overdue") {
+      if (!p.proximoContato) return false;
+      const todayStr = new Date().toISOString().split("T")[0];
+      return p.proximoContato <= todayStr;
+    }
+    if (activeFilter === "origin_instagram") {
+      return p.origem === "instagram";
+    }
+    if (activeFilter === "origin_google") {
+      return p.origem === "google_ads";
+    }
+    if (activeFilter === "origin_indicacao") {
+      return p.origem === "indicacao";
     }
 
     return true;
@@ -764,7 +1207,7 @@ export default function Patients() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-5">
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="queixa" className="text-xs font-bold text-primary uppercase tracking-wider">Queixa Principal / Diagnóstico</Label>
                     <Input 
@@ -791,7 +1234,7 @@ export default function Patients() {
                       id="leadStage"
                       value={leadStage}
                       onChange={(e) => setLeadStage(e.target.value as any)}
-                      className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <option value="lead">Lead (Mídias Sociais)</option>
                       <option value="agendado">Consulta Agendada</option>
@@ -799,6 +1242,30 @@ export default function Patients() {
                       <option value="proposto">Cirurgia Proposta</option>
                       <option value="operado">Cirurgia Realizada</option>
                     </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="origem" className="text-xs font-bold text-primary uppercase tracking-wider">Origem do Lead</Label>
+                    <select
+                      id="origem"
+                      value={origem}
+                      onChange={(e) => setOrigem(e.target.value as any)}
+                      className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="instagram">📸 Instagram</option>
+                      <option value="google_ads">🔍 Google Ads</option>
+                      <option value="indicacao">🤝 Indicação</option>
+                      <option value="outros">🌐 Outros Canais</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="proximoContato" className="text-xs font-bold text-primary uppercase tracking-wider">Próximo Contato</Label>
+                    <Input 
+                      id="proximoContato" 
+                      type="date" 
+                      value={proximoContato}
+                      onChange={(e) => setProximoContato(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
                   </div>
                 </div>
 
@@ -904,7 +1371,7 @@ export default function Patients() {
         {!isAdding && (
           <div className="space-y-6">
             {/* Abas de Visualização (Lista vs Funil CRM) */}
-            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+            <div className="flex items-center justify-between border-b border-border/40 pb-2 flex-wrap gap-2">
               <div className="flex gap-2">
                 <Button
                   size="sm"
@@ -925,6 +1392,14 @@ export default function Patients() {
                   Funil de Vendas (CRM CPP)
                 </Button>
               </div>
+              <Button
+                size="sm"
+                onClick={() => handlePrintCommercialReport()}
+                className="h-9 rounded-xl text-xs font-bold gap-1.5 border border-[#B87333]/20 bg-[#B87333]/5 hover:bg-[#B87333]/10 text-[#B87333]"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                Relatório Comercial (PDF)
+              </Button>
             </div>
 
             <div className="space-y-3">
@@ -973,7 +1448,7 @@ export default function Patients() {
                   className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "followup_late" ? "bg-amber-600 hover:bg-amber-700 text-white border-0" : "border-amber-200/40 text-amber-600 hover:bg-amber-50/40"}`}
                 >
                   <Calendar className="w-3.5 h-3.5" />
-                  Follow-up Pendente &gt; 3 meses ({
+                  Follow-up Pendente ({
                     pacientes.filter(p => {
                       const hist = p.historicoHormonal || [];
                       if (hist.length === 0) return false;
@@ -990,6 +1465,45 @@ export default function Patients() {
                       return (diffDays / 30.4) >= 3;
                     }).length
                   })
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeFilter === "contact_overdue" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("contact_overdue")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "contact_overdue" ? "bg-red-500 hover:bg-red-600 text-white border-0" : "border-red-200/40 text-red-600 hover:bg-red-50/40"}`}
+                >
+                  <CalendarClock className="w-3.5 h-3.5" />
+                  Contatos Vencidos ({
+                    pacientes.filter(p => {
+                      if (!p.proximoContato) return false;
+                      const todayStr = new Date().toISOString().split("T")[0];
+                      return p.proximoContato <= todayStr;
+                    }).length
+                  })
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeFilter === "origin_instagram" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("origin_instagram")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "origin_instagram" ? "copper-gradient text-white border-0" : "border-border text-primary hover:bg-secondary/40"}`}
+                >
+                  📸 Insta ({pacientes.filter(p => p.origem === "instagram").length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeFilter === "origin_google" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("origin_google")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "origin_google" ? "copper-gradient text-white border-0" : "border-border text-primary hover:bg-secondary/40"}`}
+                >
+                  🔍 Google ({pacientes.filter(p => p.origem === "google_ads").length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeFilter === "origin_indicacao" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("origin_indicacao")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "origin_indicacao" ? "copper-gradient text-white border-0" : "border-border text-primary hover:bg-secondary/40"}`}
+                >
+                  🤝 Indicação ({pacientes.filter(p => p.origem === "indicacao").length})
                 </Button>
               </div>
             </div>
@@ -1173,46 +1687,73 @@ export default function Patients() {
                               <div className="space-y-1">
                                 <div className="flex items-start justify-between gap-1">
                                   <h4 className="font-serif font-bold text-xs text-primary group-hover:text-accent transition-colors truncate flex-1">{p.nome}</h4>
-                                  {/* Alerta de Contato Atrasado (>7 dias) */}
-                                  {(() => {
-                                    if (col.id === "operado") return null;
-                                    const hist = p.comercialHist || [];
-                                    if (hist.length === 0) {
-                                      // Se nunca houve contato e foi cadastrado há mais de 7 dias
-                                      const parts = p.dataCadastro.split("/");
+                                  <div className="flex flex-col items-end gap-1 shrink-0">
+                                    {/* Badge de Origem do Lead */}
+                                    {p.origem && (
+                                      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-accent/5 text-accent border border-accent/10">
+                                        {p.origem === "instagram" ? "📸 Insta" : p.origem === "google_ads" ? "🔍 Google" : p.origem === "indicacao" ? "🤝 Indicação" : "🌐 Outro"}
+                                      </span>
+                                    )}
+
+                                    {/* Alerta de Contato Agendado (Lembrete) */}
+                                    {(() => {
+                                      if (p.proximoContato) {
+                                        const todayStr = new Date().toISOString().split("T")[0];
+                                        const isOverdue = p.proximoContato <= todayStr;
+                                        const parts = p.proximoContato.split("-");
+                                        const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}` : p.proximoContato;
+                                        
+                                        return (
+                                          <Badge className={`text-[8px] font-bold rounded px-1 py-0 ${isOverdue ? "bg-red-500 text-white animate-pulse" : "bg-blue-500/10 text-blue-600 border-blue-500/20"}`}>
+                                            <CalendarClock className="w-2.5 h-2.5 mr-0.5" />
+                                            {isOverdue ? `Atrasado (${formattedDate})` : `Contato: ${formattedDate}`}
+                                          </Badge>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
+
+                                    {/* Alerta de Contato Atrasado (>7 dias) */}
+                                    {(() => {
+                                      if (col.id === "operado") return null;
+                                      const hist = p.comercialHist || [];
+                                      if (hist.length === 0) {
+                                        // Se nunca houve contato e foi cadastrado há mais de 7 dias
+                                        const parts = p.dataCadastro.split("/");
+                                        if (parts.length === 3) {
+                                          const cadDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                                          const diff = Math.ceil(Math.abs(new Date().getTime() - cadDate.getTime()) / (1000 * 60 * 60 * 24));
+                                          if (diff > 7) {
+                                            return (
+                                              <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[8px] font-bold rounded px-1 py-0">
+                                                S/ Contato ({diff}d)
+                                              </Badge>
+                                            );
+                                          }
+                                        }
+                                        return null;
+                                      }
+                                      
+                                      // Verificar último contato comercial
+                                      const lastContact = hist[0]; // hist[0] é o mais recente devido à ordenação no topo
+                                      const parts = lastContact.data.split(" ")[0].split("/");
                                       if (parts.length === 3) {
-                                        const cadDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-                                        const diff = Math.ceil(Math.abs(new Date().getTime() - cadDate.getTime()) / (1000 * 60 * 60 * 24));
+                                        const day = parseInt(parts[0]);
+                                        const month = parseInt(parts[1]) - 1;
+                                        const year = parseInt(parts[2]);
+                                        const contactDate = new Date(year, month, day);
+                                        const diff = Math.ceil(Math.abs(new Date().getTime() - contactDate.getTime()) / (1000 * 60 * 60 * 24));
                                         if (diff > 7) {
                                           return (
-                                            <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[8px] font-bold rounded px-1 py-0 shrink-0">
-                                              S/ Contato ({diff}d)
+                                            <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[8px] font-bold rounded px-1 py-0">
+                                              Atrasado ({diff}d)
                                             </Badge>
                                           );
                                         }
                                       }
                                       return null;
-                                    }
-                                    
-                                    // Verificar último contato comercial
-                                    const lastContact = hist[hist.length - 1];
-                                    const parts = lastContact.data.split("/");
-                                    if (parts.length >= 2) {
-                                      const day = parseInt(parts[0]);
-                                      const month = parseInt(parts[1]) - 1;
-                                      const year = parts.length === 3 ? parseInt(parts[2]) : new Date().getFullYear();
-                                      const contactDate = new Date(year, month, day);
-                                      const diff = Math.ceil(Math.abs(new Date().getTime() - contactDate.getTime()) / (1000 * 60 * 60 * 24));
-                                      if (diff > 7) {
-                                        return (
-                                          <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[8px] font-bold rounded px-1 py-0 shrink-0 animate-pulse">
-                                            Atrasado ({diff}d)
-                                          </Badge>
-                                        );
-                                      }
-                                    }
-                                    return null;
-                                  })()}
+                                    })()}
+                                  </div>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground font-medium truncate">{p.queixa || "Sem queixa principal"}</p>
                               </div>
@@ -2338,6 +2879,34 @@ export default function Patients() {
                               <TrendingUp className="w-4 h-4 text-[#B87333]" />
                               Linha do Tempo de Acompanhamento Comercial (CRM CPP)
                             </span>
+
+                            {/* Agendamento de Próximo Contato Comercial */}
+                            <div className="bg-secondary/10 border border-border/40 rounded-xl p-3.5 space-y-2">
+                              <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+                                <CalendarClock className="w-3.5 h-3.5 text-accent" />
+                                Agendar Próximo Contato Comercial (Lembrete)
+                              </span>
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                <Input
+                                  type="date"
+                                  value={p.proximoContato || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    const updated = pacientes.map(pac => pac.id === p.id ? { ...pac, proximoContato: val } : pac);
+                                    saveToStorage(updated);
+                                    toast.success("Lembrete de contato atualizado!");
+                                  }}
+                                  className="h-9 rounded-lg text-xs bg-card max-w-[200px]"
+                                />
+                                <span className="text-[10px] text-muted-foreground font-medium">
+                                  {p.proximoContato ? (
+                                    <>Lembrete programado para: <strong className="text-accent">{p.proximoContato.split("-").reverse().join("/")}</strong></>
+                                  ) : (
+                                    "Nenhum lembrete programado. Defina uma data para receber alertas visuais no painel."
+                                  )}
+                                </span>
+                              </div>
+                            </div>
 
                             {/* Modelos de Mensagens Rápidas (Acompanhamento Comercial CPP) */}
                             <div className="bg-[#B87333]/5 border border-[#B87333]/20 rounded-xl p-3.5 space-y-3">
