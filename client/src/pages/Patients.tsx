@@ -1059,6 +1059,81 @@ export default function Patients() {
                   })()}
                 </div>
 
+                {/* Gráfico de Funil de Conversão e Perda (Gargalos) */}
+                <div className="bg-card border border-border/40 rounded-2xl p-4 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                      <TrendingUp className="w-4 h-4 text-accent" />
+                      Análise de Gargalos de Conversão (Funil de Vendas)
+                    </span>
+                    <Badge variant="outline" className="text-[9px] font-bold border-accent/20 text-accent bg-accent/5">
+                      Métricas em Tempo Real
+                    </Badge>
+                  </div>
+
+                  {(() => {
+                    const stages = [
+                      { id: "lead", title: "Leads", color: "bg-blue-500" },
+                      { id: "agendado", title: "Agendados", color: "bg-amber-500" },
+                      { id: "realizado", title: "Consultados", color: "bg-purple-500" },
+                      { id: "proposto", title: "Propostos", color: "bg-orange-500" },
+                      { id: "operado", title: "Operados", color: "bg-emerald-500" }
+                    ];
+
+                    const counts = stages.map(st => ({
+                      ...st,
+                      count: pacientes.filter(p => (p.leadStage || "lead") === st.id).length
+                    }));
+
+                    const maxCount = Math.max(...counts.map(c => c.count), 1);
+
+                    return (
+                      <div className="space-y-3.5">
+                        {counts.map((stage, idx) => {
+                          const widthPct = Math.max((stage.count / maxCount) * 100, 4); // Mínimo de 4% para renderizar a barra
+                          
+                          // Calcular taxa de conversão e perda em relação à etapa anterior
+                          let conversionRate = null;
+                          let lossRate = null;
+                          if (idx > 0) {
+                            const prevCount = counts[idx - 1].count;
+                            if (prevCount > 0) {
+                              conversionRate = Math.round((stage.count / prevCount) * 100);
+                              lossRate = 100 - conversionRate;
+                            }
+                          }
+
+                          return (
+                            <div key={stage.id} className="space-y-1">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-serif font-bold text-primary flex items-center gap-1.5">
+                                  <span className={`w-2.5 h-2.5 rounded-full ${stage.color}`} />
+                                  {stage.title}
+                                </span>
+                                <div className="flex items-center gap-3 font-semibold text-[11px]">
+                                  <span className="text-primary">{stage.count} {stage.count === 1 ? "paciente" : "pacientes"}</span>
+                                  {conversionRate !== null && (
+                                    <span className="text-emerald-600 font-bold">({conversionRate}% conv.)</span>
+                                  )}
+                                  {lossRate !== null && lossRate > 0 && (
+                                    <span className="text-red-500">({lossRate}% perda)</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="w-full bg-secondary/30 h-3 rounded-lg overflow-hidden">
+                                <div 
+                                  className={`${stage.color} h-full rounded-lg transition-all duration-500 ease-out`}
+                                  style={{ width: `${widthPct}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
                 {/* Definição das Colunas do Funil */}
                 {[
@@ -1095,8 +1170,50 @@ export default function Patients() {
                               }}
                               className="bg-card border border-border/60 hover:border-accent/20 rounded-xl p-3 shadow-sm hover:shadow transition-all duration-200 cursor-pointer space-y-2 relative group"
                             >
-                              <div>
-                                <h4 className="font-serif font-bold text-xs text-primary group-hover:text-accent transition-colors truncate">{p.nome}</h4>
+                              <div className="space-y-1">
+                                <div className="flex items-start justify-between gap-1">
+                                  <h4 className="font-serif font-bold text-xs text-primary group-hover:text-accent transition-colors truncate flex-1">{p.nome}</h4>
+                                  {/* Alerta de Contato Atrasado (>7 dias) */}
+                                  {(() => {
+                                    if (col.id === "operado") return null;
+                                    const hist = p.comercialHist || [];
+                                    if (hist.length === 0) {
+                                      // Se nunca houve contato e foi cadastrado há mais de 7 dias
+                                      const parts = p.dataCadastro.split("/");
+                                      if (parts.length === 3) {
+                                        const cadDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                                        const diff = Math.ceil(Math.abs(new Date().getTime() - cadDate.getTime()) / (1000 * 60 * 60 * 24));
+                                        if (diff > 7) {
+                                          return (
+                                            <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[8px] font-bold rounded px-1 py-0 shrink-0">
+                                              S/ Contato ({diff}d)
+                                            </Badge>
+                                          );
+                                        }
+                                      }
+                                      return null;
+                                    }
+                                    
+                                    // Verificar último contato comercial
+                                    const lastContact = hist[hist.length - 1];
+                                    const parts = lastContact.data.split("/");
+                                    if (parts.length >= 2) {
+                                      const day = parseInt(parts[0]);
+                                      const month = parseInt(parts[1]) - 1;
+                                      const year = parts.length === 3 ? parseInt(parts[2]) : new Date().getFullYear();
+                                      const contactDate = new Date(year, month, day);
+                                      const diff = Math.ceil(Math.abs(new Date().getTime() - contactDate.getTime()) / (1000 * 60 * 60 * 24));
+                                      if (diff > 7) {
+                                        return (
+                                          <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[8px] font-bold rounded px-1 py-0 shrink-0 animate-pulse">
+                                            Atrasado ({diff}d)
+                                          </Badge>
+                                        );
+                                      }
+                                    }
+                                    return null;
+                                  })()}
+                                </div>
                                 <p className="text-[10px] text-muted-foreground font-medium truncate">{p.queixa || "Sem queixa principal"}</p>
                               </div>
 
@@ -2222,6 +2339,53 @@ export default function Patients() {
                               Linha do Tempo de Acompanhamento Comercial (CRM CPP)
                             </span>
 
+                            {/* Modelos de Mensagens Rápidas (Acompanhamento Comercial CPP) */}
+                            <div className="bg-[#B87333]/5 border border-[#B87333]/20 rounded-xl p-3.5 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-[#B87333] uppercase tracking-wider flex items-center gap-1">
+                                  ⚡ Modelos de Mensagens Rápidas (WhatsApp)
+                                </span>
+                                <Badge variant="outline" className="text-[8px] font-bold border-[#B87333]/20 text-[#B87333] bg-[#B87333]/5 rounded-full">
+                                  Foco em Conversão
+                                </Badge>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {[
+                                  { 
+                                    label: "👋 Boas-vindas Lead", 
+                                    text: `Olá, ${p.nome}! Aqui é a secretária do Dr. Felipe de Bulhões. Tudo bem? Vi que você entrou em contato demonstrando interesse em nossos tratamentos especializados em Urologia e Andrologia. O Dr. Felipe realiza atendimentos com foco totalmente humanizado e focado na sua saúde e bem-estar. Gostaria de agendar o seu horário conosco esta semana?`
+                                  },
+                                  { 
+                                    label: "🔄 Lembrete Retorno", 
+                                    text: `Olá, ${p.nome}! Tudo bem? Passando para lembrar que já faz algum tempo desde o seu último acompanhamento laboratorial com o Dr. Felipe de Bulhões. Para mantermos a sua terapia hormonal e saúde urológica monitoradas de forma segura e com alta performance, é fundamental agendarmos o seu retorno. Temos horários disponíveis para esta semana. Vamos agendar?`
+                                  },
+                                  { 
+                                    label: "🏥 Pré-Operatório", 
+                                    text: `Olá, ${p.nome}! Tudo bem? Para a realização do seu procedimento com o Dr. Felipe de Bulhões, lembramos que é fundamental seguir as orientações pré-operatórias: jejum absoluto de 8 horas (inclusive água), levar todos os exames laboratoriais e de imagem realizados, além do termo de consentimento assinado. Qualquer dúvida, estamos à total disposição!`
+                                  },
+                                  { 
+                                    label: "🌟 Pós-Consulta", 
+                                    text: `Olá, ${p.nome}! Foi um grande prazer recebê-lo em consulta com o Dr. Felipe de Bulhões hoje. Esperamos que tenha tido uma experiência acolhedora e humanizada. Segue o link para o agendamento de seus exames solicitados e o contato da nossa equipe para qualquer suporte necessário. Desejamos uma excelente recuperação!`
+                                  }
+                                ].map((modelo, idx) => (
+                                  <Button
+                                    key={idx}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setNewContatoNotas(modelo.text);
+                                      setNewContatoTipo("whatsapp");
+                                      toast.success(`Modelo "${modelo.label}" carregado!`);
+                                    }}
+                                    className="h-8 rounded-lg text-[10px] font-bold border-border/60 hover:bg-card text-primary hover:text-accent truncate px-2"
+                                  >
+                                    {modelo.label}
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+
                             {/* Formulário para registrar novo contato */}
                             <div className="flex flex-col sm:flex-row gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
                               <select
@@ -2234,20 +2398,39 @@ export default function Patients() {
                                 <option value="email">✉️ E-mail</option>
                                 <option value="retorno">🔄 Agendamento Retorno</option>
                               </select>
-                              <Input
-                                type="text"
-                                placeholder="Notas do contato comercial (ex: Enviado roteiro de Peyronie, aguardando retorno)"
+                              <Textarea
+                                placeholder="Notas do contato comercial ou mensagem rápida carregada acima..."
                                 value={newContatoNotas}
                                 onChange={(e) => setNewContatoNotas(e.target.value)}
-                                className="h-9 rounded-lg text-xs bg-card flex-1"
+                                className="min-h-[80px] rounded-lg text-xs bg-card flex-1 resize-none p-2.5"
                               />
-                              <Button
-                                size="sm"
-                                onClick={() => handleAddContato(p.id)}
-                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white shrink-0 px-4"
-                              >
-                                Registrar Contato
-                              </Button>
+                              <div className="flex flex-col gap-2 shrink-0 justify-end">
+                                {newContatoTipo === "whatsapp" && newContatoNotas && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      const cleanPhone = p.telefone ? p.telefone.replace(/\D/g, "") : "";
+                                      const dddAndPhone = cleanPhone.length === 11 ? cleanPhone : "55" + cleanPhone;
+                                      const encodedText = encodeURIComponent(newContatoNotas);
+                                      window.open(`https://api.whatsapp.com/send?phone=${dddAndPhone}&text=${encodedText}`, "_blank");
+                                      
+                                      // Adicionar automaticamente ao histórico comercial
+                                      handleAddContato(p.id);
+                                    }}
+                                    className="h-9 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 px-4 flex items-center gap-1.5"
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                    Enviar WhatsApp
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleAddContato(p.id)}
+                                  className="h-9 rounded-lg text-xs font-bold copper-gradient text-white shrink-0 px-4"
+                                >
+                                  Registrar Histórico
+                                </Button>
+                              </div>
                             </div>
 
                             {/* Listagem da Linha do Tempo Comercial */}
