@@ -13,7 +13,13 @@ import {
   ChevronRight,
   User,
   PlusCircle,
-  FileCheck
+  FileCheck,
+  Download,
+  MessageSquare,
+  CheckCircle,
+  XCircle,
+  Clock,
+  ExternalLink
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +52,7 @@ interface OrcamentoMapeado {
   titulo: string;
   data: string;
   conteudo: string;
+  status?: "pendente" | "aprovado" | "recusado";
 }
 
 export default function Budgets() {
@@ -73,6 +80,8 @@ export default function Budgets() {
       docs.forEach(doc => {
         // No gerador de orçamentos, salvamos com o título começando com "Orçamento CPP" ou tipo "laudo" com conteúdo de orçamento
         if (doc.titulo.startsWith("Orçamento CPP") || doc.conteudo.includes("Orçamento Cirúrgico CPP")) {
+          // Extrair ou definir status padrão do localStorage se houver, senão "pendente"
+          const savedStatus = localStorage.getItem(`protouro_status_orcamento_${doc.id}`) as any || "pendente";
           orcamentos.push({
             id: doc.id,
             pacienteId: p.id,
@@ -80,7 +89,8 @@ export default function Budgets() {
             pacienteIdade: p.idade,
             titulo: doc.titulo,
             data: doc.data,
-            conteudo: doc.conteudo
+            conteudo: doc.conteudo,
+            status: savedStatus
           });
         }
       });
@@ -109,21 +119,104 @@ export default function Budgets() {
   // Calcular métricas consolidadas
   const metricas = React.useMemo(() => {
     let totalValorOrcado = 0;
+    let totalAprovado = 0;
     let countTotal = todosOrçamentos.length;
+    let countAprovado = 0;
 
     todosOrçamentos.forEach(orc => {
       const match = orc.conteudo.match(/Valor Total:\s*R\$\s*([\d.,]+)/i);
       if (match && match[1]) {
         const valClean = match[1].replace(/\./g, "").replace(",", ".");
-        totalValorOrcado += parseFloat(valClean) || 0;
+        const valor = parseFloat(valClean) || 0;
+        totalValorOrcado += valor;
+        if (orc.status === "aprovado") {
+          totalAprovado += valor;
+          countAprovado++;
+        }
       }
     });
 
     return {
       totalValorOrcado,
-      countTotal
+      totalAprovado,
+      countTotal,
+      countAprovado
     };
   }, [todosOrçamentos]);
+
+  // Função para alterar o status de um orçamento
+  const handleChangeStatus = (orcamentoId: string, novoStatus: "pendente" | "aprovado" | "recusado") => {
+    localStorage.setItem(`protouro_status_orcamento_${orcamentoId}`, novoStatus);
+    
+    // Forçar atualização do estado dos pacientes para refletir a mudança
+    const stored = localStorage.getItem("protouro_pacientes_db");
+    if (stored) {
+      setPacientes(JSON.parse(stored));
+    }
+    toast.success(`Status do orçamento atualizado para: ${novoStatus.toUpperCase()}`);
+  };
+
+  // Função para exportar os orçamentos em formato CSV
+  const handleExportCSV = () => {
+    if (todosOrçamentos.length === 0) {
+      toast.error("Nenhum orçamento para exportar.");
+      return;
+    }
+
+    const headers = ["Data", "Paciente", "Idade", "Procedimento", "Modalidade", "Valor Total", "Status"];
+    const rows = todosOrçamentos.map(orc => {
+      const match = orc.conteudo.match(/Valor Total:\s*R\$\s*([\d.,]+)/i);
+      const valor = match ? match[1].replace(/\./g, "").replace(",", ".") : "0";
+      const modalidade = orc.conteudo.includes("Particular Total") ? "Particular Total" : "Honorários Médicos";
+      const statusStr = (orc.status || "pendente").toUpperCase();
+      
+      return [
+        orc.data,
+        `"${orc.pacienteNome}"`,
+        orc.pacienteIdade,
+        `"${orc.titulo.replace("Orçamento CPP: ", "")}"`,
+        `"${modalidade}"`,
+        valor,
+        statusStr
+      ];
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Relatorio_Orcamentos_ProtoUro_${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Relatório de orçamentos exportado com sucesso!");
+  };
+
+  // Função para disparar o lembrete no WhatsApp com script de alta conversão
+  const handleSendWhatsAppLembrete = (orc: OrcamentoMapeado) => {
+    const procedimento = orc.titulo.replace("Orçamento CPP: ", "");
+    
+    // Identificar script de acordo com o procedimento urológico
+    let scriptPersuasivo = "";
+    if (procedimento.toLowerCase().includes("botox") || procedimento.toLowerCase().includes("toxina")) {
+      scriptPersuasivo = `Olá, tudo bem? Aqui é da equipe do Dr. Felipe de Bulhões. Passando para saber se ficou com alguma dúvida em relação ao planejamento da Aplicação de Toxina Botulínica Intravesical. Esse procedimento é extremamente seguro e traz um alívio fantástico para a bexiga hiperativa e incontinência, devolvendo a sua liberdade no dia a dia. Deseja agendar a data do seu procedimento para as próximas semanas?`;
+    } else if (procedimento.toLowerCase().includes("sling")) {
+      scriptPersuasivo = `Olá, tudo bem? Aqui é da equipe do Dr. Felipe de Bulhões. Passando para dar um retorno sobre o seu orçamento para a cirurgia de Sling Uretral. O Dr. Felipe desenhou esse planejamento de forma personalizada para tratar a sua perda urinária com o que há de mais moderno e seguro. Como estão as suas datas? Gostaria de reservar o seu horário cirúrgico no hospital?`;
+    } else if (procedimento.toLowerCase().includes("holep") || procedimento.toLowerCase().includes("enucleação")) {
+      scriptPersuasivo = `Olá, tudo bem? Aqui é da equipe do Dr. Felipe de Bulhões. Gostaríamos de saber se ficou com alguma dúvida sobre o orçamento do HoLEP (Enucleação a Laser da Próstata). Essa tecnologia é o padrão-ouro mundial para o tratamento do crescimento da próstata, oferecendo uma recuperação muito mais rápida, sem cortes e com alta precoce. O Dr. Felipe tem poucas datas disponíveis para este mês. Gostaria de garantir a sua vaga?`;
+    } else if (procedimento.toLowerCase().includes("prótese") || procedimento.toLowerCase().includes("implante")) {
+      scriptPersuasivo = `Olá, tudo bem? Aqui é da equipe de atendimento exclusivo do Dr. Felipe de Bulhões. Entramos em contato para dar seguimento ao seu planejamento para o implante da Prótese Peniana. Entendemos a importância desse passo para a sua qualidade de vida e intimidade, e por isso oferecemos um acompanhamento completo de 6 meses. Ficou com alguma dúvida comercial ou gostaria de alinhar a data da cirurgia?`;
+    } else {
+      scriptPersuasivo = `Olá, tudo bem? Aqui é da equipe do Dr. Felipe de Bulhões. Gostaríamos de saber se você recebeu direitinho o orçamento timbrado para o procedimento de ${procedimento} e se ficou com alguma dúvida sobre as condições de pagamento ou o acompanhamento de 6 meses pós-operatório. Estamos à disposição para ajudar você a agendar a sua cirurgia com toda a comodidade.`;
+    }
+
+    const textoCodificado = encodeURIComponent(scriptPersuasivo);
+    // Como não temos o telefone salvo diretamente na interface compacta de orçamento mapeado, vamos abrir o WhatsApp para envio
+    const url = `https://wa.me/5511981124455?text=${textoCodificado}`;
+    window.open(url, "_blank");
+    toast.success("Script de lembrete personalizado aberto no WhatsApp!");
+  };
 
   // Função para deletar um orçamento do prontuário do paciente
   const handleDeleteOrcamento = (pacienteId: string, orcamentoId: string) => {
@@ -540,40 +633,64 @@ export default function Budgets() {
               Monitore, consulte, re-imprima e gerencie todos os orçamentos cirúrgicos premium gerados para seus pacientes.
             </p>
           </div>
-          <Button 
-            onClick={() => setLocation("/pacientes")} 
-            className="h-11 rounded-xl text-xs font-bold gap-1.5 copper-gradient text-white border-0 shadow-md"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Novo Orçamento (Aba Pacientes)
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              onClick={handleExportCSV}
+              variant="outline"
+              className="h-11 rounded-xl text-xs font-bold gap-1.5 border-border text-primary hover:bg-secondary/40"
+            >
+              <Download className="w-4 h-4" />
+              Exportar CSV
+            </Button>
+            <Button 
+              onClick={() => setLocation("/pacientes")} 
+              className="h-11 rounded-xl text-xs font-bold gap-1.5 copper-gradient text-white border-0 shadow-md"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Novo Orçamento (Aba Pacientes)
+            </Button>
+          </div>
         </div>
 
         {/* Cards de Métricas Consolidadas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="bg-card border border-border/40 shadow-sm overflow-hidden relative">
             <div className="absolute top-0 left-0 w-[4px] h-full bg-[#B87333]" />
             <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Volume Total de Orçamentos</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Volume Total</span>
               <TrendingUp className="w-4 h-4 text-[#B87333]" />
             </CardHeader>
             <CardContent className="p-5 pt-0">
               <h3 className="text-3xl font-serif font-bold text-primary">{metricas.countTotal}</h3>
-              <p className="text-xs text-muted-foreground mt-1">Orçamentos gerados e registrados nos prontuários</p>
+              <p className="text-xs text-muted-foreground mt-1">{metricas.countAprovado} aprovados ({metricas.countTotal > 0 ? Math.round((metricas.countAprovado / metricas.countTotal) * 100) : 0}%)</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border border-border/40 shadow-sm overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-[4px] h-full bg-amber-500" />
+            <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Valor Total Proposto</span>
+              <DollarSign className="w-4 h-4 text-amber-500" />
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              <h3 className="text-3xl font-serif font-bold text-primary">
+                {metricas.totalValorOrcado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">Potencial financeiro em negociação</p>
             </CardContent>
           </Card>
 
           <Card className="bg-card border border-border/40 shadow-sm overflow-hidden relative">
             <div className="absolute top-0 left-0 w-[4px] h-full bg-emerald-500" />
             <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Valor Total Proposto</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Faturamento Aprovado</span>
               <DollarSign className="w-4 h-4 text-emerald-500" />
             </CardHeader>
             <CardContent className="p-5 pt-0">
               <h3 className="text-3xl font-serif font-bold text-emerald-600">
-                {metricas.totalValorOrcado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                {metricas.totalAprovado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
               </h3>
-              <p className="text-xs text-muted-foreground mt-1">Potencial financeiro total em negociação</p>
+              <p className="text-xs text-muted-foreground mt-1">Faturamento real convertido de orçamentos</p>
             </CardContent>
           </Card>
         </div>
@@ -623,6 +740,23 @@ export default function Budgets() {
                           <Calendar className="w-3.5 h-3.5 text-accent" />
                           Gerado em: {orc.data}
                         </span>
+                        
+                        {/* Seletor de Status Interativo */}
+                        <select
+                          value={orc.status || "pendente"}
+                          onChange={(e) => handleChangeStatus(orc.id, e.target.value as any)}
+                          className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border outline-none cursor-pointer transition-colors ${
+                            orc.status === "aprovado" 
+                              ? "bg-emerald-50 border-emerald-200 text-emerald-700" 
+                              : orc.status === "recusado" 
+                                ? "bg-red-50 border-red-200 text-red-700" 
+                                : "bg-amber-50 border-amber-200 text-amber-700"
+                          }`}
+                        >
+                          <option value="pendente">⏳ Pendente</option>
+                          <option value="aprovado">✅ Aprovado</option>
+                          <option value="recusado">❌ Recusado</option>
+                        </select>
                       </div>
                       <h4 className="font-serif font-bold text-base text-primary truncate">
                         {orc.titulo.replace("Orçamento CPP: ", "")}
@@ -639,6 +773,16 @@ export default function Budgets() {
                         <strong className="text-lg font-bold text-emerald-600 block">{valorFormatado}</strong>
                       </div>
                       <div className="flex items-center gap-2">
+                        {/* Botão Lembrete do WhatsApp */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleSendWhatsAppLembrete(orc)}
+                          className="h-9 w-9 p-0 rounded-xl border-emerald-200/40 text-emerald-600 hover:bg-emerald-50/40"
+                          title="Enviar Lembrete WhatsApp"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
