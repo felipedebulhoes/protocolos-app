@@ -97,6 +97,17 @@ interface Paciente {
   comercialHist?: ContatoRegistro[]; // Linha do Tempo Comercial CPP
   origem?: "instagram" | "google_ads" | "indicacao" | "outros"; // Origem de Captação CPP
   proximoContato?: string; // Data agendada para o próximo acompanhamento comercial (AAAA-MM-DD)
+  faturamentoReal?: number; // Faturamento real do paciente (cirurgia/consulta paga)
+}
+
+interface SecretáriaTarefa {
+  id: string;
+  pacienteId: string;
+  pacienteNome: string;
+  tipo: "followup_lead" | "busca_ativa" | "agendar_retorno" | "documento_pendente";
+  descricao: string;
+  dataCriacao: string;
+  status: "pendente" | "concluida";
 }
 
 export default function Patients() {
@@ -121,7 +132,9 @@ export default function Patients() {
   const [leadStage, setLeadStage] = useState<"lead" | "agendado" | "realizado" | "proposto" | "operado">("lead"); // CRM Funil
   const [origem, setOrigem] = useState<"instagram" | "google_ads" | "indicacao" | "outros">("instagram"); // Origem de Captação CPP
   const [proximoContato, setProximoContato] = useState(""); // Data agendada para o próximo contato (AAAA-MM-DD)
+  const [faturamentoReal, setFaturamentoReal] = useState(""); // Faturamento real do paciente
   const [activeView, setActiveView] = useState<"list" | "crm">("list"); // Visualização ativa (Lista vs CRM Kanban)
+  const [tarefasSecretaria, setTarefasSecretaria] = useState<SecretáriaTarefa[]>([]);
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
   const [periodoFiltro, setPeriodoFiltro] = useState<"30_dias" | "90_dias" | "todos">("todos"); // Filtro de Período do CRM e Relatório
 
@@ -213,6 +226,76 @@ export default function Patients() {
   const [prescricaoModelo, setPrescricaoPacienteModelo] = useState("");
   const [prescricaoConteudo, setPrescricaoConteudo] = useState("");
 
+  // Estados para o Gerador de Orçamentos CPP Premium
+  const [orcamentoOpen, setOrcamentoOpen] = useState(false);
+  const [orcamentoPaciente, setOrcamentoPaciente] = useState<Paciente | null>(null);
+  const [orcamentoTipo, setOrcamentoTipo] = useState<"honorarios" | "particular_total">("honorarios");
+  const [orcamentoProcedimento, setOrcamentoProcedimento] = useState("");
+  const [orcamentoLocal, setOrcamentoLocal] = useState("Clinovi Paulista");
+  const [orcamentoValorHonorarios, setOrcamentoValorHonorarios] = useState("15000");
+  const [orcamentoValorHospital, setOrcamentoValorHospital] = useState("12000");
+  const [orcamentoValorMateriais, setOrcamentoValorHospitalMateriais] = useState("8000");
+  const [orcamentoValorAcompanhamento, setOrcamentoValorAcompanhamento] = useState("3000");
+  const [orcamentoObs, setOrcamentoObs] = useState("");
+
+  // Catálogo de procedimentos urológicos premium do Dr. Felipe de Bulhões (CPP)
+  const procedimentosCatalogo = [
+    {
+      id: "holep",
+      nome: "HoLEP (Enucleação da Próstata com Holmium Laser) para HPB",
+      honorarios: "22000",
+      hospital: "18000",
+      materiais: "12000",
+      acompanhamento: "4000",
+      obs: "Tratamento cirúrgico minimamente invasivo de excelência para Hiperplasia Prostática Benigna (HPB) com alta precoce em regime de Day Hospital. Inclui o uso de tecnologia laser de Holmium e morcelador de tecidos."
+    },
+    {
+      id: "protese_peniana_inflavel",
+      nome: "Implante de Prótese Peniana Inflável (3 Volumes) para Disfunção Erétil",
+      honorarios: "28000",
+      hospital: "25000",
+      materiais: "65000",
+      acompanhamento: "5000",
+      obs: "Tratamento definitivo de altíssimo padrão para Disfunção Erétil refratária. Inclui o dispositivo inflável importado de última geração (AMS 700 ou Coloplast Titan), bomba de ativação escrotal e reservatório pré-vesical."
+    },
+    {
+      id: "botox_intravesical",
+      nome: "Aplicação de Toxina Botulínica (Botox) Intravesical para Bexiga Hiperativa",
+      honorarios: "6000",
+      hospital: "5000",
+      materiais: "3500",
+      acompanhamento: "1500",
+      obs: "Procedimento minimamente invasivo sob sedação leve para tratamento de Bexiga Hiperativa refratária ou Incontinência Urinária de Urgência. Consiste na injeção endoscópica (cistoscopia) de Toxina Botulínica diretamente no músculo detrusor."
+    },
+    {
+      id: "sling_uretral_masculino",
+      nome: "Sling Uretral Masculino para Incontinência Urinária Pós-Prostatectomia",
+      honorarios: "16000",
+      hospital: "14000",
+      materiais: "22000",
+      acompanhamento: "3500",
+      obs: "Procedimento cirúrgico de alto padrão para incontinência urinária de esforço pós-prostatectomia de grau leve a moderado. Consiste na colocação de tela de suporte uretral para restaurar a continência urinária de forma imediata."
+    },
+    {
+      id: "sling_uretral_feminino",
+      nome: "Sling Suburetral Feminino (Mini-Sling) para Incontinência de Esforço",
+      honorarios: "9000",
+      hospital: "8000",
+      materiais: "6000",
+      acompanhamento: "2000",
+      obs: "Tratamento padrão-ouro minimamente invasivo para Incontinência Urinária de Esforço feminina. Realizado via vaginal com mini-tela sintética importada de suporte sob a uretra média."
+    },
+    {
+      id: "ondas_choque_peniano",
+      nome: "Terapia por Ondas de Choque Extracorpóreas de Baixa Intensidade (Li-ESWT)",
+      honorarios: "12000",
+      hospital: "0",
+      materiais: "0",
+      acompanhamento: "2000",
+      obs: "Tratamento inovador e regenerativo para Disfunção Erétil vascular e Doença de Peyronie. Realizado em consultório (Clinovi) em protocolo de 6 sessões semanais para neovascularização do tecido erétil corporocavernoso."
+    }
+  ];
+
   // Modelos de receitas oficiais do Dr. Felipe de Bulhões baseados em diretrizes urológicas (SBU/AUA/EAU)
   const modelosPrescricao = [
     {
@@ -266,12 +349,84 @@ export default function Patients() {
     }
   ];
 
-  // Carregar pacientes do LocalStorage
+  // Carregar pacientes e tarefas do LocalStorage
   useEffect(() => {
     const stored = localStorage.getItem("protouro_pacientes_db");
     if (stored) {
       try {
-        setPacientes(JSON.parse(stored));
+        const parsedPacientes = JSON.parse(stored) as Paciente[];
+        setPacientes(parsedPacientes);
+        
+        // Gerar tarefas automaticamente baseadas no estado clínico e comercial dos pacientes
+        const storedTasks = localStorage.getItem("protouro_tarefas_secretaria");
+        let currentTasks: SecretáriaTarefa[] = [];
+        if (storedTasks) {
+          try { currentTasks = JSON.parse(storedTasks); } catch (e) { console.error(e); }
+        }
+
+        const novasTarefas: SecretáriaTarefa[] = [];
+        const hojeStr = new Date().toLocaleDateString("pt-BR");
+
+        parsedPacientes.forEach(p => {
+          // Regra 1: Follow-up de novo lead sem contato há mais de 3 dias
+          if (p.leadStage === "lead") {
+            const hist = p.comercialHist || [];
+            if (hist.length === 0) {
+              const taskId = `task_lead_${p.id}`;
+              const jaExiste = currentTasks.some(t => t.id === taskId);
+              if (!jaExiste) {
+                novasTarefas.push({
+                  id: taskId,
+                  pacienteId: p.id,
+                  pacienteNome: p.nome,
+                  tipo: "followup_lead",
+                  descricao: `Entrar em contato via WhatsApp para apresentar o Dr. Felipe e agendar a consulta particular.`,
+                  dataCriacao: hojeStr,
+                  status: "pendente"
+                });
+              }
+            }
+          }
+
+          // Regra 2: Busca Ativa de cirurgia proposta sem contato há mais de 5 dias
+          if (p.leadStage === "proposto") {
+            const taskId = `task_busca_${p.id}`;
+            const jaExiste = currentTasks.some(t => t.id === taskId);
+            if (!jaExiste) {
+              novasTarefas.push({
+                id: taskId,
+                pacienteId: p.id,
+                pacienteNome: p.nome,
+                tipo: "busca_ativa",
+                descricao: `Realizar busca ativa / follow-up humanizado sobre a proposta cirúrgica enviada.`,
+                dataCriacao: hojeStr,
+                status: "pendente"
+              });
+            }
+          }
+
+          // Regra 3: Agendar retorno pós-operatório (7 a 14 dias após cirurgia)
+          if (p.leadStage === "operado") {
+            const taskId = `task_retorno_${p.id}`;
+            const jaExiste = currentTasks.some(t => t.id === taskId);
+            if (!jaExiste) {
+              novasTarefas.push({
+                id: taskId,
+                pacienteId: p.id,
+                pacienteNome: p.nome,
+                tipo: "agendar_retorno",
+                descricao: `Agendar consulta de retorno pós-operatório para avaliação clínica e cicatrização.`,
+                dataCriacao: hojeStr,
+                status: "pendente"
+              });
+            }
+          }
+        });
+
+        const tarefasFinais = [...currentTasks, ...novasTarefas];
+        setTarefasSecretaria(tarefasFinais);
+        localStorage.setItem("protouro_tarefas_secretaria", JSON.stringify(tarefasFinais));
+
       } catch (e) {
         console.error("Erro ao carregar pacientes:", e);
       }
@@ -327,6 +482,7 @@ export default function Patients() {
             leadStage: leadStage,
             origem: origem,
             proximoContato: proximoContato,
+            faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined,
             comercialHist: updatedHist
           };
         }
@@ -364,7 +520,8 @@ export default function Patients() {
         documentos: [],
         leadStage: leadStage,
         origem: origem,
-        proximoContato: proximoContato
+        proximoContato: proximoContato,
+        faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined
       };
       saveToStorage([novo, ...pacientes]);
       toast.success("Paciente cadastrado com sucesso!");
@@ -391,6 +548,7 @@ export default function Patients() {
     setLeadStage(p.leadStage || "lead");
     setOrigem(p.origem || "instagram");
     setProximoContato(p.proximoContato || "");
+    setFaturamentoReal(p.faturamentoReal !== undefined ? p.faturamentoReal.toString() : "");
     setIsAdding(true);
   };
 
@@ -528,6 +686,7 @@ export default function Patients() {
     setLeadStage("lead");
     setOrigem("instagram");
     setProximoContato("");
+    setFaturamentoReal("");
   };
 
   const handleCancel = () => {
@@ -598,16 +757,22 @@ export default function Patients() {
       outros: pacientesNoPeriodo.filter(p => p.origem === "outros" || !p.origem).length,
     };
 
-    // Faturamento Estimado (Valores padrão de urologia particular premium)
+    // Faturamento Real e Estimado (Valores padrão de urologia particular premium se não preenchido)
     // Consulta: R$ 1.000,00 (todos os que agendaram ou passaram)
     // Cirurgia: R$ 15.000,00 (operados)
     const valorConsulta = 1000;
     const valorCirurgia = 15000;
     
+    // Calcular faturamento real com base no campo faturamentoReal preenchido
+    const faturamentoRealTotal = pacientesNoPeriodo.reduce((sum, p) => sum + (p.faturamentoReal || 0), 0);
+    
+    // Se houver faturamento real cadastrado, usamos ele. Caso contrário, usamos a estimativa baseada nos estágios.
     const consultasRealizadas = agendados + realizados + propostos + operados;
     const faturamentoConsultas = consultasRealizadas * valorConsulta;
     const faturamentoCirurgias = operados * valorCirurgia;
-    const faturamentoTotal = faturamentoConsultas + faturamentoCirurgias;
+    const faturamentoTotalEst = faturamentoConsultas + faturamentoCirurgias;
+    
+    const faturamentoExibido = faturamentoRealTotal > 0 ? faturamentoRealTotal : faturamentoTotalEst;
 
     // Tempo Médio de Conversão (simulado com base no histórico comercial, ou padrão de 14 dias se vazio)
     let totalDias = 0;
@@ -849,8 +1014,8 @@ export default function Patients() {
             <div class="kpi-label">Conversão Cirúrgica</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-value">R$ ${faturamentoTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</div>
-            <div class="kpi-label">Faturamento Est.</div>
+            <div class="kpi-value">R$ ${faturamentoExibido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</div>
+            <div class="kpi-label">${faturamentoRealTotal > 0 ? "Faturamento Real" : "Faturamento Est."}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-value">${tempoMedioConversao} dias</div>
@@ -929,7 +1094,7 @@ export default function Patients() {
               <th>Origem do Lead</th>
               <th>Volume de Pacientes</th>
               <th>Proporção (%)</th>
-              <th>Faturamento Est. por Canal</th>
+              <th>Faturamento por Canal</th>
             </tr>
           </thead>
           <tbody>
@@ -937,25 +1102,25 @@ export default function Patients() {
               <td><span class="badge badge-instagram">Instagram / Redes Sociais</span></td>
               <td>${origens.instagram}</td>
               <td>${totalLeads > 0 ? ((origens.instagram / totalLeads) * 100).toFixed(0) : 0}%</td>
-              <td>R$ ${(origens.instagram * (valorConsulta + (operados / totalLeads) * valorCirurgia)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+              <td>R$ ${(pacientesNoPeriodo.filter(p => p.origem === "instagram").reduce((sum, p) => sum + (p.faturamentoReal || (p.leadStage === "operado" ? valorCirurgia : p.leadStage !== "lead" ? valorConsulta : 0)), 0)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
             </tr>
             <tr>
               <td><span class="badge badge-google">Google Ads / Tráfego Pago</span></td>
               <td>${origens.google_ads}</td>
               <td>${totalLeads > 0 ? ((origens.google_ads / totalLeads) * 100).toFixed(0) : 0}%</td>
-              <td>R$ ${(origens.google_ads * (valorConsulta + (operados / totalLeads) * valorCirurgia)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+              <td>R$ ${(pacientesNoPeriodo.filter(p => p.origem === "google_ads").reduce((sum, p) => sum + (p.faturamentoReal || (p.leadStage === "operado" ? valorCirurgia : p.leadStage !== "lead" ? valorConsulta : 0)), 0)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
             </tr>
             <tr>
               <td><span class="badge badge-indicacao">Indicação Médica / Colegas</span></td>
               <td>${origens.indicacao}</td>
               <td>${totalLeads > 0 ? ((origens.indicacao / totalLeads) * 100).toFixed(0) : 0}%</td>
-              <td>R$ ${(origens.indicacao * (valorConsulta + (operados / totalLeads) * valorCirurgia)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+              <td>R$ ${(pacientesNoPeriodo.filter(p => p.origem === "indicacao").reduce((sum, p) => sum + (p.faturamentoReal || (p.leadStage === "operado" ? valorCirurgia : p.leadStage !== "lead" ? valorConsulta : 0)), 0)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
             </tr>
             <tr>
               <td><span class="badge badge-outros">Outros / Orgânico</span></td>
               <td>${origens.outros}</td>
               <td>${totalLeads > 0 ? ((origens.outros / totalLeads) * 100).toFixed(0) : 0}%</td>
-              <td>R$ ${(origens.outros * (valorConsulta + (operados / totalLeads) * valorCirurgia)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+              <td>R$ ${(pacientesNoPeriodo.filter(p => !p.origem || p.origem === "outros").reduce((sum, p) => sum + (p.faturamentoReal || (p.leadStage === "operado" ? valorCirurgia : p.leadStage !== "lead" ? valorConsulta : 0)), 0)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
             </tr>
           </tbody>
         </table>
@@ -1260,7 +1425,7 @@ export default function Patients() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="queixa" className="text-xs font-bold text-primary uppercase tracking-wider">Queixa Principal / Diagnóstico</Label>
                     <Input 
@@ -1317,6 +1482,17 @@ export default function Patients() {
                       type="date" 
                       value={proximoContato}
                       onChange={(e) => setProximoContato(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="faturamentoReal" className="text-xs font-bold text-primary uppercase tracking-wider">Faturamento Real (R$)</Label>
+                    <Input 
+                      id="faturamentoReal" 
+                      type="number" 
+                      placeholder="Ex: 15000" 
+                      value={faturamentoReal}
+                      onChange={(e) => setFaturamentoReal(e.target.value)}
                       className="rounded-xl h-11"
                     />
                   </div>
@@ -1646,6 +1822,179 @@ export default function Patients() {
                   })()}
                 </div>
 
+                {/* Painel de Tarefas Diárias da Secretária */}
+                <div className="bg-card border border-border/40 rounded-2xl p-4 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#B87333] uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                      <Clipboard className="w-4 h-4 text-[#B87333]" />
+                      Tarefas Diárias da Secretária (Busca Ativa & Follow-up)
+                    </span>
+                    {tarefasSecretaria.filter(t => t.status === "pendente").length > 0 && (
+                      <Badge className="bg-red-500 text-white text-[9px] font-bold animate-pulse">
+                        {tarefasSecretaria.filter(t => t.status === "pendente").length} Pendentes
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="space-y-2.5 max-h-[250px] overflow-y-auto pr-1">
+                    {tarefasSecretaria.filter(t => t.status === "pendente").length === 0 ? (
+                      <div className="text-center py-6 text-muted-foreground text-xs">
+                        🎉 Todas as tarefas concluídas! Excelente trabalho de busca ativa.
+                      </div>
+                    ) : (
+                      tarefasSecretaria
+                        .filter(t => t.status === "pendente")
+                        .map(task => (
+                          <div 
+                            key={task.id} 
+                            className="flex items-start justify-between gap-3 p-3 bg-secondary/10 hover:bg-secondary/20 border border-border/30 rounded-xl transition-all"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-[10px] text-primary">{task.pacienteNome}</span>
+                                <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-wider border-accent/20 text-accent bg-accent/5">
+                                  {task.tipo === "followup_lead" ? "📞 Novo Lead" : task.tipo === "busca_ativa" ? "⚡ Busca Ativa" : "🔄 Retorno"}
+                                </Badge>
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">{task.descricao}</p>
+                              <span className="text-[8px] text-muted-foreground block">Criada em: {task.dataCriacao}</span>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const updatedTasks = tarefasSecretaria.map(t => {
+                                  if (t.id === task.id) return { ...t, status: "concluida" as const };
+                                  return t;
+                                });
+                                setTarefasSecretaria(updatedTasks);
+                                localStorage.setItem("protouro_tarefas_secretaria", JSON.stringify(updatedTasks));
+                                toast.success("Tarefa concluída com sucesso!");
+                              }}
+                              className="h-7 rounded-lg text-[9px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              Concluir
+                            </Button>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Dashboard de ROI de Marketing (CPP) */}
+                <div className="bg-card border border-border/40 rounded-2xl p-4 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#B87333] uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                      <TrendingUp className="w-4 h-4" />
+                      Painel de ROI de Marketing & Captação CPP
+                    </span>
+                    <Badge variant="outline" className="text-[9px] font-bold border-emerald-500/20 text-emerald-600 bg-emerald-500/5">
+                      Acompanhamento de Conversão Real
+                    </Badge>
+                  </div>
+
+                  {(() => {
+                    // Carregar ou inicializar custos de campanha no localStorage
+                    const storedCosts = localStorage.getItem("protouro_custos_marketing");
+                    const defaultCosts = { instagram: 1500, google_ads: 2500 };
+                    let costs = defaultCosts;
+                    if (storedCosts) {
+                      try { costs = JSON.parse(storedCosts); } catch (e) { console.error(e); }
+                    }
+
+                    const handleSaveCost = (canal: "instagram" | "google_ads", val: string) => {
+                      const newCosts = { ...costs, [canal]: parseFloat(val) || 0 };
+                      localStorage.setItem("protouro_custos_marketing", JSON.stringify(newCosts));
+                      // Forçar atualização do componente
+                      toast.success(`Custo do ${canal === "instagram" ? "Instagram" : "Google Ads"} atualizado!`);
+                      window.location.reload();
+                    };
+
+                    // Calcular faturamento por canal
+                    const valorConsulta = 1000;
+                    const valorCirurgia = 15000;
+
+                    const faturamentoPorCanal = (canal: "instagram" | "google_ads" | "indicacao" | "outros") => {
+                      return filteredPacientes
+                        .filter(p => {
+                          if (canal === "outros") return !p.origem || p.origem === "outros";
+                          return p.origem === canal;
+                        })
+                        .reduce((sum, p) => sum + (p.faturamentoReal || (p.leadStage === "operado" ? valorCirurgia : p.leadStage !== "lead" ? valorConsulta : 0)), 0);
+                    };
+
+                    const fatInsta = faturamentoPorCanal("instagram");
+                    const fatGoogle = faturamentoPorCanal("google_ads");
+                    const fatIndicacao = faturamentoPorCanal("indicacao");
+                    const fatOutros = faturamentoPorCanal("outros");
+
+                    const roiInsta = costs.instagram > 0 ? ((fatInsta - costs.instagram) / costs.instagram) * 100 : 0;
+                    const roiGoogle = costs.google_ads > 0 ? ((fatGoogle - costs.google_ads) / costs.google_ads) * 100 : 0;
+
+                    return (
+                      <div className="space-y-4">
+                        {/* Inputs de Custos */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-secondary/10 p-3 rounded-xl border border-border/30">
+                          <div className="space-y-1.5">
+                            <Label className="text-[9px] font-bold text-muted-foreground uppercase">Custo Campanha Instagram (R$)</Label>
+                            <div className="flex gap-2">
+                              <Input 
+                                type="number" 
+                                placeholder="Ex: 1500" 
+                                defaultValue={costs.instagram}
+                                onBlur={(e) => handleSaveCost("instagram", e.target.value)}
+                                className="h-8 rounded-lg text-xs"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[9px] font-bold text-muted-foreground uppercase">Custo Campanha Google Ads (R$)</Label>
+                            <div className="flex gap-2">
+                              <Input 
+                                type="number" 
+                                placeholder="Ex: 2500" 
+                                defaultValue={costs.google_ads}
+                                onBlur={(e) => handleSaveCost("google_ads", e.target.value)}
+                                className="h-8 rounded-lg text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Cards de ROI */}
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                          <div className="bg-card border border-border/40 rounded-xl p-3 space-y-1">
+                            <span className="text-[8px] font-bold text-pink-600 uppercase block">📸 Instagram</span>
+                            <div className="text-sm font-serif font-bold text-primary">R$ {fatInsta.toLocaleString("pt-BR")}</div>
+                            <span className={`text-[9px] font-bold block ${roiInsta >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                              ROI: {roiInsta.toFixed(0)}%
+                            </span>
+                          </div>
+
+                          <div className="bg-card border border-border/40 rounded-xl p-3 space-y-1">
+                            <span className="text-[8px] font-bold text-blue-600 uppercase block">🔍 Google Ads</span>
+                            <div className="text-sm font-serif font-bold text-primary">R$ {fatGoogle.toLocaleString("pt-BR")}</div>
+                            <span className={`text-[9px] font-bold block ${roiGoogle >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                              ROI: {roiGoogle.toFixed(0)}%
+                            </span>
+                          </div>
+
+                          <div className="bg-card border border-border/40 rounded-xl p-3 space-y-1">
+                            <span className="text-[8px] font-bold text-emerald-600 uppercase block">🤝 Indicação</span>
+                            <div className="text-sm font-serif font-bold text-primary">R$ {fatIndicacao.toLocaleString("pt-BR")}</div>
+                            <span className="text-[9px] text-muted-foreground block">Custo: R$ 0 (Orgânico)</span>
+                          </div>
+
+                          <div className="bg-card border border-border/40 rounded-xl p-3 space-y-1">
+                            <span className="text-[8px] font-bold text-muted-foreground uppercase block">🌐 Outros</span>
+                            <div className="text-sm font-serif font-bold text-primary">R$ {fatOutros.toLocaleString("pt-BR")}</div>
+                            <span className="text-[9px] text-muted-foreground block">Custo: R$ 0 (Orgânico)</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
                 {/* Gráfico de Funil de Conversão e Perda (Gargalos) */}
                 <div className="bg-card border border-border/40 rounded-2xl p-4 shadow-sm space-y-3">
                   <div className="flex items-center justify-between">
@@ -1832,10 +2181,18 @@ export default function Patients() {
                               </div>
 
                               {/* Telefone e Parâmetros Rápidos */}
-                              <div className="flex items-center justify-between text-[9px] text-muted-foreground font-semibold border-t border-border/40 pt-1.5">
-                                <span>{p.idade ? `${p.idade} anos` : ""}</span>
-                                {p.testosterona && (
-                                  <span className="text-accent font-bold">T: {p.testosterona} ng/dL</span>
+                              <div className="flex flex-col gap-1 border-t border-border/40 pt-1.5">
+                                <div className="flex items-center justify-between text-[9px] text-muted-foreground font-semibold">
+                                  <span>{p.idade ? `${p.idade} anos` : ""}</span>
+                                  {p.testosterona && (
+                                    <span className="text-accent font-bold">T: {p.testosterona} ng/dL</span>
+                                  )}
+                                </div>
+                                {p.faturamentoReal !== undefined && (
+                                  <div className="flex items-center justify-between text-[9px] font-bold text-emerald-600">
+                                    <span>Faturamento Real:</span>
+                                    <span>R$ {p.faturamentoReal.toLocaleString("pt-BR")}</span>
+                                  </div>
                                 )}
                               </div>
 
@@ -2266,7 +2623,29 @@ export default function Patients() {
                             )}
 
                             {/* Botões de Exportação (JSON e PDF Timbrado Completo) */}
-                            <div className="flex justify-end gap-2 pt-2">
+                            <div className="flex justify-end gap-2 pt-2 flex-wrap">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOrcamentoPaciente(p);
+                                  setOrcamentoTipo("honorarios");
+                                  setOrcamentoProcedimento("");
+                                  setOrcamentoLocal("Clinovi Paulista");
+                                  setOrcamentoValorHonorarios("15000");
+                                  setOrcamentoValorHospital("12000");
+                                  setOrcamentoValorHospitalMateriais("8000");
+                                  setOrcamentoValorAcompanhamento("3000");
+                                  setOrcamentoObs("");
+                                  setOrcamentoOpen(true);
+                                }}
+                                className="h-9 rounded-xl text-xs font-bold border-[#B87333]/30 text-primary hover:bg-[#B87333]/5 gap-1.5"
+                              >
+                                <FileText className="w-3.5 h-3.5 text-[#B87333]" />
+                                Orçamento CPP Premium
+                              </Button>
+
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -3529,6 +3908,603 @@ export default function Patients() {
               className="h-9 rounded-xl text-xs font-bold copper-gradient text-white"
             >
               Imprimir Receita &amp; Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal do Gerador de Orçamentos CPP Premium */}
+      <Dialog open={orcamentoOpen} onOpenChange={setOrcamentoOpen}>
+        <DialogContent className="max-w-3xl bg-[#FEFEFE] rounded-2xl border border-border shadow-xl p-6 overflow-y-auto max-h-[90vh]">
+          <DialogHeader className="border-b border-border/40 pb-3">
+            <DialogTitle className="text-base font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[#B87333]" />
+              Gerador de Orçamentos Cirúrgicos CPP Premium
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Gere orçamentos de alto padrão timbrados para o paciente <strong>{orcamentoPaciente?.nome}</strong> de forma totalmente profissional.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-4">
+            {/* Seletor de Tipo de Orçamento e Procedimento do Catálogo */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-primary uppercase tracking-wider">Tipo de Orçamento:</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={orcamentoTipo === "honorarios" ? "default" : "outline"}
+                    onClick={() => setOrcamentoTipo("honorarios")}
+                    className={`flex-1 h-9 rounded-xl text-xs font-bold ${orcamentoTipo === "honorarios" ? "copper-gradient text-white border-0" : "border-border text-primary hover:bg-secondary/40"}`}
+                  >
+                    Apenas Honorários Médicos
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={orcamentoTipo === "particular_total" ? "default" : "outline"}
+                    onClick={() => setOrcamentoTipo("particular_total")}
+                    className={`flex-1 h-9 rounded-xl text-xs font-bold ${orcamentoTipo === "particular_total" ? "copper-gradient text-white border-0" : "border-border text-primary hover:bg-secondary/40"}`}
+                  >
+                    Particular Total
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="procedimento-catalogo" className="text-xs font-bold text-primary uppercase tracking-wider">Procedimento de Referência (Catálogo):</Label>
+                <select
+                  id="procedimento-catalogo"
+                  onChange={(e) => {
+                    const selected = procedimentosCatalogo.find(p => p.id === e.target.value);
+                    if (selected) {
+                      setOrcamentoProcedimento(selected.nome);
+                      setOrcamentoValorHonorarios(selected.honorarios);
+                      setOrcamentoValorHospital(selected.hospital);
+                      setOrcamentoValorHospitalMateriais(selected.materiais);
+                      setOrcamentoValorAcompanhamento(selected.acompanhamento);
+                      setOrcamentoObs(selected.obs);
+                    }
+                  }}
+                  className="w-full h-9 px-3 rounded-xl border border-border bg-card text-xs font-medium focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none"
+                >
+                  <option value="">-- Selecione do Catálogo para Autopreencher --</option>
+                  {procedimentosCatalogo.map(p => (
+                    <option key={p.id} value={p.id}>{p.nome}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Nome do Procedimento Livre e Local da Cirurgia */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="orcamento-procedimento-nome" className="text-xs font-bold text-primary uppercase tracking-wider">Procedimento (Editável):</Label>
+                <Input
+                  id="orcamento-procedimento-nome"
+                  value={orcamentoProcedimento}
+                  onChange={(e) => setOrcamentoProcedimento(e.target.value)}
+                  placeholder="Ex: HoLEP (Enucleação da Próstata com Holmium Laser)"
+                  className="h-9 rounded-xl text-xs font-medium bg-card"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="orcamento-local" className="text-xs font-bold text-primary uppercase tracking-wider">Local / Hospital Recomendado:</Label>
+                <select
+                  id="orcamento-local"
+                  value={orcamentoLocal}
+                  onChange={(e) => setOrcamentoLocal(e.target.value)}
+                  className="w-full h-9 px-3 rounded-xl border border-border bg-card text-xs font-medium focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none"
+                >
+                  <option value="Clinovi Paulista">Clinovi Paulista (Particular)</option>
+                  <option value="Clinovi Moema">Clinovi Moema (Particular)</option>
+                  <option value="Campinas Day Hospital">Campinas Day Hospital (Particular / Convênios)</option>
+                  <option value="Hospital Alvorada Moema">Hospital Alvorada Moema</option>
+                  <option value="Hospital São Luiz Campinas">Hospital São Luiz Campinas</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Valores e Acompanhamento */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="val-honorarios" className="text-xs font-bold text-primary uppercase tracking-wider">Honorários Equipe (R$):</Label>
+                <Input
+                  id="val-honorarios"
+                  type="number"
+                  value={orcamentoValorHonorarios}
+                  onChange={(e) => setOrcamentoValorHonorarios(e.target.value)}
+                  className="h-9 rounded-xl text-xs bg-card font-bold text-primary"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="val-acompanhamento" className="text-xs font-bold text-primary uppercase tracking-wider">Acomp. Pós-Op 6 Meses (R$):</Label>
+                <Input
+                  id="val-acompanhamento"
+                  type="number"
+                  value={orcamentoValorAcompanhamento}
+                  onChange={(e) => setOrcamentoValorAcompanhamento(e.target.value)}
+                  className="h-9 rounded-xl text-xs bg-card font-bold text-primary"
+                />
+              </div>
+
+              {orcamentoTipo === "particular_total" && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="val-hospital" className="text-xs font-bold text-primary uppercase tracking-wider">Custo Hospitalar (R$):</Label>
+                    <Input
+                      id="val-hospital"
+                      type="number"
+                      value={orcamentoValorHospital}
+                      onChange={(e) => setOrcamentoValorHospital(e.target.value)}
+                      className="h-9 rounded-xl text-xs bg-card font-bold text-primary"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="val-materiais" className="text-xs font-bold text-primary uppercase tracking-wider">OPME / Materiais (R$):</Label>
+                    <Input
+                      id="val-materiais"
+                      type="number"
+                      value={orcamentoValorMateriais}
+                      onChange={(e) => setOrcamentoValorHospitalMateriais(e.target.value)}
+                      className="h-9 rounded-xl text-xs bg-card font-bold text-primary"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Descrição / Observações */}
+            <div className="space-y-1.5">
+              <Label htmlFor="orcamento-obs" className="text-xs font-bold text-primary uppercase tracking-wider">Descrição Detalhada do Procedimento:</Label>
+              <Textarea
+                id="orcamento-obs"
+                value={orcamentoObs}
+                onChange={(e) => setOrcamentoObs(e.target.value)}
+                placeholder="Detalhes adicionais sobre a cirurgia, internação, reabilitação..."
+                className="min-h-[100px] rounded-xl text-xs bg-card leading-relaxed"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-border/40 pt-4 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setOrcamentoOpen(false);
+                setOrcamentoPaciente(null);
+              }}
+              className="h-9 rounded-xl text-xs font-bold border-border"
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              disabled={!orcamentoProcedimento || !orcamentoPaciente}
+              onClick={() => {
+                if (!orcamentoPaciente || !orcamentoProcedimento) return;
+
+                // Gerar o documento em PDF timbrado via iframe de impressão
+                const printFrame = document.createElement("iframe");
+                printFrame.style.position = "fixed";
+                printFrame.style.right = "0";
+                printFrame.style.bottom = "0";
+                printFrame.style.width = "0";
+                printFrame.style.height = "0";
+                printFrame.style.border = "0";
+                document.body.appendChild(printFrame);
+
+                const docToday = new Date().toLocaleDateString("pt-BR");
+                const validadeDate = new Date();
+                validadeDate.setDate(validadeDate.getDate() + 30);
+                const validadeStr = validadeDate.toLocaleDateString("pt-BR");
+
+                const vHonorarios = parseFloat(orcamentoValorHonorarios) || 0;
+                const vAcompanhamento = parseFloat(orcamentoValorAcompanhamento) || 0;
+                const vHospital = orcamentoTipo === "particular_total" ? (parseFloat(orcamentoValorHospital) || 0) : 0;
+                const vMateriais = orcamentoTipo === "particular_total" ? (parseFloat(orcamentoValorMateriais) || 0) : 0;
+                const vTotal = vHonorarios + vAcompanhamento + vHospital + vMateriais;
+
+                const formatMoeda = (val: number) => {
+                  return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+                };
+
+                const useSignature = localStorage.getItem("protouro_use_signature") === "true";
+                const signatureUrl = localStorage.getItem("protoUro_signature_data") || "";
+
+                const htmlContent = `
+                  <!DOCTYPE html>
+                  <html lang="pt-BR">
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>Orçamento Cirúrgico CPP - Dr. Felipe de Bulhões</title>
+                    <style>
+                      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+                      
+                      body {
+                        font-family: 'Montserrat', sans-serif;
+                        color: #1C3D5A;
+                        margin: 0;
+                        padding: 40px;
+                        background-color: #FFFFFF;
+                        font-size: 11px;
+                        line-height: 1.5;
+                      }
+                      
+                      .header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border-b: 2px solid #B87333;
+                        padding-bottom: 20px;
+                        margin-bottom: 30px;
+                      }
+                      
+                      .logo-area {
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                      }
+                      
+                      .logo-icon {
+                        width: 45px;
+                        height: 45px;
+                        border-radius: 12px;
+                        background: linear-gradient(135deg, #1C3D5A 0%, #B87333 100%);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #FFFFFF;
+                        font-family: 'Playfair Display', serif;
+                        font-size: 22px;
+                        font-weight: bold;
+                        border: 1px solid rgba(184, 115, 51, 0.3);
+                      }
+                      
+                      .logo-text {
+                        font-family: 'Playfair Display', serif;
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #1C3D5A;
+                        line-height: 1.2;
+                      }
+                      
+                      .logo-sub {
+                        font-size: 8px;
+                        color: #B87333;
+                        letter-spacing: 2px;
+                        text-transform: uppercase;
+                        font-weight: 700;
+                        font-family: 'Montserrat', sans-serif;
+                      }
+                      
+                      .doc-info {
+                        text-align: right;
+                        font-size: 9px;
+                        color: #64748B;
+                      }
+                      
+                      .doc-info strong {
+                        color: #B87333;
+                        font-size: 11px;
+                      }
+                      
+                      .title {
+                        font-family: 'Playfair Display', serif;
+                        font-size: 18px;
+                        font-weight: bold;
+                        color: #1C3D5A;
+                        text-align: center;
+                        margin-bottom: 25px;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                      }
+                      
+                      .title::after {
+                        content: '';
+                        display: block;
+                        width: 50px;
+                        height: 3px;
+                        background-color: #B87333;
+                        margin: 8px auto 0;
+                        border-radius: 2px;
+                      }
+                      
+                      .section-title {
+                        font-size: 10px;
+                        font-weight: 800;
+                        color: #B87333;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        margin-top: 20px;
+                        margin-bottom: 10px;
+                        border-bottom: 1px solid rgba(184, 115, 51, 0.2);
+                        padding-bottom: 4px;
+                      }
+                      
+                      table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 20px;
+                        font-size: 10px;
+                      }
+                      
+                      th {
+                        background-color: #1C3D5A;
+                        color: #FFFFFF;
+                        font-weight: bold;
+                        text-align: left;
+                        padding: 8px 12px;
+                        text-transform: uppercase;
+                        font-size: 9px;
+                        letter-spacing: 0.5px;
+                      }
+                      
+                      td {
+                        padding: 10px 12px;
+                        border-bottom: 1px solid #E2E8F0;
+                        color: #334155;
+                      }
+                      
+                      tr:nth-child(even) {
+                        background-color: #F8FAFC;
+                      }
+                      
+                      .total-box {
+                        background: linear-gradient(135deg, #1C3D5A 0%, #11253C 100%);
+                        color: #FFFFFF;
+                        border-radius: 12px;
+                        padding: 15px 20px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-top: 20px;
+                        margin-bottom: 25px;
+                        border: 1px solid #B87333;
+                      }
+                      
+                      .total-box span {
+                        font-size: 11px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                      }
+                      
+                      .total-box strong {
+                        font-size: 18px;
+                        color: #F3A847; /* Cobre destacado claro */
+                        font-weight: 800;
+                      }
+                      
+                      .clauses {
+                        font-size: 9px;
+                        color: #475569;
+                        text-align: justify;
+                        margin-bottom: 30px;
+                        line-height: 1.6;
+                      }
+                      
+                      .clauses p {
+                        margin: 0 0 8px 0;
+                      }
+                      
+                      .signature-container {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-top: 40px;
+                        padding-top: 20px;
+                      }
+                      
+                      .signature-box {
+                        width: 45%;
+                        text-align: center;
+                      }
+                      
+                      .signature-line {
+                        border-top: 1px solid #94A3B8;
+                        margin-top: 40px;
+                        margin-bottom: 8px;
+                      }
+                      
+                      .footer {
+                        position: fixed;
+                        bottom: 30px;
+                        left: 40px;
+                        right: 40px;
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 7px;
+                        color: #94A3B8;
+                        border-top: 1px solid #E2E8F0;
+                        padding-top: 10px;
+                      }
+                      
+                      @media print {
+                        body {
+                          padding: 0;
+                        }
+                        .footer {
+                          position: absolute;
+                          bottom: 0;
+                        }
+                      }
+                    </style>
+                  </head>
+                  <body>
+                    <!-- Cabeçalho Timbrado Premium -->
+                    <div class="header">
+                      <div class="logo-area">
+                        <div class="logo-icon">FB</div>
+                        <div>
+                          <div class="logo-text">Dr. Felipe de Bulhões</div>
+                          <div class="logo-sub">Urologia & Andrologia de Alta Performance</div>
+                        </div>
+                      </div>
+                      <div class="doc-info">
+                        <strong>ORÇAMENTO DE PROCEDIMENTO</strong><br>
+                        Data de Emissão: ${docToday}<br>
+                        Validade da Proposta: 30 dias (até ${validadeStr})
+                      </div>
+                    </div>
+                    
+                    <div class="title">Proposta de Planejamento Cirúrgico Premium</div>
+                    
+                    <!-- Dados do Paciente -->
+                    <div class="section-title">Dados do Paciente e Planejamento</div>
+                    <table>
+                      <tr>
+                        <td style="width: 20%; font-weight: bold; color: #1C3D5A;">Paciente:</td>
+                        <td style="width: 45%;">${orcamentoPaciente.nome}</td>
+                        <td style="width: 15%; font-weight: bold; color: #1C3D5A;">Idade:</td>
+                        <td style="width: 20%;">${orcamentoPaciente.idade} anos</td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight: bold; color: #1C3D5A;">Procedimento:</td>
+                        <td colspan="3" style="font-weight: bold; color: #B87333;">${orcamentoProcedimento}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight: bold; color: #1C3D5A;">Hospital Sugerido:</td>
+                        <td>${orcamentoLocal}</td>
+                        <td style="font-weight: bold; color: #1C3D5A;">Modalidade:</td>
+                        <td>${orcamentoTipo === "particular_total" ? "Particular Total (All-Inclusive)" : "Apenas Honorários Médicos"}</td>
+                      </tr>
+                    </table>
+                    
+                    <!-- Serviços Contratados -->
+                    <div class="section-title">Detalhamento dos Serviços e Custos</div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th style="width: 30%;">Serviço / Profissional</th>
+                          <th style="width: 50%;">Descrição</th>
+                          <th style="width: 20%; text-align: right;">Valor</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style="font-weight: bold; color: #1C3D5A;">Equipe Cirúrgica</td>
+                          <td>Honorários médicos completos do Dr. Felipe de Bulhões, cirurgião auxiliar, anestesista e instrumentadores especializados em técnicas minimamente invasivas.</td>
+                          <td style="text-align: right; font-weight: bold;">${formatMoeda(vHonorarios)}</td>
+                        </tr>
+                        <tr>
+                          <td style="font-weight: bold; color: #1C3D5A;">Acompanhamento Pós-Operatório</td>
+                          <td>6 meses de acompanhamento médico contínuo, consultas ilimitadas presenciais ou por telemedicina dedicadas à cirurgia, e canal de contato direto e exclusivo com o Dr. Felipe.</td>
+                          <td style="text-align: right; font-weight: bold;">${formatMoeda(vAcompanhamento)}</td>
+                        </tr>
+                        ${orcamentoTipo === "particular_total" ? `
+                          <tr>
+                            <td style="font-weight: bold; color: #1C3D5A;">Taxas Hospitalares</td>
+                            <td>Reserva de centro cirúrgico de alta tecnologia, taxa de sala, internação em apartamento privativo e suporte assistencial completo.</td>
+                            <td style="text-align: right; font-weight: bold;">${formatMoeda(vHospital)}</td>
+                          </tr>
+                          <tr>
+                            <td style="font-weight: bold; color: #1C3D5A;">Materiais e OPME</td>
+                            <td>Dispositivos médicos e materiais importados de alta qualidade específicos para o procedimento (ex: laser, telas, próteses de alta tecnologia).</td>
+                            <td style="text-align: right; font-weight: bold;">${formatMoeda(vMateriais)}</td>
+                          </tr>
+                        ` : ""}
+                      </tbody>
+                    </table>
+                    
+                    <!-- Caixa de Valor Total -->
+                    <div class="total-box">
+                      <span>Valor Total do Planejamento Cirúrgico</span>
+                      <strong>${formatMoeda(vTotal)}</strong>
+                    </div>
+                    
+                    <!-- Descrição Clínica Adicional -->
+                    ${orcamentoObs ? `
+                      <div class="section-title">Informações e Orientações Adicionais</div>
+                      <div style="font-size: 9px; color: #475569; margin-bottom: 20px; line-height: 1.5; text-align: justify;">
+                        ${orcamentoObs}
+                      </div>
+                    ` : ""}
+                    
+                    <!-- Condições Comerciais e Cláusulas de Proteção CPP -->
+                    <div class="section-title">Condições Comerciais e Termos de Garantia</div>
+                    <div class="clauses">
+                      <p><strong>1. Formas de Pagamento:</strong> À vista com 5% de desconto no valor de ${formatMoeda(vTotal * 0.95)} ou parcelado em até 6x de ${formatMoeda(vTotal / 6)} sem juros no cartão de crédito corporativo ou boleto bancário (sujeito a análise).</p>
+                      <p><strong>2. Programação de Equipe:</strong> O pagamento deverá ser efetuado em até 20 dias corridos antes da data cirúrgica agendada para fins de reserva e garantia da programação da equipe e insumos tecnológicos.</p>
+                      <p><strong>3. Política de Reagendamento:</strong> A cirurgia poderá ser reagendada uma única vez sem custos adicionais. Cancelamentos ou desistências em menos de 15 dias úteis da data cirúrgica acarretarão multa de 15% do valor total para cobertura de custos operacionais da equipe médica reservada.</p>
+                      <p><strong>4. Garantia de Revisão:</strong> Caso seja necessária uma segunda abordagem cirúrgica complementar ou revisão direta relacionada ao procedimento principal dentro de 6 meses pós-operatórios, os honorários médicos do Dr. Felipe de Bulhões não serão cobrados.</p>
+                      ${orcamentoTipo === "honorarios" ? `<p><strong>5. Observação de Custos Hospitalares:</strong> Custos de hospital e materiais não estão inclusos neste orçamento e são de inteira responsabilidade do paciente diretamente com a instituição de saúde escolhida.</p>` : ""}
+                    </div>
+                    
+                    <!-- Área de Assinaturas -->
+                    <div class="signature-container">
+                      <div class="signature-box">
+                        <div class="signature-line"></div>
+                        <span style="font-weight: bold;">${orcamentoPaciente.nome}</span><br>
+                        <span style="font-size: 8px; color: #64748B;">Contratante / Paciente</span>
+                      </div>
+                      <div class="signature-box">
+                        ${useSignature && signatureUrl ? `<img src="${signatureUrl}" style="height: 45px; margin-bottom: -15px;" />` : `<div style="height: 30px;"></div>`}
+                        <div class="signature-line"></div>
+                        <span style="font-weight: bold; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</span><br>
+                        <span style="font-size: 8px; color: #64748B;">Urologista • CRM-SP 241.135 | RQE 112.445</span>
+                      </div>
+                    </div>
+                    
+                    <!-- Rodapé Fixo -->
+                    <div class="footer">
+                      <span>Orçamento de Procedimento Particular • Gerado via ProtoUro App</span>
+                      <span>Campinas: Av. José de Souza Campos, 123 | São Paulo: Av. Paulista, 1000</span>
+                      <span>Página 1 de 1</span>
+                    </div>
+                  </body>
+                  </html>
+                `;
+
+                const doc = printFrame.contentWindow?.document || printFrame.contentDocument;
+                if (doc) {
+                  doc.open();
+                  doc.write(htmlContent);
+                  doc.close();
+
+                  // Registrar orçamento como documento no histórico do paciente
+                  const novoDocumento = {
+                    id: Math.random().toString(36).substring(2, 9),
+                    titulo: `Orçamento CPP: ${orcamentoProcedimento}`,
+                    tipo: "laudo" as const, // Salva como tipo laudo para categorização de orçamento
+                    data: docToday,
+                    conteudo: `Orçamento Cirúrgico CPP (${orcamentoTipo === "particular_total" ? "Particular Total" : "Apenas Honorários"})\nProcedimento: ${orcamentoProcedimento}\nLocal: ${orcamentoLocal}\nValor Total: ${formatMoeda(vTotal)}\n\nDetalhamento:\n- Honorários: ${formatMoeda(vHonorarios)}\n- Acompanhamento: ${formatMoeda(vAcompanhamento)}\n${orcamentoTipo === "particular_total" ? `- Hospital: ${formatMoeda(vHospital)}\n- Materiais: ${formatMoeda(vMateriais)}` : ""}`
+                  };
+
+                  const pacientesAtualizados = pacientes.map(p => {
+                    if (p.id === orcamentoPaciente.id) {
+                      return {
+                        ...p,
+                        documentos: [novoDocumento, ...(p.documentos || [])]
+                      };
+                    }
+                    return p;
+                  });
+
+                  setPacientes(pacientesAtualizados);
+                  saveToStorage(pacientesAtualizados);
+
+                  setTimeout(() => {
+                    printFrame.contentWindow?.focus();
+                    printFrame.contentWindow?.print();
+                    setTimeout(() => {
+                      document.body.removeChild(printFrame);
+                    }, 1000);
+                  }, 500);
+
+                  toast.success("Orçamento CPP gerado com sucesso para impressão e salvo no prontuário!");
+                  setOrcamentoOpen(false);
+                  setOrcamentoPaciente(null);
+                }
+              }}
+              className="h-9 rounded-xl text-xs font-bold copper-gradient text-white"
+            >
+              Imprimir Orçamento &amp; Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
