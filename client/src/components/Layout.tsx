@@ -146,6 +146,15 @@ export default function Layout({ children }: LayoutProps) {
               <MessageCircle className="w-4 h-4" />
               WhatsApp Comercial
             </a>
+            <a 
+              href="https://app.notion.com/p/34dd2b6d803981358982ea22fb58db5f#34dd2b6d80398110b9c3e5362e6e3c54" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#FEFEFE] bg-gradient-to-r from-[#B87333] to-[#8C5226] hover:brightness-110 transition-all shadow-md shadow-[#B87333]/20 border border-[#B87333]/30"
+            >
+              <User className="w-4 h-4 text-[#FEFEFE]" />
+              Paciente Ideal (ICP)
+            </a>
           </div>
 
           <div className="p-3 bg-white/5 rounded-lg border border-white/10 flex items-center gap-3">
