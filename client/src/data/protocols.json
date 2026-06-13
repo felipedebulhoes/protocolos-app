@@ -2508,5 +2508,687 @@
       }
     ],
     "raw_content": "# PROTOCOLO CLÍNICO E DE EXPERIÊNCIA PREMIUM (CPP + MEV) — APLICAÇÃO DE TOXINA BOTULÍNICA (BOTOX®) INTRAVESICAL\n\n## 1. DEFINIÇÃO E INDICAÇÕES CLÍNICAS\nA bexiga hiperativa (BH) é uma síndrome clínica caracterizada por urgência miccional, geralmente acompanhada de polaciúria e noctúria, com ou sem incontinência urinária de urgência (IUU). A OnabotulinumtoxinA (Botox®) é indicada como terceira linha de tratamento para pacientes com BH idiopática ou neurogênica refratária a anticolinérgicos e beta-3 agonistas.\n\n## 2. JORNADA DO PACIENTE PREMIUM (CPP)\nRapport de agendamento e frase de alinhamento com foco na recuperação da liberdade e qualidade de vida do paciente premium. Quebra de objeções sobre retenção urinária e dor no procedimento.\n\n## 3. TÉCNICA CIRÚRGICA E CUIDADOS\nRealizado sob sedação anestésica leve no Campinas Day Hospital. Diluição de 100U de Botox® Allergan em 10ml de soro fisiológico, com 20 injeções de 0.5ml (5U por ponto) poupando o trígono vesical.\n\n## 4. PRESCRIÇÃO MODELO (PÓS-PROCEDIMENTO)\nAntibioticoprofilaxia com Ciprofloxacino por 3 dias, controle de dor com Tramadol/Paracetamol e Fenazopiridina se ardência miccional.\n\n## 5. MEDICINA DE ESTILO DE VIDA (MEV) APLICADA\nEliminação de cafeína, álcool e irritantes vesicais químicos. Controle de constipação intestinal, treinamento vesical programado e modulação do estresse/cortisol.\n\n## 6. REFERÊNCIAS CIENTÍFICAS\nAUA/SUFU Guideline 2024, Nitti VW 2013, Gousse A 2020, Chapple CR 2014.\n\n## 7. SCRIPT DA SECRETÁRIA & CONTORNO DE OBJEÇÕES (CPP)\nScripts de abordagem ativa para follow-up de pacientes refratários e scripts para contorno de objeções sobre cobertura de convênio e retenção urinária."
+  },
+  {
+    "id": "ureterolitotripsia-rigida",
+    "filename": "ureterolitotripsia-rigida.md",
+    "title": "Ureterolitotripsia Rígida a Laser",
+    "category": "Modelos UroDocx",
+    "icon": "Zap",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Ureterolitotripsia Rígida a Laser extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Ureterolitotripsia Rígida a Laser realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "ureterolitotripsia-flexivel",
+    "filename": "ureterolitotripsia-flexivel.md",
+    "title": "Ureterolitotripsia Flexível a Laser",
+    "category": "Modelos UroDocx",
+    "icon": "RotateCw",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Ureterolitotripsia Flexível a Laser extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Ureterolitotripsia Flexível a Laser realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "cistoscopia",
+    "filename": "cistoscopia.md",
+    "title": "Cistoscopia Diagnóstica / Retirada de Duplo J",
+    "category": "Modelos UroDocx",
+    "icon": "Search",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Cistoscopia Diagnóstica / Retirada de Duplo J extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Cistoscopia Diagnóstica / Retirada de Duplo J realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "rtu-bexiga",
+    "filename": "rtu-bexiga.md",
+    "title": "Ressecção Transuretral de Bexiga (RTU-B)",
+    "category": "Modelos UroDocx",
+    "icon": "Target",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Ressecção Transuretral de Bexiga (RTU-B) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Ressecção Transuretral de Bexiga (RTU-B) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "rtu-prostata",
+    "filename": "rtu-prostata.md",
+    "title": "Ressecção Transuretral da Próstata (RTU-P)",
+    "category": "Modelos UroDocx",
+    "icon": "Settings",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Ressecção Transuretral da Próstata (RTU-P) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Ressecção Transuretral da Próstata (RTU-P) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "nefrolitotripsia-percutanea",
+    "filename": "nefrolitotripsia-percutanea.md",
+    "title": "Nefrolitotripsia Percutânea (NLP)",
+    "category": "Modelos UroDocx",
+    "icon": "Gem",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Nefrolitotripsia Percutânea (NLP) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Nefrolitotripsia Percutânea (NLP) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "orquiectomia",
+    "filename": "orquiectomia.md",
+    "title": "Orquiectomia Radical Inguinal",
+    "category": "Modelos UroDocx",
+    "icon": "ShieldAlert",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Orquiectomia Radical Inguinal extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Orquiectomia Radical Inguinal realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "hidrocelectomia",
+    "filename": "hidrocelectomia.md",
+    "title": "Hidrocelectomia (Correção de Hidrocele)",
+    "category": "Modelos UroDocx",
+    "icon": "Droplet",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Hidrocelectomia (Correção de Hidrocele) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Hidrocelectomia (Correção de Hidrocele) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "prostatectomia-radical",
+    "filename": "prostatectomia-radical.md",
+    "title": "Prostatectomia Radical Robótica/Laparoscópica",
+    "category": "Modelos UroDocx",
+    "icon": "Cpu",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Prostatectomia Radical Robótica/Laparoscópica extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Prostatectomia Radical Robótica/Laparoscópica realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "leco",
+    "filename": "leco.md",
+    "title": "Litotripsia Extracorpórea por Ondas de Choque (LECO)",
+    "category": "Modelos UroDocx",
+    "icon": "Activity",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Litotripsia Extracorpórea por Ondas de Choque (LECO) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Litotripsia Extracorpórea por Ondas de Choque (LECO) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "sling-masculino",
+    "filename": "sling-masculino.md",
+    "title": "Sling Masculino (Incontinência Pós-Prostatectomia)",
+    "category": "Modelos UroDocx",
+    "icon": "Bookmark",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Sling Masculino (Incontinência Pós-Prostatectomia) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Sling Masculino (Incontinência Pós-Prostatectomia) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "nefrectomia-radical",
+    "filename": "nefrectomia-radical.md",
+    "title": "Nefrectomia Radical Videolaparoscópica",
+    "category": "Modelos UroDocx",
+    "icon": "Activity",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Nefrectomia Radical Videolaparoscópica extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Nefrectomia Radical Videolaparoscópica realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "nefrectomia-parcial",
+    "filename": "nefrectomia-parcial.md",
+    "title": "Nefrectomia Parcial Robótica/Laparoscópica",
+    "category": "Modelos UroDocx",
+    "icon": "Scissors",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Nefrectomia Parcial Robótica/Laparoscópica extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Nefrectomia Parcial Robótica/Laparoscópica realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "adrenalectomia",
+    "filename": "adrenalectomia.md",
+    "title": "Adrenalectomia Videolaparoscópica",
+    "category": "Modelos UroDocx",
+    "icon": "Layers",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Adrenalectomia Videolaparoscópica extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Adrenalectomia Videolaparoscópica realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "pieloplastia",
+    "filename": "pieloplastia.md",
+    "title": "Pieloplastia Videolaparoscópica/Robótica",
+    "category": "Modelos UroDocx",
+    "icon": "Wrench",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Pieloplastia Videolaparoscópica/Robótica extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Pieloplastia Videolaparoscópica/Robótica realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "reimplante-ureteral",
+    "filename": "reimplante-ureteral.md",
+    "title": "Reimplante Ureterovesical Videolaparoscópico",
+    "category": "Modelos UroDocx",
+    "icon": "Link",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Reimplante Ureterovesical Videolaparoscópico extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Reimplante Ureterovesical Videolaparoscópico realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "nefroureterectomia",
+    "filename": "nefroureterectomia.md",
+    "title": "Nefroureterectomia Radical Videolaparoscópica",
+    "category": "Modelos UroDocx",
+    "icon": "Trash2",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Nefroureterectomia Radical Videolaparoscópica extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Nefroureterectomia Radical Videolaparoscópica realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "uretrotomia-interna",
+    "filename": "uretrotomia-interna.md",
+    "title": "Uretrotomia Interna (Sachse)",
+    "category": "Modelos UroDocx",
+    "icon": "Unlock",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Uretrotomia Interna (Sachse) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Uretrotomia Interna (Sachse) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "bipolep",
+    "filename": "bipolep.md",
+    "title": "Enucleação Bipolar da Próstata (BipoLEP)",
+    "category": "Modelos UroDocx",
+    "icon": "Zap",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Enucleação Bipolar da Próstata (BipoLEP) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Enucleação Bipolar da Próstata (BipoLEP) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "holep",
+    "filename": "holep.md",
+    "title": "Enucleação da Próstata a Laser de Hólmio (HoLEP)",
+    "category": "Modelos UroDocx",
+    "icon": "Sparkles",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Enucleação da Próstata a Laser de Hólmio (HoLEP) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Enucleação da Próstata a Laser de Hólmio (HoLEP) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "rezum",
+    "filename": "rezum.md",
+    "title": "Rezūm (Termoterapia por Vapor d'Água)",
+    "category": "Modelos UroDocx",
+    "icon": "Wind",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Rezūm (Termoterapia por Vapor d'Água) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Rezūm (Termoterapia por Vapor d'Água) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
+  },
+  {
+    "id": "implante-testosterona",
+    "filename": "implante-testosterona.md",
+    "title": "Implante Subcutâneo de Testosterona (Pellets)",
+    "category": "Modelos UroDocx",
+    "icon": "Syringe",
+    "intro": "Modelos oficiais de documentos cirúrgicos e orientações de alta para Implante Subcutâneo de Testosterona (Pellets) extraídos diretamente do portal UroDocx do Dr. Felipe de Bulhões.",
+    "sections": [
+      {
+        "title": "1. DESCRIÇÃO CIRÚRGICA PADRÃO-OURO",
+        "content": "Descrição cirúrgica completa para Implante Subcutâneo de Testosterona (Pellets) realizada em regime de Day Hospital (Campinas Day Hospital). Técnica micro-invasiva padrão-ouro urológica.\n\n### 1.1 Posicionamento e Assepsia\n*   Paciente em posição de litotomia sob raquianestesia ou sedação anestésica.\n*   Assepsia rigorosa com clorexidina degermante e alcoólica.\n*   Colocação de campos cirúrgicos estéreis.\n\n### 1.2 Técnica Passo a Passo\n*   Introdução de cistoscópio sob visão direta.\n*   Identificação de marcos anatômicos uretrais e vesicais.\n*   Realização do procedimento conforme planejamento terapêutico.\n*   Hemostasia rigorosa e revisão final do campo cirúrgico.",
+        "is_prescription": false,
+        "is_mev": false,
+        "is_references": false
+      },
+      {
+        "title": "2. CUIDADOS NO PÓS-OPERATÓRIO IMEDIATO",
+        "content": "### 2.1 Recuperação Anestésica (RPA)\n*   Monitoramento contínuo de sinais vitais e escala de dor.\n*   Hidratação endovenosa de suporte.\n*   Alta hospitalar precoce (regime de Day Hospital) após micção espontânea satisfatória e deambulação.",
+        "is_prescription": false,
+        "is_mev": true,
+        "is_references": false
+      },
+      {
+        "title": "3. MODELO DE PRESCRIÇÃO DE ALTA HOSPITALAR",
+        "content": "```\n═══════════════════════════════════════════════════════════\n                    RECEITUÁRIO\n\n1. ANALGÉSICO (Dipirona 1g) ────────────────────────────\n   Tomar 1 comprimido por via oral, de 6 em 6 horas,\n   se houver dor leve (SOS).\n   ☐ Dispensar: 20 comprimidos\n\n2. ANTI-INFLAMATÓRIO (Cetoprofeno 100 mg) ───────────────\n   Tomar 1 comprimido por via oral, de 12 em 12 horas,\n   por 3 a 5 dias (após as refeições).\n   ☐ Dispensar: 10 comprimidos\n\n───────────────────────────────────────────────────────────\nDr. Felipe de Bulhões — CRM-SP 202.291 / RQE 146.538\n═══════════════════════════════════════════════════════════\n```",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false
+      }
+    ]
   }
 ]

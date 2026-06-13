@@ -30,7 +30,14 @@ import {
   Moon, 
   Gem, 
   Droplets,
-  Star
+  Star,
+  RotateCw,
+  Cpu,
+  Bookmark,
+  Wrench,
+  Trash2,
+  Wind,
+  Syringe
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,7 +52,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   PlusCircle, Flame, ShieldAlert, RefreshCw, Layers, Sparkles,
   FileText, Users, Clock, Hourglass, AlertTriangle, HeartCrack,
   FolderHeart, HeartPulse, ZapOff, CheckSquare, Droplet, Moon,
-  Gem, Droplets
+  Gem, Droplets, RotateCw, Cpu, Bookmark, Wrench, Trash2, Wind, Syringe
 };
 
 export default function Home() {
@@ -85,7 +92,8 @@ export default function Home() {
       const matchesSearch = searchQuery === "" || 
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.raw_content.toLowerCase().includes(searchQuery.toLowerCase());
+        (p.raw_content && p.raw_content.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.sections && p.sections.some(sec => sec.content.toLowerCase().includes(searchQuery.toLowerCase())));
       return matchesCategory && matchesSearch;
     });
   }, [searchQuery, selectedCategory]);
