@@ -40,7 +40,8 @@ import {
   MessageSquare,
   PlayCircle,
   Video,
-  Printer
+  Printer,
+  Trash2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,6 +83,15 @@ export default function ProtocolDetail() {
   const [selectedAdjuvants, setSelectedAdjuvants] = useState<Record<string, string[]>>({});
   const [checklistItems, setChecklistItems] = useState<Record<string, { id: string; text: string; checked: boolean }[]>>({});
   const [mevCopied, setMevCopied] = useState<boolean>(false);
+  
+  // Catálogo de medicamentos adjuvantes customizados
+  const [customAdjuvants, setCustomAdjuvants] = useState<{ id: string; name: string; desc: string }[]>([]);
+  const [newMedName, setNewMedName] = useState("");
+  const [newMedDesc, setNewMedDesc] = useState("");
+  const [isAddingMed, setIsAddingMed] = useState(false);
+  
+  // Tom selecionado para a mensagem MEV (formal, acolhedor, pratico)
+  const [mevTone, setMevTone] = useState<"formal" | "acolhedor" | "pratico">("acolhedor");
 
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
@@ -107,7 +117,7 @@ export default function ProtocolDetail() {
     }
   }, [protocolId]);
 
-  // Salvar checklist no LocalStorage ao alterar
+  // Salvar checklist no LocalStorage ao alterar e vincular ao CRM do paciente ativo se houver
   const handleToggleChecklistItem = (itemId: string) => {
     if (!protocol) return;
     const currentList = checklistItems[protocol.id] || [];
@@ -117,19 +127,58 @@ export default function ProtocolDetail() {
     setChecklistItems(prev => ({ ...prev, [protocol.id]: updated }));
     localStorage.setItem(`protoUro_checklist_${protocol.id}`, JSON.stringify(updated));
     
+    // Se houver um paciente ativo, salvar o estado do checklist de alta no prontuário dele no CRM
+    if (patientName.trim()) {
+      const cleanName = patientName.trim();
+      const stored = localStorage.getItem("protouro_pacientes_db");
+      if (stored) {
+        try {
+          const pacientesList = JSON.parse(stored);
+          const paciente = pacientesList.find((p: any) => p.nome.toLowerCase() === cleanName.toLowerCase());
+          if (paciente) {
+            // Inicializar ou atualizar o histórico de auditoria de checklists
+            if (!paciente.auditorias_alta) {
+              paciente.auditorias_alta = {};
+            }
+            paciente.auditorias_alta[protocol.id] = updated;
+            localStorage.setItem("protouro_pacientes_db", JSON.stringify(pacientesList));
+          }
+        } catch (e) {
+          console.error("Erro ao vincular auditoria de alta ao paciente:", e);
+        }
+      }
+    }
+    
     const item = updated.find(i => i.id === itemId);
     if (item?.checked) {
       toast.success(`Checklist: "${item.text}" auditado com sucesso!`);
     }
   };
 
-  // Resetar checklist
+  // Resetar checklist e remover do CRM do paciente se houver
   const handleResetChecklist = () => {
     if (!protocol) return;
     const currentList = checklistItems[protocol.id] || [];
     const updated = currentList.map(item => ({ ...item, checked: false }));
     setChecklistItems(prev => ({ ...prev, [protocol.id]: updated }));
     localStorage.setItem(`protoUro_checklist_${protocol.id}`, JSON.stringify(updated));
+    
+    if (patientName.trim()) {
+      const cleanName = patientName.trim();
+      const stored = localStorage.getItem("protouro_pacientes_db");
+      if (stored) {
+        try {
+          const pacientesList = JSON.parse(stored);
+          const paciente = pacientesList.find((p: any) => p.nome.toLowerCase() === cleanName.toLowerCase());
+          if (paciente && paciente.auditorias_alta) {
+            paciente.auditorias_alta[protocol.id] = updated;
+            localStorage.setItem("protouro_pacientes_db", JSON.stringify(pacientesList));
+          }
+        } catch (e) {
+          console.error("Erro ao limpar auditoria do paciente:", e);
+        }
+      }
+    }
     toast.info("Auditoria de alta reiniciada.");
   };
 
@@ -144,6 +193,36 @@ export default function ProtocolDetail() {
     toast.success(current.includes(adjuvantText) ? "Medicamento removido da receita." : "Medicamento adicionado à receita!");
   };
 
+  // Cadastrar novo medicamento customizado
+  const handleAddCustomAdjuvant = () => {
+    if (!newMedName.trim() || !newMedDesc.trim()) {
+      toast.error("Preencha o nome e a posologia do medicamento!");
+      return;
+    }
+    const newMed = {
+      id: "med_" + Date.now(),
+      name: newMedName.trim(),
+      desc: newMedDesc.trim()
+    };
+    const updated = [...customAdjuvants, newMed];
+    setCustomAdjuvants(updated);
+    localStorage.setItem("protoUro_custom_adjuvants", JSON.stringify(updated));
+    
+    setNewMedName("");
+    setNewMedDesc("");
+    setIsAddingMed(false);
+    toast.success(`Medicamento "${newMed.name}" adicionado ao catálogo!`);
+  };
+
+  // Remover medicamento customizado
+  const handleRemoveCustomAdjuvant = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar disparar o toggle de seleção
+    const updated = customAdjuvants.filter(m => m.id !== id);
+    setCustomAdjuvants(updated);
+    localStorage.setItem("protoUro_custom_adjuvants", JSON.stringify(updated));
+    toast.info("Medicamento removido do catálogo.");
+  };
+
   // Carregar favoritos, histórico de pacientes e assinatura do LocalStorage
   useEffect(() => {
     const savedFavs = localStorage.getItem("protoUro_favorites");
@@ -153,6 +232,10 @@ export default function ProtocolDetail() {
     const savedHistory = localStorage.getItem("protoUro_patient_history");
     if (savedHistory) {
       setPatientHistory(JSON.parse(savedHistory));
+    }
+    const savedCustomMeds = localStorage.getItem("protoUro_custom_adjuvants");
+    if (savedCustomMeds) {
+      setCustomAdjuvants(JSON.parse(savedCustomMeds));
     }
     // Carregar o último paciente ativo se houver
     const activePatient = localStorage.getItem("protoUro_active_patient");
@@ -1234,54 +1317,89 @@ export default function ProtocolDetail() {
 		            </CardContent>
 		          </Card>
 
-		          {/* Envio MEV WhatsApp */}
-		          <Card className="border-[#B87333]/20 bg-[#B87333]/[0.01] shadow-sm flex flex-col justify-between">
-		            <CardHeader className="p-5 pb-3">
-		              <div className="space-y-1 text-left">
-		                <CardTitle className="text-sm font-serif font-bold text-primary flex items-center gap-1.5">
-		                  <Sparkles className="w-4 h-4 text-[#B87333]" />
-		                  Orientações MEV para o Paciente
-		                </CardTitle>
-		                <p className="text-[10px] text-muted-foreground leading-normal">
-		                  Envie as orientações completas de Estilo de Vida (Nutrição, Sono, Treino) formatadas.
-		                </p>
-		              </div>
-		            </CardHeader>
-		            <CardContent className="p-5 pt-0 space-y-4 flex-1 flex flex-col justify-between">
-		              <div className="bg-secondary/30 rounded-xl p-4 border border-border/40 text-left space-y-2 flex-1">
-		                <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">Prévia da Mensagem:</span>
-		                <div className="text-xs text-foreground/80 leading-relaxed font-mono line-clamp-6 whitespace-pre-wrap">
-		                  {`Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular.\n• SONO: Sono reparador para pico de testosterona e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à disposição!`}
-		                </div>
-		              </div>
-		              <div className="flex gap-2 pt-2 shrink-0">
-		                <Button
-		                  variant="outline"
-		                  onClick={() => {
-		                    const text = `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular.\n• SONO: Sono reparador para pico de testosterona e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à disposição!`;
-		                    navigator.clipboard.writeText(text);
-		                    setMevCopied(true);
-		                    toast.success("Mensagem MEV copiada com sucesso!");
-		                    setTimeout(() => setMevCopied(false), 2000);
-		                  }}
-		                  className="flex-1 rounded-xl text-xs h-10 font-semibold border-border"
-		                >
-		                  {mevCopied ? "Copiado!" : "Copiar Texto"}
-		                </Button>
-		                <Button
-		                  onClick={() => {
-		                    const text = `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular.\n• SONO: Sono reparador para pico de testosterona e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à disposição!`;
-		                    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-		                    window.open(url, "_blank");
-		                    toast.success("Abrindo WhatsApp...");
-		                  }}
-		                  className="flex-1 rounded-xl text-xs h-10 font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
-		                >
-		                  Enviar WhatsApp
-		                </Button>
-		              </div>
-		            </CardContent>
-		          </Card>
+			          {/* Envio MEV WhatsApp */}
+			          <Card className="border-[#B87333]/20 bg-[#B87333]/[0.01] shadow-sm flex flex-col justify-between">
+			            <CardHeader className="p-5 pb-3">
+			              <div className="space-y-1 text-left">
+			                <CardTitle className="text-sm font-serif font-bold text-primary flex items-center gap-1.5">
+			                  <Sparkles className="w-4 h-4 text-[#B87333]" />
+			                  Orientações MEV para o Paciente
+			                </CardTitle>
+			                <p className="text-[10px] text-muted-foreground leading-normal">
+			                  Envie as orientações completas de Estilo de Vida (Nutrição, Sono, Treino) formatadas.
+			                </p>
+			              </div>
+			            </CardHeader>
+			            <CardContent className="p-5 pt-0 space-y-3.5 flex-1 flex flex-col justify-between">
+			              {/* Seletor de Tom */}
+			              <div className="flex gap-1.5 p-1 bg-secondary/40 rounded-lg border border-border/40">
+			                <button
+			                  onClick={() => setMevTone("acolhedor")}
+			                  className={`flex-1 text-[10px] font-bold py-1.5 px-2 rounded-md transition-all ${mevTone === "acolhedor" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+			                >
+			                  Acolhedor
+			                </button>
+			                <button
+			                  onClick={() => setMevTone("formal")}
+			                  className={`flex-1 text-[10px] font-bold py-1.5 px-2 rounded-md transition-all ${mevTone === "formal" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+			                >
+			                  Formal (Premium)
+			                </button>
+			                <button
+			                  onClick={() => setMevTone("pratico")}
+			                  className={`flex-1 text-[10px] font-bold py-1.5 px-2 rounded-md transition-all ${mevTone === "pratico" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+			                >
+			                  Prático (Performance)
+			                </button>
+			              </div>
+
+			              <div className="bg-secondary/30 rounded-xl p-4 border border-border/40 text-left space-y-2 flex-1">
+			                <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">Prévia da Mensagem ({mevTone}):</span>
+			                <div className="text-xs text-foreground/80 leading-relaxed font-mono line-clamp-5 whitespace-pre-wrap">
+			                  {mevTone === "acolhedor" 
+			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja se sentindo bem!\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei com muito carinho algumas orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular para cicatrizar rápido.\n• SONO: Sono reparador para manter seu corpo forte e equilibrado.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à sua disposição!`
+			                    : mevTone === "formal"
+			                    ? `Prezado(a) ${patientName || "[Nome do Paciente]"}, aqui é o Dr. Felipe de Bulhões Ojeda.\n\nCom o objetivo de assegurar a máxima excelência no seu pós-operatório de ${protocol.title}, estabelecemos as seguintes diretrizes de Medicina de Estilo de Vida (MEV) para otimização da sua recuperação:\n\n• NUTRIÇÃO: Dieta de alta densidade nutricional, rica em antioxidantes e hidratação celular.\n• SONO: Protocolo de higiene do sono para otimização da modulação hormonal e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo rigoroso com reintrodução gradual assistida.\n\nMinha equipe e eu permanecemos à inteira disposição para suporte contínuo.`
+			                    : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe aqui.\n\nFoco na recuperação rápida do seu procedimento de ${protocol.title}. Segue o plano de ação de Estilo de Vida (MEV) focado em alta performance pós-alta:\n\n• NUTRIÇÃO: Protocolo anti-inflamatório focado em regeneração tecidual acelerada.\n• SONO: Higiene do sono estrita para pico de testosterona e reparação celular.\n• ATIVIDADE FÍSICA: Repouso ativo estratégico. Retorno aos treinos conforme o cronograma.\n\nQualquer dúvida, acione nosso suporte rápido!`
+			                  }
+			                </div>
+			              </div>
+			              <div className="flex gap-2 pt-1 shrink-0">
+			                <Button
+			                  variant="outline"
+			                  onClick={() => {
+			                    const text = mevTone === "acolhedor" 
+			                      ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja se sentindo bem!\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei com muito carinho algumas orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular para cicatrizar rápido.\n• SONO: Sono reparador para manter seu corpo forte e equilibrado.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à sua disposição!`
+			                      : mevTone === "formal"
+			                      ? `Prezado(a) ${patientName || "[Nome do Paciente]"}, aqui é o Dr. Felipe de Bulhões Ojeda.\n\nCom o objetivo de assegurar a máxima excelência no seu pós-operatório de ${protocol.title}, estabelecemos as seguintes diretrizes de Medicina de Estilo de Vida (MEV) para otimização da sua recuperação:\n\n• NUTRIÇÃO: Dieta de alta densidade nutricional, rica em antioxidantes e hidratação celular.\n• SONO: Protocolo de higiene do sono para otimização da modulação hormonal e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo rigoroso com reintrodução gradual assistida.\n\nMinha equipe e eu permanecemos à inteira disposição para suporte contínuo.`
+			                      : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe aqui.\n\nFoco na recuperação rápida do seu procedimento de ${protocol.title}. Segue o plano de ação de Estilo de Vida (MEV) focado em alta performance pós-alta:\n\n• NUTRIÇÃO: Protocolo anti-inflamatório focado em regeneração tecidual acelerada.\n• SONO: Higiene do sono estrita para pico de testosterona e reparação celular.\n• ATIVIDADE FÍSICA: Repouso ativo estratégico. Retorno aos treinos conforme o cronograma.\n\nQualquer dúvida, acione nosso suporte rápido!`;
+			                    navigator.clipboard.writeText(text);
+			                    setMevCopied(true);
+			                    toast.success("Mensagem MEV copiada com sucesso!");
+			                    setTimeout(() => setMevCopied(false), 2000);
+			                  }}
+			                  className="flex-1 rounded-xl text-xs h-10 font-semibold border-border"
+			                >
+			                  {mevCopied ? "Copiado!" : "Copiar Texto"}
+			                </Button>
+			                <Button
+			                  onClick={() => {
+			                    const text = mevTone === "acolhedor" 
+			                      ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja se sentindo bem!\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei com muito carinho algumas orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular para cicatrizar rápido.\n• SONO: Sono reparador para manter seu corpo forte e equilibrado.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à disposição!`
+			                      : mevTone === "formal"
+			                      ? `Prezado(a) ${patientName || "[Nome do Paciente]"}, aqui é o Dr. Felipe de Bulhões Ojeda.\n\nCom o objetivo de assegurar a máxima excelência no seu pós-operatório de ${protocol.title}, estabelecemos as seguintes diretrizes de Medicina de Estilo de Vida (MEV) para otimização da sua recuperação:\n\n• NUTRIÇÃO: Dieta de alta densidade nutricional, rica em antioxidantes e hidratação celular.\n• SONO: Protocolo de higiene do sono para otimização da modulação hormonal e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo rigoroso com reintrodução gradual assistida.\n\nMinha equipe e eu permanecemos à inteira disposição para suporte contínuo.`
+			                      : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe aqui.\n\nFoco na recuperação rápida do seu procedimento de ${protocol.title}. Segue o plano de ação de Estilo de Vida (MEV) focado em alta performance pós-alta:\n\n• NUTRIÇÃO: Protocolo anti-inflamatório focado em regeneração tecidual acelerada.\n• SONO: Higiene do sono estrita para pico de testosterona e reparação celular.\n• ATIVIDADE FÍSICA: Repouso ativo estratégico. Retorno aos treinos conforme o cronograma.\n\nQualquer dúvida, acione nosso suporte rápido!`;
+			                    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+			                    window.open(url, "_blank");
+			                    toast.success("Abrindo WhatsApp...");
+			                  }}
+			                  className="flex-1 rounded-xl text-xs h-10 font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+			                >
+			                  Enviar WhatsApp
+			                </Button>
+			              </div>
+			            </CardContent>
+			          </Card>
 		        </div>
 
 		        {/* Seções Colapsáveis (Accordion) */}
@@ -1587,40 +1705,87 @@ export default function ProtocolDetail() {
 		                          <p className="text-[10px] text-muted-foreground">
 		                            Selecione medicamentos complementares para serem injetados automaticamente no final do seu receituário antes de imprimir ou copiar.
 		                          </p>
-		                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-		                            {[
-		                              { id: "tansulosina", name: "Tansulosina 0,4mg", desc: "1 cp VO à noite por 30 dias (facilita eliminação de cálculos/LUTS)" },
-		                              { id: "pyridium", name: "Pyridium (Fenazopiridina) 200mg", desc: "1 cp VO de 8/8h por 2 dias se disúria importante" },
-		                              { id: "laxante", name: "Lactulona (Xarope)", desc: "15ml VO à noite se constipação pós-operatória" },
-		                              { id: "scopolamina", name: "Buscopan Composto", desc: "1 cp VO de 8/8h se cólica ou espasmo vesical" },
-		                              { id: "cetoprofeno", name: "Profem (Cetoprofeno) 100mg", desc: "1 cp VO de 12/12h por 3 a 5 dias se dor/inflamação" },
-		                              { id: "ciprofloxacino", name: "Ciprofloxacino 500mg", desc: "1 cp VO de 12/12h por 3 a 5 dias se profilaxia de ITU estendida" }
-		                            ].map((med) => {
-		                              const isSelected = (selectedAdjuvants[section.title] || []).includes(`${med.name} - ${med.desc}`);
-		                              return (
-		                                <div 
-		                                  key={med.id}
-		                                  onClick={() => handleToggleAdjuvant(section.title, `${med.name} - ${med.desc}`)}
-		                                  className={`
-		                                    flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-card
-		                                    ${isSelected ? "border-accent/50 bg-accent/[0.03] shadow-sm" : "border-border/50 bg-card/40"}
-		                                  `}
-		                                >
-		                                  <input 
-		                                    type="checkbox"
-		                                    checked={isSelected}
-		                                    onChange={() => {}} // Tratado no onClick do container
-		                                    className="h-3.5 w-3.5 rounded border-border text-accent focus:ring-accent mt-0.5 pointer-events-none"
-		                                  />
-		                                  <div className="space-y-0.5 text-left">
-		                                    <div className="text-xs font-bold text-primary">{med.name}</div>
-		                                    <div className="text-[10px] text-muted-foreground leading-normal">{med.desc}</div>
-		                                  </div>
-		                                </div>
-		                              );
-		                            })}
-		                          </div>
-		                        </div>
+			                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+			                            {[
+			                              { id: "tansulosina", name: "Tansulosina 0,4mg", desc: "1 cp VO à noite por 30 dias (facilita eliminação de cálculos/LUTS)" },
+			                              { id: "pyridium", name: "Pyridium (Fenazopiridina) 200mg", desc: "1 cp VO de 8/8h por 2 dias se disúria importante" },
+			                              { id: "laxante", name: "Lactulona (Xarope)", desc: "15ml VO à noite se constipação pós-operatória" },
+			                              { id: "scopolamina", name: "Buscopan Composto", desc: "1 cp VO de 8/8h se cólica ou espasmo vesical" },
+			                              { id: "cetoprofeno", name: "Profem (Cetoprofeno) 100mg", desc: "1 cp VO de 12/12h por 3 a 5 dias se dor/inflamação" },
+			                              { id: "ciprofloxacino", name: "Ciprofloxacino 500mg", desc: "1 cp VO de 12/12h por 3 a 5 dias se profilaxia de ITU estendida" },
+			                              ...customAdjuvants
+			                            ].map((med) => {
+			                              const isSelected = (selectedAdjuvants[section.title] || []).includes(`${med.name} - ${med.desc}`);
+			                              const isCustom = customAdjuvants.some(ca => ca.id === med.id);
+			                              return (
+			                                <div 
+			                                  key={med.id}
+			                                  onClick={() => handleToggleAdjuvant(section.title, `${med.name} - ${med.desc}`)}
+			                                  className={`
+			                                    flex items-start justify-between gap-3 p-2.5 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-card group
+			                                    ${isSelected ? "border-accent/50 bg-accent/[0.03] shadow-sm" : "border-border/50 bg-card/40"}
+			                                  `}
+			                                >
+			                                  <div className="flex items-start gap-3">
+			                                    <input 
+			                                      type="checkbox"
+			                                      checked={isSelected}
+			                                      onChange={() => {}} // Tratado no onClick do container
+			                                      className="h-3.5 w-3.5 rounded border-border text-accent focus:ring-accent mt-0.5 pointer-events-none"
+			                                    />
+			                                    <div className="space-y-0.5 text-left">
+			                                      <div className="text-xs font-bold text-primary flex items-center gap-1.5">
+			                                        {med.name}
+			                                        {isCustom && <Badge className="text-[8px] px-1 py-0 bg-accent/10 text-accent border-accent/20">Custom</Badge>}
+			                                      </div>
+			                                      <div className="text-[10px] text-muted-foreground leading-normal">{med.desc}</div>
+			                                    </div>
+			                                  </div>
+                                  {isCustom && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        handleRemoveCustomAdjuvant(med.id, e);
+                                      }}
+                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  )}
+			                                </div>
+			                              );
+			                            })}
+			                          </div>
+
+			                          {/* Formulário para Cadastrar Adjuvante Customizado */}
+			                          <div className="pt-3 mt-3 border-t border-border/40 space-y-2">
+			                            <span className="text-[10px] font-bold text-primary uppercase tracking-wider block text-left">Cadastrar Novo Medicamento Customizado:</span>
+			                            <div className="flex flex-col md:flex-row gap-2">
+			                              <input
+			                                type="text"
+			                                placeholder="Nome do Medicamento (ex: Buscopan Composto 500mg)"
+			                                value={newMedName}
+			                                onChange={(e) => setNewMedName(e.target.value)}
+			                                className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-card text-xs focus:ring-1 focus:ring-accent focus:border-accent"
+			                              />
+			                              <input
+			                                type="text"
+			                                placeholder="Posologia / Instrução (ex: Tomar 1 cp VO de 8/8h se cólica)"
+			                                value={newMedDesc}
+			                                onChange={(e) => setNewMedDesc(e.target.value)}
+			                                className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-card text-xs focus:ring-1 focus:ring-accent focus:border-accent"
+			                              />
+			                              <Button
+			                                size="sm"
+			                                onClick={handleAddCustomAdjuvant}
+			                                className="h-8 text-xs font-bold bg-accent hover:bg-accent/90 text-white rounded-lg px-4 shrink-0"
+			                              >
+			                                Adicionar ao Catálogo
+			                              </Button>
+			                            </div>
+			                          </div>
+			                        </div>
 
 		                        <div className="bg-secondary/50 dark:bg-secondary/20 p-4 rounded-lg border border-border/60 font-mono text-xs overflow-x-auto whitespace-pre-wrap text-left">
 		                          {section.content.replace(/```/g, "")}
