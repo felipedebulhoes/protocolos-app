@@ -379,6 +379,109 @@ export default function Patients() {
    Posologia: Tomar 1 comprimido por via oral, uma vez ao dia, sempre no mesmo horário (preferencialmente à noite ou 2 horas antes de dormir). Uso contínuo.
 
 * Benefícios: Melhora da função erétil e redução dos sintomas urinários obstrutivos (IPSS) por hiperplasia prostática benigna (HPB).`
+    },
+    {
+      id: "flukkahormo_hcg_preservacao",
+      titulo: "HCG 5000 UI - Preservação de Fertilidade (Flukkahormo)",
+      conteudo: `USO SUBCUTÂNEO / INTRAMUSCULAR
+
+1. Gonadotrofina Coriônica Humana (HCG) 5.000 UI ------------ 1 frasco-ampola
+   (Apresentação Flukkahormo)
+   Posologia: Aplicar 500 UI por via subcutânea, 2 a 3 vezes por semana (ex: segundas, quartas e sextas-feiras), concomitantemente à Terapia de Reposição de Testosterona (TRT).
+   ☐ Dispensar: 1 frasco-ampola + diluente + seringas de insulina.
+
+* Racional Clínico: Mimetiza o LH para estimular as células de Leydig, mantendo a produção de testosterona intratesticular, preservando o volume testicular e a fertilidade durante a TRT.`
+    },
+    {
+      id: "flukkahormo_nandrolona",
+      titulo: "Decanoato de Nandrolona - Sarcopenia e Articular (Flukkahormo)",
+      conteudo: `USO INTRAMUSCULAR DE USO ADJUVANTE
+
+1. Decanoato de Nandrolona 100 mg/mL ------------------------- 1 ampola (1 mL)
+   (Apresentação Flukkahormo)
+   Posologia: Aplicar 50 mg a 100 mg por via intramuscular profunda na região glútea, a cada 7 ou 14 dias, conforme avaliação clínica e exames de controle.
+   ☐ Dispensar: 2 ampolas.
+
+* ALERTA MÉDICO: Nunca utilizar de forma isolada (sem testosterona base de cobertura), pois causa supressão severa do eixo e disfunção erétil secundária.
+* Indicação: Tratamento adjuvante de sarcopenia, osteoporose e dores articulares crônicas refratárias em pacientes hipogonádicos.`
+    },
+    {
+      id: "flukkamen_dapoxetina_ep",
+      titulo: "Dapoxetina 30mg Sob Demanda - Ejaculação Precoce (Flukkamen)",
+      conteudo: `USO ORAL SOB DEMANDA
+
+1. Dapoxetina 30 mg ------------------------------------------ 15 cápsulas
+   (Apresentação Flukkamen)
+   Posologia: Tomar 1 cápsula por via oral, de 1 a 3 horas antes da atividade sexual prevista. Não ultrapassar a dose de 1 cápsula por dia.
+   ☐ Dispensar: 1 frasco.
+
+* Mecanismo: Inibidor seletivo da recaptação de serotonina (ISRS) de ação rápida e eliminação ultrarrápida, ideal para controle da ejaculação precoce sem os efeitos colaterais da descontinuação diária.`
+    },
+    {
+      id: "flukkamen_spray_sublingual",
+      titulo: "Spray Sublingual de Tadalafila Potencializada (Flukkamen)",
+      conteudo: `USO SUBLINGUAL
+
+1. Spray Sublingual de Tadalafila Potencializada ------------- 1 frasco (12 mL)
+   (Tadalafila 40mg/mL + Fentolamina 2,25mg/mL + Tribulus Terrestris 35mg/mL)
+   
+   Posologia (Escolha uma das modalidades):
+   [ ] USO DIÁRIO: Realizar 1 jato sublingual (equivalente a 6 mg de Tadalafila) diariamente, pela manhã ou à noite.
+   [ ] USO SOB DEMANDA: Realizar 3 jatos sublinguais (equivalente a 18 mg de Tadalafila) de 45 a 60 minutos antes da relação sexual.
+
+* Vantagem: A absorção sublingual evita o metabolismo de primeira passagem hepática, proporcionando início de ação mais rápido e potente devido à associação sinérgica com a Fentolamina.`
+    },
+    {
+      id: "flukkamen_ocitocina_anorgasmia",
+      titulo: "Ocitocina Spray Nasal - Anorgasmia/Ejaculação Retardada (Flukkamen)",
+      conteudo: `USO NASAL
+
+1. Ocitocina Spray Nasal 24 UI/dose -------------------------- 1 frasco (10 mL)
+   (Apresentação Flukkamen - Nasalan)
+   Posologia: Aplicar 1 borrifada em cada narina (totalizando 48 UI), cerca de 5 a 10 minutos antes da atividade sexual prevista.
+   ☐ Dispensar: 1 frasco.
+
+* Indicação: Tratamento adjuvante para anorgasmia masculina ou retardo ejaculatório crônico. Melhora a dimensão orgásmica e a percepção de satisfação pós-coito.`
+    },
+    {
+      id: "flukkamen_verapamil_peyronie",
+      titulo: "Verapamil Tópico Combinado - Doença de Peyronie (Flukkamen)",
+      conteudo: `USO TÓPICO LOCAL
+
+1. Verapamil 5% + Papaína 2% + Vitamina E 5% Creme ----------- 30 g
+   (Apresentação Flukkamen - Home Care)
+   Posologia: Aplicar uma fina camada do creme sobre a placa fibrótica (região dorsal/lateral do pênis), massageando suavemente por 2 a 3 minutos, duas vezes ao dia (após o banho e antes de deitar).
+   ☐ Dispensar: 1 bisnaga.
+
+* Objetivo: Terapia antifibrótica tópica de suporte para estabilização e redução da curvatura peniana na fase aguda da Doença de Peyronie.`
+    },
+    {
+      id: "flukkanutri_combo_infertilidade",
+      titulo: "Combo Pró-Fertilidade Masculina (FlukkaNutri)",
+      conteudo: `USO ORAL DIÁRIO (SUPLEMENTAÇÃO PREMIUM)
+
+1. Coenzima Q10 (CoQ10) 100 mg ------------------------------- 60 cápsulas
+   Posologia: Tomar 1 cápsula por via oral, duas vezes ao dia (total 200mg/dia), junto às refeições.
+   
+2. Ômega 3 Premium (Alto DHA) -------------------------------- 120 cápsulas
+   Posologia: Tomar 2 cápsulas por via oral, uma vez ao dia, junto ao almoço.
+
+3. Vitamina D3 2.000 UI -------------------------------------- 60 cápsulas
+   Posologia: Tomar 1 cápsula por via oral, uma vez ao dia, pela manhã.
+
+* Racional: Antioxidantes de alta evidência científica para otimização da motilidade, concentração e morfologia espermática, além de redução do estresse oxidativo seminal (ECR Cochrane).`
+    },
+    {
+      id: "flukkanutri_cranberry_itu",
+      titulo: "Cranberry Premium - Prevenção de ITU Recorrente (FlukkaNutri)",
+      conteudo: `USO ORAL PROFILÁTICO
+
+1. Extrato Seco de Cranberry Premium ------------------------- 60 cápsulas
+   (Rico em Proantocianidinas tipo A - PACs)
+   Posologia: Tomar 1 cápsula por via oral, duas vezes ao dia (de 12/12 horas), por 3 a 6 meses.
+   ☐ Dispensar: 2 frascos.
+
+* Indicação: Profilaxia não-antibiótica de infecções do trato urinário (ITU) recorrentes. Inibe a adesão das fímbrias da bactéria Escherichia coli ao urotélio vesical (Grau de Evidência Forte - Cochrane).`
     }
   ];
 
