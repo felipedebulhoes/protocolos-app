@@ -102,6 +102,7 @@ interface Paciente {
   custoHospitalarReal?: number; // Custo hospitalar real incorrido de fato (taxas, insumos, OPME)
   desdobramentoCustos?: string; // Histórico de desdobramento de custos adicionais (taxas extras, OPME detalhado, etc.)
   auditorias_alta?: Record<string, any>; // Auditoria de checklists de alta de protocolos
+  estradiol?: string; // Nível de Estradiol sérico (pg/mL)
 }
 
 interface SecretáriaTarefa {
@@ -139,6 +140,7 @@ export default function Patients() {
   const [faturamentoReal, setFaturamentoReal] = useState(""); // Faturamento real do paciente
   const [custoHospitalarReal, setCustoHospitalarReal] = useState(""); // Custo hospitalar real do paciente
   const [desdobramentoCustos, setDesdobramentoCustos] = useState(""); // Histórico de desdobramento de custos do paciente
+  const [estradiol, setEstradiol] = useState(""); // Nível de Estradiol sérico (pg/mL)
   const [activeView, setActiveView] = useState<"list" | "crm">("list"); // Visualização ativa (Lista vs CRM Kanban)
   const [tarefasSecretaria, setTarefasSecretaria] = useState<SecretáriaTarefa[]>([]);
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
@@ -390,7 +392,10 @@ export default function Patients() {
    Posologia: Aplicar 500 UI por via subcutânea, 2 a 3 vezes por semana (ex: segundas, quartas e sextas-feiras), concomitantemente à Terapia de Reposição de Testosterona (TRT).
    ☐ Dispensar: 1 frasco-ampola + diluente + seringas de insulina.
 
-* Racional Clínico: Mimetiza o LH para estimular as células de Leydig, mantendo a produção de testosterona intratesticular, preservando o volume testicular e a fertilidade durante a TRT.`
+* Racional Clínico: Mimetiza o LH para estimular as células de Leydig, mantendo a produção de testosterona intratesticular, preservando o volume testicular e a fertilidade durante a TRT.
+
+🛒 Adquira de forma segura na Flukka: https://flukka.com.br/hormo
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
     },
     {
       id: "flukkahormo_nandrolona",
@@ -403,7 +408,10 @@ export default function Patients() {
    ☐ Dispensar: 2 ampolas.
 
 * ALERTA MÉDICO: Nunca utilizar de forma isolada (sem testosterona base de cobertura), pois causa supressão severa do eixo e disfunção erétil secundária.
-* Indicação: Tratamento adjuvante de sarcopenia, osteoporose e dores articulares crônicas refratárias em pacientes hipogonádicos.`
+* Indicação: Tratamento adjuvante de sarcopenia, osteoporose e dores articulares crônicas refratárias em pacientes hipogonádicos.
+
+🛒 Adquira de forma segura na Flukka: https://flukka.com.br/hormo
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
     },
     {
       id: "flukkamen_dapoxetina_ep",
@@ -415,7 +423,10 @@ export default function Patients() {
    Posologia: Tomar 1 cápsula por via oral, de 1 a 3 horas antes da atividade sexual prevista. Não ultrapassar a dose de 1 cápsula por dia.
    ☐ Dispensar: 1 frasco.
 
-* Mecanismo: Inibidor seletivo da recaptação de serotonina (ISRS) de ação rápida e eliminação ultrarrápida, ideal para controle da ejaculação precoce sem os efeitos colaterais da descontinuação diária.`
+* Mecanismo: Inibidor seletivo da recaptação de serotonina (ISRS) de ação rápida e eliminação ultrarrápida, ideal para controle da ejaculação precoce sem os efeitos colaterais da descontinuação diária.
+
+🛒 Adquira de forma segura na Flukka: https://flukka.com.br/men
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
     },
     {
       id: "flukkamen_spray_sublingual",
@@ -429,7 +440,10 @@ export default function Patients() {
    [ ] USO DIÁRIO: Realizar 1 jato sublingual (equivalente a 6 mg de Tadalafila) diariamente, pela manhã ou à noite.
    [ ] USO SOB DEMANDA: Realizar 3 jatos sublinguais (equivalente a 18 mg de Tadalafila) de 45 a 60 minutos antes da relação sexual.
 
-* Vantagem: A absorção sublingual evita o metabolismo de primeira passagem hepática, proporcionando início de ação mais rápido e potente devido à associação sinérgica com a Fentolamina.`
+* Vantagem: A absorção sublingual evita o metabolismo de primeira passagem hepática, proporcionando início de ação mais rápido e potente devido à associação sinérgica com a Fentolamina.
+
+🛒 Adquira de forma segura na Flukka: https://flukka.com.br/men
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
     },
     {
       id: "flukkamen_ocitocina_anorgasmia",
@@ -441,7 +455,10 @@ export default function Patients() {
    Posologia: Aplicar 1 borrifada em cada narina (totalizando 48 UI), cerca de 5 a 10 minutos antes da atividade sexual prevista.
    ☐ Dispensar: 1 frasco.
 
-* Indicação: Tratamento adjuvante para anorgasmia masculina ou retardo ejaculatório crônico. Melhora a dimensão orgásmica e a percepção de satisfação pós-coito.`
+* Indicação: Tratamento adjuvante para anorgasmia masculina ou retardo ejaculatório crônico. Melhora a dimensão orgásmica e a percepção de satisfação pós-coito.
+
+🛒 Adquira de forma segura na Flukka: https://flukka.com.br/men
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
     },
     {
       id: "flukkamen_verapamil_peyronie",
@@ -453,7 +470,10 @@ export default function Patients() {
    Posologia: Aplicar uma fina camada do creme sobre a placa fibrótica (região dorsal/lateral do pênis), massageando suavemente por 2 a 3 minutos, duas vezes ao dia (após o banho e antes de deitar).
    ☐ Dispensar: 1 bisnaga.
 
-* Objetivo: Terapia antifibrótica tópica de suporte para estabilização e redução da curvatura peniana na fase aguda da Doença de Peyronie.`
+* Objetivo: Terapia antifibrótica tópica de suporte para estabilização e redução da curvatura peniana na fase aguda da Doença de Peyronie.
+
+🛒 Adquira de forma segura na Flukka: https://flukka.com.br/men
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
     },
     {
       id: "flukkanutri_combo_infertilidade",
@@ -469,7 +489,10 @@ export default function Patients() {
 3. Vitamina D3 2.000 UI -------------------------------------- 60 cápsulas
    Posologia: Tomar 1 cápsula por via oral, uma vez ao dia, pela manhã.
 
-* Racional: Antioxidantes de alta evidência científica para otimização da motilidade, concentração e morfologia espermática, além de redução do estresse oxidativo seminal (ECR Cochrane).`
+* Racional: Antioxidantes de alta evidência científica para otimização da motilidade, concentração e morfologia espermática, além de redução do estresse oxidativo seminal (ECR Cochrane).
+
+🛒 Adquira de forma segura na Flukka: https://flukka.com.br/nutri
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
     },
     {
       id: "flukkanutri_cranberry_itu",
@@ -481,7 +504,10 @@ export default function Patients() {
    Posologia: Tomar 1 cápsula por via oral, duas vezes ao dia (de 12/12 horas), por 3 a 6 meses.
    ☐ Dispensar: 2 frascos.
 
-* Indicação: Profilaxia não-antibiótica de infecções do trato urinário (ITU) recorrentes. Inibe a adesão das fímbrias da bactéria Escherichia coli ao urotélio vesical (Grau de Evidência Forte - Cochrane).`
+* Indicação: Profilaxia não-antibiótica de infecções do trato urinário (ITU) recorrentes. Inibe a adesão das fímbrias da bactéria Escherichia coli ao urotélio vesical (Grau de Evidência Forte - Cochrane).
+
+🛒 Adquira de forma segura na Flukka: https://flukka.com.br/nutri
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
     }
   ];
 
@@ -621,7 +647,8 @@ export default function Patients() {
             faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined,
             custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined,
             desdobramentoCustos: desdobramentoCustos.trim() || undefined,
-            comercialHist: updatedHist
+            comercialHist: updatedHist,
+            estradiol: estradiol.trim() || undefined
           };
         }
         return p;
@@ -661,7 +688,8 @@ export default function Patients() {
         proximoContato: proximoContato,
         faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined,
         custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined,
-        desdobramentoCustos: desdobramentoCustos.trim() || undefined
+        desdobramentoCustos: desdobramentoCustos.trim() || undefined,
+        estradiol: estradiol.trim() || undefined
       };
       saveToStorage([novo, ...pacientes]);
       toast.success("Paciente cadastrado com sucesso!");
@@ -691,6 +719,7 @@ export default function Patients() {
     setFaturamentoReal(p.faturamentoReal !== undefined ? p.faturamentoReal.toString() : "");
     setCustoHospitalarReal(p.custoHospitalarReal !== undefined ? p.custoHospitalarReal.toString() : "");
     setDesdobramentoCustos(p.desdobramentoCustos || "");
+    setEstradiol(p.estradiol || "");
     setIsAdding(true);
   };
 
@@ -831,6 +860,7 @@ export default function Patients() {
     setFaturamentoReal("");
     setCustoHospitalarReal("");
     setDesdobramentoCustos("");
+    setEstradiol("");
   };
 
   const handleCancel = () => {
@@ -1743,6 +1773,16 @@ export default function Patients() {
                       className="rounded-xl h-11"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="estradiol" className="text-xs font-bold text-primary uppercase tracking-wider">Estradiol (pg/mL)</Label>
+                    <Input 
+                      id="estradiol" 
+                      placeholder="Ex: 28.4" 
+                      value={estradiol}
+                      onChange={(e) => setEstradiol(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2 border-t border-border/40 pt-5">
@@ -2623,7 +2663,7 @@ export default function Patients() {
                       )}
 
                       {/* Parâmetros Laboratoriais */}
-                      <div className="grid grid-cols-3 gap-2.5 bg-secondary/20 p-2.5 rounded-xl border border-border/40 text-center">
+                      <div className="grid grid-cols-4 gap-2 bg-secondary/20 p-2.5 rounded-xl border border-border/40 text-center">
                         <div className="space-y-0.5">
                           <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">Testosterona</span>
                           <span className={`text-xs font-bold ${parseFloat(p.testosterona) < 300 ? "text-orange-600" : "text-primary"}`}>
@@ -2640,6 +2680,12 @@ export default function Patients() {
                           <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">Hematócrito</span>
                           <span className={`text-xs font-bold ${parseFloat(p.hematocrito) > 50 ? "text-orange-600" : "text-primary"}`}>
                             {p.hematocrito ? `${p.hematocrito} %` : "N/A"}
+                          </span>
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">Estradiol</span>
+                          <span className={`text-xs font-bold ${p.estradiol && parseFloat(p.estradiol) > 50 ? "text-orange-600" : "text-primary"}`}>
+                            {p.estradiol ? `${p.estradiol} pg/mL` : "N/A"}
                           </span>
                         </div>
                       </div>
@@ -2690,17 +2736,51 @@ export default function Patients() {
                       {isExpanded && (
                         <div className="space-y-6 pt-4 border-t border-border/40" onClick={(e) => e.stopPropagation()}>
                           
-                          {/* Alertas Clínicos Inteligentes */}
-                          {(parseFloat(p.hematocrito) > 52 || (p.shbg && parseFloat(p.shbg) < 15)) && (
+                          {/* Alertas Clínicos Inteligentes de Segurança de TRT */}
+                          {(parseFloat(p.hematocrito) > 52 || (p.shbg && parseFloat(p.shbg) < 15) || (p.psa && parseFloat(p.psa) > 2.5) || (p.estradiol && parseFloat(p.estradiol) > 50)) && (
                             <div className="space-y-2">
                               <span className="font-bold text-red-600 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
-                                ⚠️ Alertas de Segurança Clínica (TRT)
+                                ⚠️ Alertas de Segurança Clínica & Laboratorial (TRT / Flukka-Safety)
                               </span>
                               <div className="grid grid-cols-1 gap-2">
-                                {parseFloat(p.hematocrito) > 52 && (
+                                {parseFloat(p.hematocrito) > 54 && (
                                   <div className="bg-red-500/10 border border-red-500/30 text-red-700 p-3 rounded-xl text-xs font-medium flex flex-col gap-1">
-                                    <span className="font-bold">Hematócrito Crítico ({p.hematocrito}%)</span>
-                                    <span>Valor acima de 52% indica risco aumentado de hiperviscosidade sanguínea e eventos tromboembólicos. Recomenda-se suspender/reduzir TRT e indicar sangria terapêutica.</span>
+                                    <span className="font-bold flex items-center gap-1.5 text-red-800">
+                                      🚨 Hematócrito Crítico ({p.hematocrito}%) - Risco Tromboembólico
+                                    </span>
+                                    <span>Valor acima de 54% é contraindicação absoluta para manutenção de TRT. Suspender terapia imediatamente, indicar flebotomia (sangria terapêutica) de 500mL e hidratar abundantemente.</span>
+                                  </div>
+                                )}
+                                {parseFloat(p.hematocrito) > 52 && parseFloat(p.hematocrito) <= 54 && (
+                                  <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-800 p-3 rounded-xl text-xs font-medium flex flex-col gap-1">
+                                    <span className="font-bold flex items-center gap-1.5">
+                                      ⚠️ Hematócrito Limítrofe ({p.hematocrito}%) - Atenção
+                                    </span>
+                                    <span>Hematócrito entre 52-54% exige atenção. Considerar fracionamento da dose (aplicações mais frequentes subcutâneas), migração para gel transdérmico ou redução da dose em 25%.</span>
+                                  </div>
+                                )}
+                                {p.psa && parseFloat(p.psa) > 4.0 && (
+                                  <div className="bg-red-500/10 border border-red-500/30 text-red-700 p-3 rounded-xl text-xs font-medium flex flex-col gap-1">
+                                    <span className="font-bold flex items-center gap-1.5 text-red-800">
+                                      🚨 PSA Total Elevado ({p.psa} ng/mL) - Contraindicação Absoluta
+                                    </span>
+                                    <span>PSA acima de 4.0 ng/mL requer suspensão imediata da TRT e encaminhamento para investigação de neoplasia prostática (toque retal e RM Multiparamétrica de Próstata).</span>
+                                  </div>
+                                )}
+                                {p.psa && parseFloat(p.psa) > 2.5 && parseFloat(p.psa) <= 4.0 && (
+                                  <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-800 p-3 rounded-xl text-xs font-medium flex flex-col gap-1">
+                                    <span className="font-bold flex items-center gap-1.5">
+                                      ⚠️ PSA Total Limítrofe ({p.psa} ng/mL) - Monitoramento Estrito
+                                    </span>
+                                    <span>Elevação rápida ou PSA &gt; 2.5 ng/mL em homens sob TRT requer repetição de exame em 6 semanas e avaliação de velocidade de subida do PSA.</span>
+                                  </div>
+                                )}
+                                {p.estradiol && parseFloat(p.estradiol) > 50 && (
+                                  <div className="bg-orange-500/10 border border-orange-500/30 text-orange-700 p-3 rounded-xl text-xs font-medium flex flex-col gap-1">
+                                    <span className="font-bold flex items-center gap-1.5">
+                                      🧪 Estradiol Elevado ({p.estradiol} pg/mL) - Aromatização Ativa
+                                    </span>
+                                    <span>Níveis acima de 50 pg/mL podem causar ginecomastia, mastalgia e retenção hídrica. Se houver sintomas clínicos, considerar inibidor de aromatase (Anastrozol 0.25mg a 0.5mg, 1x a 2x por semana).</span>
                                   </div>
                                 )}
                                 {p.shbg && parseFloat(p.shbg) < 15 && (

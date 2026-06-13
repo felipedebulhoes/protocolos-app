@@ -235,11 +235,18 @@ export default function Calculators() {
   const [trtType, setTrtType] = useState("gel");
   const [trtSerumTesto, setTrtSerumTesto] = useState("");
   const [trtTargetTesto, setTrtTargetTesto] = useState("600");
+  const [trtWeight, setTrtWeight] = useState("");
+  const [trtHematocrit, setTrtHematocrit] = useState("");
+  const [trtPSA, setTrtPSA] = useState("");
+  const [trtEstradiol, setTrtEstradiol] = useState("");
+  const [trtFertilityGoal, setTrtFertilityGoal] = useState("no"); // "no" | "yes" (HCG para preservação de fertilidade)
   const [trtResult, setTrtResult] = useState<{
     currentDose: string;
     suggestedDose: string;
     frequency: string;
+    hcgDose?: string; // Dosagem recomendada de HCG se fertilidade ativa
     clinicalTip: string;
+    safetyAlert?: { type: "warning" | "critical"; text: string }; // Alertas críticos de exames
     followUp: string;
   } | null>(null);
 
@@ -309,6 +316,10 @@ export default function Calculators() {
   const calculateTRT = () => {
     const serum = parseFloat(trtSerumTesto);
     const target = parseFloat(trtTargetTesto);
+    const weight = parseFloat(trtWeight);
+    const hematocrit = parseFloat(trtHematocrit);
+    const psa = parseFloat(trtPSA);
+    const estradiol = parseFloat(trtEstradiol);
 
     if (isNaN(serum) || serum <= 0) {
       alert("Por favor, insira um valor válido de Testosterona Total sérica.");
@@ -318,63 +329,124 @@ export default function Calculators() {
     let currentDose = "";
     let suggestedDose = "";
     let frequency = "";
+    let hcgDose = "";
     let clinicalTip = "";
+    let safetyAlert: { type: "warning" | "critical"; text: string } | undefined = undefined;
     let followUp = "Realizar nova coleta de Testosterona Total, Livre, SHBG, Estradiol, Prolactina e Hemograma completo em 6 semanas.";
 
+    // 1. Alertas de Segurança Laboratorial Críticos (Baseado em Diretrizes da AUA/EAU)
+    if (!isNaN(hematocrit) && hematocrit > 54) {
+      safetyAlert = {
+        type: "critical",
+        text: `CRÍTICO: Hematócrito elevado em ${hematocrit}%. Risco grave de hiperviscosidade sanguínea e eventos tromboembólicos. Suspender imediatamente a TRT, realizar sangria terapêutica terapêutica (flebotomia de 500mL) e investigar causas associadas antes de reintroduzir dose menor.`
+      };
+    } else if (!isNaN(hematocrit) && hematocrit > 52) {
+      safetyAlert = {
+        type: "warning",
+        text: `ALERTA: Hematócrito limítrofe em ${hematocrit}%. Recomenda-se fracionar a dose da testosterona (ex: injeções semanais em vez de quinzenais) ou migrar para via transdérmica (Gel), além de aumentar a ingestão hídrica.`
+      };
+    }
+
+    if (!isNaN(psa) && psa > 4.0) {
+      safetyAlert = {
+        type: "critical",
+        text: `CRÍTICO: PSA elevado em ${psa} ng/mL. Contraindicação absoluta para manutenção ou aumento de TRT. Suspender a terapia imediatamente e encaminhar o paciente para investigação de neoplasia prostática (toque retal e Ressonância Magnética Multiparamétrica).`
+      };
+    }
+
+    if (!isNaN(estradiol) && estradiol > 50) {
+      const ginecoTip = " Estradiol elevado (>50 pg/mL). Monitorar sintomas de ginecomastia, mastalgia e retenção hídrica. Se houver sintomas clínicos, considerar o uso de inibidores de aromatase em doses ultra-baixas (ex: Anastrozol 0.25mg a 0.5mg 1x a 2x por semana). Evitar o uso empírico sem sintomas.";
+      clinicalTip += ginecoTip;
+    }
+
+    // 2. Cálculo da Dose de Testosterona com Base no Peso e Tipo
     if (trtType === "gel") {
       currentDose = "Gel Transdérmico 5% (50mg/g)";
       frequency = "Aplicação diária pela manhã nos ombros/braços ou abdômen.";
+      
+      // Ajuste de dose por peso (pacientes obesos > 100kg necessitam de mais área/absorção)
+      const weightFactor = !isNaN(weight) && weight > 100 ? " Devido ao peso corporal elevado (>100kg), a absorção transdérmica pode requerer maior área de aplicação." : "";
+
       if (serum < 350) {
         suggestedDose = "Gel 5% - 2 pumps (50mg de testosterona) por dia";
-        clinicalTip = "Nível sérico abaixo da meta fisiológica. Recomenda-se aumentar a dose para 2 pumps diários (ou 1g de gel a 5%). Certificar-se de que o paciente está aplicando na pele limpa e seca, sem tomar banho por pelo menos 6 horas após a aplicação.";
+        clinicalTip = "Nível sérico abaixo da meta fisiológica. Recomenda-se aumentar a dose para 2 pumps diários (ou 1g de gel a 5%). Certificar-se de que o paciente está aplicando na pele limpa e seca, sem tomar banho por pelo menos 6 horas após a aplicação." + weightFactor;
       } else if (serum > 900) {
         suggestedDose = "Gel 5% - Reduzir para 1 pump (25mg de testosterona) por dia";
-        clinicalTip = "Níveis séricos supra-fisiológicos. Recomenda-se redução de dose para evitar efeitos colaterais como policitemia (elevação do hematócrito) ou aromatização excessiva (estradiol elevado).";
+        clinicalTip = "Níveis séricos supra-fisiológicos. Recomenda-se redução de dose para evitar efeitos colaterais como policitemia ou aromatização excessiva." + weightFactor;
       } else {
         suggestedDose = "Gel 5% - Manter dose atual (1 pump ou 2 pumps)";
-        clinicalTip = "Paciente está dentro da faixa terapêutica fisiológica ideal (350-900 ng/dL). Manter a aplicação diária regular e monitorar a resposta clínica de libido, disposição e cognição.";
+        clinicalTip = "Paciente está dentro da faixa terapêutica fisiológica ideal (350-900 ng/dL). Manter a aplicação diária regular e monitorar a resposta clínica de libido, disposição e cognição." + weightFactor;
       }
     } else if (trtType === "cipionato") {
       currentDose = "Cipionato de Testosterona (Deposteron 200mg/2mL)";
+      
+      // Ajuste de dose por peso (pacientes magros ou obesos têm volumes de distribuição diferentes)
+      let intervalDays = 14;
+      if (!isNaN(weight) && weight > 95) {
+        intervalDays = 10; // Metabolismo e volume de distribuição aumentados
+      } else if (!isNaN(weight) && weight < 65) {
+        intervalDays = 16; // Menor volume de distribuição
+      }
+
       if (serum < 400) {
-        suggestedDose = "Deposteron 200mg (1 ampola) a cada 10 ou 12 dias";
+        suggestedDose = `Deposteron 200mg (1 ampola) a cada ${intervalDays - 4} ou ${intervalDays - 2} dias`;
         frequency = "Injeção intramuscular profunda.";
-        clinicalTip = "Nível de vale (pré-dose) muito baixo. Pacientes frequentemente queixam-se de flutuação de humor e libido no final do intervalo. Recomenda-se encurtar o intervalo de aplicação de 14 para 10 ou 12 dias em vez de aumentar a dose única.";
+        clinicalTip = "Nível de vale (pré-dose) muito baixo. Pacientes frequentemente queixam-se de flutuação de humor e libido no final do intervalo. Recomenda-se encurtar o intervalo de aplicação em vez de aumentar a dose única para evitar picos suprafisiológicos.";
       } else if (serum > 1000) {
-        suggestedDose = "Deposteron 200mg (1 ampola) a cada 14 ou 18 dias";
+        suggestedDose = `Deposteron 200mg (1 ampola) a cada ${intervalDays + 4} ou ${intervalDays + 6} dias`;
         frequency = "Injeção intramuscular profunda.";
-        clinicalTip = "Nível sérico de vale está supra-fisiológico ou no limite superior. Risco aumentado de hematócrito > 54% e ginecomastia. Recomenda-se aumentar o intervalo de aplicação ou fracionar a dose (ex: 100mg por semana).";
+        clinicalTip = "Nível sérico de vale está supra-fisiológico ou no limite superior. Risco aumentado de hematócrito > 54% e ginecomastia. Recomenda-se aumentar o intervalo de aplicação ou fracionar a dose (ex: 100mg por semana subcutâneo).";
       } else {
-        suggestedDose = "Deposteron 200mg (1 ampola) a cada 14 dias";
+        suggestedDose = `Deposteron 200mg (1 ampola) a cada ${intervalDays} dias`;
         frequency = "Injeção intramuscular profunda.";
         clinicalTip = "Nível sérico estável e na faixa terapêutica ideal de vale (400-800 ng/dL). Excelente estabilidade clínica. Monitorar hematócrito e PSA anualmente.";
       }
     } else if (trtType === "undecanato") {
       currentDose = "Undecanato de Testosterona (Nebido / Hormus 1000mg/4mL)";
       frequency = "Injeção intramuscular profunda ultra-lenta (durante 2 minutos).";
-      if (serum < 350) {
-        suggestedDose = "Nebido 1000mg a cada 10 semanas (antecipar o intervalo)";
-        clinicalTip = "Nível de vale está abaixo do esperado para testosterona de ação lenta. Recomenda-se encurtar o intervalo regular de 12 semanas para 10 semanas para estabilizar os níveis e evitar a queda de performance no final do ciclo.";
-      } else if (serum > 850) {
-        suggestedDose = "Nebido 1000mg a cada 14 semanas (postergar o intervalo)";
-        clinicalTip = "Nível de vale excelente, no limite superior. Nebido possui uma meia-vida longa de ~90 dias. É seguro estender o intervalo de aplicação para 14 semanas para monitoramento seguro e manutenção da faixa terapêutica.";
-      } else {
-        suggestedDose = "Nebido 1000mg a cada 12 semanas (manter intervalo padrão)";
-        clinicalTip = "Níveis de vale altamente estáveis (geralmente entre 400-700 ng/dL). Esta é a terapia mais estável em termos de flutuações hormonais. Manter a aplicação a cada 12 semanas e monitorar exames de segurança.";
+      
+      let intervalWeeks = 12;
+      if (!isNaN(weight) && weight > 100) {
+        intervalWeeks = 10; // Maior peso corporal pode requerer intervalos menores
       }
+
+      if (serum < 350) {
+        suggestedDose = `Nebido 1000mg a cada ${intervalWeeks - 2} semanas (antecipar o intervalo)`;
+        clinicalTip = "Nível de vale está abaixo do esperado para testosterona de ação lenta. Recomenda-se encurtar o intervalo regular para estabilizar os níveis e evitar a queda de performance no final do ciclo.";
+      } else if (serum > 850) {
+        suggestedDose = `Nebido 1000mg a cada ${intervalWeeks + 2} semanas (postergar o intervalo)`;
+        clinicalTip = "Nível de vale excelente, no limite superior. Nebido possui uma meia-vida longa de ~90 dias. É seguro estender o intervalo de aplicação para manutenção segura.";
+      } else {
+        suggestedDose = `Nebido 1000mg a cada ${intervalWeeks} semanas (manter intervalo padrão)`;
+        clinicalTip = "Níveis de vale altamente estáveis (geralmente entre 400-700 ng/dL). Esta é a terapia mais estável em termos de flutuações hormonais. Manter a aplicação regular.";
+      }
+    }
+
+    // 3. Conduta de Preservação de Fertilidade com HCG (Flukkahormo)
+    if (trtFertilityGoal === "yes") {
+      // Dose padrão baseada nas diretrizes de preservação testicular durante TRT
+      hcgDose = "HCG 500 UI por via subcutânea, 2x a 3x por semana (Total: 1.000 a 1.500 UI/semana)";
+      clinicalTip += " IMPORTANTE (Preservação de Fertilidade): O uso concomitante de HCG (Gonadotrofina Coriônica Humana) mimetiza o LH, estimulando a produção de testosterona intratesticular para preservar a espermatogênese e o volume testicular durante a TRT exógena, prevenindo a atrofia testicular secundária.";
     }
 
     setTrtResult({
       currentDose,
       suggestedDose,
       frequency,
+      hcgDose: trtFertilityGoal === "yes" ? hcgDose : undefined,
       clinicalTip,
+      safetyAlert,
       followUp
     });
   };
 
   const resetTRT = () => {
     setTrtSerumTesto("");
+    setTrtWeight("");
+    setTrtHematocrit("");
+    setTrtPSA("");
+    setTrtEstradiol("");
+    setTrtFertilityGoal("no");
     setTrtResult(null);
   };
 
@@ -507,24 +579,112 @@ export default function Calculators() {
                       </RadioGroup>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="trt-serum" className="text-xs font-bold text-primary uppercase tracking-wider">
-                        Testosterona Total Sérica Medida (ng/dL)
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="trt-serum"
-                          type="number"
-                          placeholder="Ex: 280"
-                          value={trtSerumTesto}
-                          onChange={(e) => setTrtSerumTesto(e.target.value)}
-                          className="pr-16 h-11 rounded-xl"
-                        />
-                        <span className="absolute right-4 top-3 text-xs font-bold text-muted-foreground">ng/dL</span>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="trt-serum" className="text-xs font-bold text-primary uppercase tracking-wider">
+                          Testosterona Total (ng/dL)
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="trt-serum"
+                            type="number"
+                            placeholder="Ex: 280"
+                            value={trtSerumTesto}
+                            onChange={(e) => setTrtSerumTesto(e.target.value)}
+                            className="pr-14 h-11 rounded-xl"
+                          />
+                          <span className="absolute right-3 top-3 text-[10px] font-bold text-muted-foreground">ng/dL</span>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-muted-foreground leading-snug">
-                        *Para injetáveis, coletar preferencialmente no dia da próxima aplicação (nível de vale).
-                      </p>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="trt-weight" className="text-xs font-bold text-primary uppercase tracking-wider">
+                          Peso Corporal (kg)
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="trt-weight"
+                            type="number"
+                            placeholder="Ex: 80"
+                            value={trtWeight}
+                            onChange={(e) => setTrtWeight(e.target.value)}
+                            className="pr-10 h-11 rounded-xl"
+                          />
+                          <span className="absolute right-3 top-3 text-[10px] font-bold text-muted-foreground">kg</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="trt-ht" className="text-xs font-bold text-primary uppercase tracking-wider">
+                          Hematócrito (%)
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="trt-ht"
+                            type="number"
+                            placeholder="Ex: 45"
+                            value={trtHematocrit}
+                            onChange={(e) => setTrtHematocrit(e.target.value)}
+                            className="pr-8 h-11 rounded-xl text-xs"
+                          />
+                          <span className="absolute right-2 top-3 text-[10px] font-bold text-muted-foreground">%</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="trt-psa" className="text-xs font-bold text-primary uppercase tracking-wider">
+                          PSA (ng/mL)
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="trt-psa"
+                            type="number"
+                            step="0.1"
+                            placeholder="Ex: 1.2"
+                            value={trtPSA}
+                            onChange={(e) => setTrtPSA(e.target.value)}
+                            className="pr-12 h-11 rounded-xl text-xs"
+                          />
+                          <span className="absolute right-2 top-3 text-[10px] font-bold text-muted-foreground">ng/ml</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="trt-e2" className="text-xs font-bold text-primary uppercase tracking-wider">
+                          Estradiol (pg/mL)
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="trt-e2"
+                            type="number"
+                            placeholder="Ex: 28"
+                            value={trtEstradiol}
+                            onChange={(e) => setTrtEstradiol(e.target.value)}
+                            className="pr-12 h-11 rounded-xl text-xs"
+                          />
+                          <span className="absolute right-2 top-3 text-[10px] font-bold text-muted-foreground">pg/ml</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-primary uppercase tracking-wider">Preservar Fertilidade / Volume Testicular?</Label>
+                      <RadioGroup value={trtFertilityGoal} onValueChange={setTrtFertilityGoal} className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center space-x-2 rounded-lg border border-border/50 p-2.5 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value="no" id="fert-no" />
+                          <Label htmlFor="fert-no" className="text-xs font-medium cursor-pointer w-full">
+                            Não (Apenas TRT)
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2 rounded-lg border border-border/50 p-2.5 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value="yes" id="fert-yes" />
+                          <Label htmlFor="fert-yes" className="text-xs font-medium cursor-pointer w-full flex items-center gap-1">
+                            Sim (HCG + TRT)
+                          </Label>
+                        </div>
+                      </RadioGroup>
                     </div>
 
                     <div className="space-y-2">
@@ -545,7 +705,7 @@ export default function Calculators() {
 
                     {!trtResult && (
                       <Button onClick={calculateTRT} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md shadow-accent/15">
-                        Analisar Ajuste de TRT
+                        Analisar Dosagem e Segurança de TRT
                       </Button>
                     )}
                   </div>
@@ -561,6 +721,16 @@ export default function Calculators() {
                         </div>
 
                         <div className="space-y-3 text-xs">
+                          {trtResult.safetyAlert && (
+                            <div className={`p-3 rounded-xl border text-xs leading-relaxed ${
+                              trtResult.safetyAlert.type === "critical" 
+                                ? "bg-destructive/10 border-destructive/20 text-destructive font-semibold" 
+                                : "bg-yellow-500/10 border-yellow-500/20 text-yellow-700 font-semibold"
+                            }`}>
+                              {trtResult.safetyAlert.text}
+                            </div>
+                          )}
+
                           <div>
                             <span className="font-bold text-primary block">Terapia Atual:</span>
                             <p className="text-foreground/80">{trtResult.currentDose}</p>
@@ -577,6 +747,15 @@ export default function Calculators() {
                             <span className="font-bold text-primary block">Frequência e Via:</span>
                             <p className="text-foreground/80">{trtResult.frequency}</p>
                           </div>
+
+                          {trtResult.hcgDose && (
+                            <div>
+                              <span className="font-bold text-emerald-600 block">Dosagem de HCG Recomendada (Flukkahormo):</span>
+                              <p className="text-foreground font-semibold bg-emerald-500/5 p-2.5 rounded-lg border border-emerald-500/10 text-emerald-700">
+                                {trtResult.hcgDose}
+                              </p>
+                            </div>
+                          )}
 
                           <div>
                             <span className="font-bold text-primary block">Diretriz e Dica Clínica:</span>
