@@ -11,6 +11,7 @@ import Calculators from "./pages/Calculators";
 import Patients from "./pages/Patients";
 import Budgets from "./pages/Budgets";
 import SecretaryTraining from "./pages/SecretaryTraining";
+import ICP from "./pages/ICP";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/pacientes" component={Patients} />
       <Route path="/orçamentos" component={Budgets} />
       <Route path="/treinamento" component={SecretaryTraining} />
+      <Route path="/icp" component={ICP} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
