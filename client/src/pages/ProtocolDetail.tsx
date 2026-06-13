@@ -45,7 +45,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
@@ -77,9 +77,72 @@ export default function ProtocolDetail() {
   const [useSignature, setUseSignature] = useState(true);
   const [useQrCode, setUseQrCode] = useState(true);
   const [signatureUrl, setSignatureUrl] = useState<string>("");
+  
+  // Estados para as novas funcionalidades (Medicamentos Adjuvantes, Checklist de Alta, Cópia MEV)
+  const [selectedAdjuvants, setSelectedAdjuvants] = useState<Record<string, string[]>>({});
+  const [checklistItems, setChecklistItems] = useState<Record<string, { id: string; text: string; checked: boolean }[]>>({});
+  const [mevCopied, setMevCopied] = useState<boolean>(false);
 
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
+
+  // Inicializar o checklist específico deste protocolo se houver
+  useEffect(() => {
+    if (protocol) {
+      const savedChecklist = localStorage.getItem(`protoUro_checklist_${protocol.id}`);
+      if (savedChecklist) {
+        setChecklistItems(prev => ({ ...prev, [protocol.id]: JSON.parse(savedChecklist) }));
+      } else {
+        // Itens de auditoria padrão CPP + específicos se aplicável
+        const defaultItems = [
+          { id: "receita", text: "Receituário impresso/assinado digitalmente (incluindo adjuvantes se selecionados)", checked: false },
+          { id: "atestado", text: "Atestado de afastamento gerado e impresso com QR Code", checked: false },
+          { id: "mev", text: "Orientações de Estilo de Vida (MEV) enviadas via WhatsApp", checked: false },
+          { id: "retorno", text: "Consulta de retorno agendada e registrada no CRM", checked: false },
+          { id: "contato", text: "Contato de emergência pós-operatório salvo no celular do paciente", checked: false },
+          { id: "financeiro", text: "Faturamento real do procedimento registrado no CRM", checked: false }
+        ];
+        setChecklistItems(prev => ({ ...prev, [protocol.id]: defaultItems }));
+      }
+    }
+  }, [protocolId]);
+
+  // Salvar checklist no LocalStorage ao alterar
+  const handleToggleChecklistItem = (itemId: string) => {
+    if (!protocol) return;
+    const currentList = checklistItems[protocol.id] || [];
+    const updated = currentList.map(item => 
+      item.id === itemId ? { ...item, checked: !item.checked } : item
+    );
+    setChecklistItems(prev => ({ ...prev, [protocol.id]: updated }));
+    localStorage.setItem(`protoUro_checklist_${protocol.id}`, JSON.stringify(updated));
+    
+    const item = updated.find(i => i.id === itemId);
+    if (item?.checked) {
+      toast.success(`Checklist: "${item.text}" auditado com sucesso!`);
+    }
+  };
+
+  // Resetar checklist
+  const handleResetChecklist = () => {
+    if (!protocol) return;
+    const currentList = checklistItems[protocol.id] || [];
+    const updated = currentList.map(item => ({ ...item, checked: false }));
+    setChecklistItems(prev => ({ ...prev, [protocol.id]: updated }));
+    localStorage.setItem(`protoUro_checklist_${protocol.id}`, JSON.stringify(updated));
+    toast.info("Auditoria de alta reiniciada.");
+  };
+
+  // Gerenciar seleção de medicamentos adjuvantes
+  const handleToggleAdjuvant = (sectionTitle: string, adjuvantText: string) => {
+    const current = selectedAdjuvants[sectionTitle] || [];
+    const updated = current.includes(adjuvantText)
+      ? current.filter(t => t !== adjuvantText)
+      : [...current, adjuvantText];
+    
+    setSelectedAdjuvants(prev => ({ ...prev, [sectionTitle]: updated }));
+    toast.success(current.includes(adjuvantText) ? "Medicamento removido da receita." : "Medicamento adicionado à receita!");
+  };
 
   // Carregar favoritos, histórico de pacientes e assinatura do LocalStorage
   useEffect(() => {
@@ -265,6 +328,14 @@ export default function ProtocolDetail() {
     // Limpar marcações markdown de blocos de código se houver
     let cleanText = text.replace(/```[\s\S]*?\n/g, "").replace(/```/g, "");
     
+    // Injetar medicamentos adjuvantes se for prescrição e houver algum selecionado para esta seção
+    if (isPrescription) {
+      const adjuvantsForSection = selectedAdjuvants[sectionTitle] || [];
+      if (adjuvantsForSection.length > 0) {
+        cleanText += "\n\n---\nMEDICAMENTOS ADJUVANTES SELECIONADOS:\n" + adjuvantsForSection.map((adj, idx) => `${idx + 1}. ${adj}`).join("\n");
+      }
+    }
+
     // Se for uma prescrição e tiver um nome de paciente definido, injetar o cabeçalho personalizado
     if (isPrescription) {
       const nameHeader = `--------------------------------------------------\nDR. FELIPE DE BULHÕES - UROLOGISTA & CIRURGIÃO GERAL\nRECEITUÁRIO MÉDICO\n\nPaciente: ${patientName || "______________________________________"}\nData: ${new Date().toLocaleDateString("pt-BR")}\n--------------------------------------------------\n\n`;
@@ -370,6 +441,16 @@ export default function ProtocolDetail() {
     } else {
       // Limpar os marcadores markdown de blocos de código
       formattedContent = content.replace(/```[\s\S]*?\n/g, "").replace(/```/g, "");
+      
+      // Injetar medicamentos adjuvantes se selecionados para qualquer seção de receita
+      // Como handlePrintDocument recebe o título e o conteúdo bruto, podemos varrer as seções de receita para ver qual coincide
+      const matchingSection = protocol.sections.find((s: any) => s.is_prescription && s.content === content);
+      if (matchingSection) {
+        const adjuvantsForSection = selectedAdjuvants[matchingSection.title] || [];
+        if (adjuvantsForSection.length > 0) {
+          formattedContent += "\n\n--------------------------------------------------\nMEDICAMENTOS ADJUVANTES SELECIONADOS:\n" + adjuvantsForSection.map((adj, idx) => `${idx + 1}. ${adj}`).join("\n");
+        }
+      }
     }
 
     // Gerar um QR Code dinâmico para validação do documento usando a API pública do QR Server
@@ -1104,6 +1185,105 @@ export default function ProtocolDetail() {
 	          </div>
 	        )}
 
+		        {/* Checklist de Auditoria de Alta CPP & Envio MEV WhatsApp */}
+		        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+		          {/* Checklist de Alta */}
+		          <Card className="border-emerald-500/20 bg-emerald-500/[0.01] shadow-sm">
+		            <CardHeader className="p-5 pb-3 flex flex-row items-center justify-between space-y-0">
+		              <div className="space-y-1 text-left">
+		                <CardTitle className="text-sm font-serif font-bold text-primary flex items-center gap-1.5">
+		                  <CheckSquare className="w-4 h-4 text-emerald-500" />
+		                  Auditoria de Alta CPP
+		                </CardTitle>
+		                <p className="text-[10px] text-muted-foreground leading-normal">
+		                  Garantia da entrega dos diferenciais de Cirurgião Particular Premium.
+		                </p>
+		              </div>
+		              <Button 
+		                variant="ghost" 
+		                size="sm" 
+		                onClick={handleResetChecklist}
+		                className="h-7 px-2 text-[10px] font-bold text-muted-foreground hover:text-destructive rounded-md"
+		              >
+		                Resetar Checklist
+		              </Button>
+		            </CardHeader>
+		            <CardContent className="p-5 pt-0 space-y-2.5">
+		              {(checklistItems[protocol.id] || []).map((item) => (
+		                <div 
+		                  key={item.id}
+		                  onClick={() => handleToggleChecklistItem(item.id)}
+		                  className={`
+		                    flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all duration-150
+		                    ${item.checked 
+		                      ? "border-emerald-500/30 bg-emerald-500/[0.03] text-foreground/80" 
+		                      : "border-border/50 bg-card/50 hover:bg-secondary/20"}
+		                  `}
+		                >
+		                  <input 
+		                    type="checkbox"
+		                    checked={item.checked}
+		                    onChange={() => {}} // Tratado no onClick do container
+		                    className="h-3.5 w-3.5 rounded border-border text-emerald-500 focus:ring-emerald-500 mt-0.5 pointer-events-none"
+		                  />
+		                  <span className={`text-xs text-left leading-snug ${item.checked ? "line-through text-muted-foreground" : "font-medium"}`}>
+		                    {item.text}
+		                  </span>
+		                </div>
+		              ))}
+		            </CardContent>
+		          </Card>
+
+		          {/* Envio MEV WhatsApp */}
+		          <Card className="border-[#B87333]/20 bg-[#B87333]/[0.01] shadow-sm flex flex-col justify-between">
+		            <CardHeader className="p-5 pb-3">
+		              <div className="space-y-1 text-left">
+		                <CardTitle className="text-sm font-serif font-bold text-primary flex items-center gap-1.5">
+		                  <Sparkles className="w-4 h-4 text-[#B87333]" />
+		                  Orientações MEV para o Paciente
+		                </CardTitle>
+		                <p className="text-[10px] text-muted-foreground leading-normal">
+		                  Envie as orientações completas de Estilo de Vida (Nutrição, Sono, Treino) formatadas.
+		                </p>
+		              </div>
+		            </CardHeader>
+		            <CardContent className="p-5 pt-0 space-y-4 flex-1 flex flex-col justify-between">
+		              <div className="bg-secondary/30 rounded-xl p-4 border border-border/40 text-left space-y-2 flex-1">
+		                <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">Prévia da Mensagem:</span>
+		                <div className="text-xs text-foreground/80 leading-relaxed font-mono line-clamp-6 whitespace-pre-wrap">
+		                  {`Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular.\n• SONO: Sono reparador para pico de testosterona e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à disposição!`}
+		                </div>
+		              </div>
+		              <div className="flex gap-2 pt-2 shrink-0">
+		                <Button
+		                  variant="outline"
+		                  onClick={() => {
+		                    const text = `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular.\n• SONO: Sono reparador para pico de testosterona e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à disposição!`;
+		                    navigator.clipboard.writeText(text);
+		                    setMevCopied(true);
+		                    toast.success("Mensagem MEV copiada com sucesso!");
+		                    setTimeout(() => setMevCopied(false), 2000);
+		                  }}
+		                  className="flex-1 rounded-xl text-xs h-10 font-semibold border-border"
+		                >
+		                  {mevCopied ? "Copiado!" : "Copiar Texto"}
+		                </Button>
+		                <Button
+		                  onClick={() => {
+		                    const text = `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nPara otimizar a sua recuperação do procedimento de ${protocol.title}, preparei orientações exclusivas de Estilo de Vida (MEV):\n\n• NUTRIÇÃO: Foco em anti-inflamatórios e hidratação celular.\n• SONO: Sono reparador para pico de testosterona e cicatrização.\n• ATIVIDADE FÍSICA: Repouso ativo e retorno gradual seguro.\n\nQualquer dúvida, nossa equipe está 100% à disposição!`;
+		                    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+		                    window.open(url, "_blank");
+		                    toast.success("Abrindo WhatsApp...");
+		                  }}
+		                  className="flex-1 rounded-xl text-xs h-10 font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+		                >
+		                  Enviar WhatsApp
+		                </Button>
+		              </div>
+		            </CardContent>
+		          </Card>
+		        </div>
+
 		        {/* Seções Colapsáveis (Accordion) */}
 		        <div className="space-y-4">
 		          <Accordion type="multiple" defaultValue={protocol.sections.map((_, i) => `section-${i}`)} className="space-y-4">
@@ -1390,12 +1570,73 @@ export default function ProtocolDetail() {
 	                    </div>
 	                  </div>
 
-	                  <AccordionContent className="p-5 pt-4 text-sm leading-relaxed text-foreground/90 prose dark:prose-invert max-w-none">
-	                    {isPrescription ? (
-	                      <div className="bg-secondary/50 dark:bg-secondary/20 p-4 rounded-lg border border-border/60 font-mono text-xs overflow-x-auto whitespace-pre-wrap">
-	                        {section.content.replace(/```/g, "")}
-	                      </div>
-	                    ) : isSecretary ? (
+		                  <AccordionContent className="p-5 pt-4 text-sm leading-relaxed text-foreground/90 prose dark:prose-invert max-w-none">
+		                    {isPrescription ? (
+		                      <div className="space-y-4">
+		                        {/* Seletor de Medicamentos Adjuvantes / Sintomáticos */}
+		                        <div className="bg-secondary/20 border border-border/60 rounded-xl p-4 space-y-3">
+		                          <div className="flex items-center justify-between">
+		                            <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+		                              <Sparkles className="w-3.5 h-3.5 text-accent" />
+		                              Medicamentos Adjuvantes / Sintomáticos Opcionais
+		                            </span>
+		                            <Badge variant="secondary" className="text-[9px] font-semibold uppercase tracking-wider">
+		                              Injetar na Receita
+		                            </Badge>
+		                          </div>
+		                          <p className="text-[10px] text-muted-foreground">
+		                            Selecione medicamentos complementares para serem injetados automaticamente no final do seu receituário antes de imprimir ou copiar.
+		                          </p>
+		                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+		                            {[
+		                              { id: "tansulosina", name: "Tansulosina 0,4mg", desc: "1 cp VO à noite por 30 dias (facilita eliminação de cálculos/LUTS)" },
+		                              { id: "pyridium", name: "Pyridium (Fenazopiridina) 200mg", desc: "1 cp VO de 8/8h por 2 dias se disúria importante" },
+		                              { id: "laxante", name: "Lactulona (Xarope)", desc: "15ml VO à noite se constipação pós-operatória" },
+		                              { id: "scopolamina", name: "Buscopan Composto", desc: "1 cp VO de 8/8h se cólica ou espasmo vesical" },
+		                              { id: "cetoprofeno", name: "Profem (Cetoprofeno) 100mg", desc: "1 cp VO de 12/12h por 3 a 5 dias se dor/inflamação" },
+		                              { id: "ciprofloxacino", name: "Ciprofloxacino 500mg", desc: "1 cp VO de 12/12h por 3 a 5 dias se profilaxia de ITU estendida" }
+		                            ].map((med) => {
+		                              const isSelected = (selectedAdjuvants[section.title] || []).includes(`${med.name} - ${med.desc}`);
+		                              return (
+		                                <div 
+		                                  key={med.id}
+		                                  onClick={() => handleToggleAdjuvant(section.title, `${med.name} - ${med.desc}`)}
+		                                  className={`
+		                                    flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all duration-200 hover:bg-card
+		                                    ${isSelected ? "border-accent/50 bg-accent/[0.03] shadow-sm" : "border-border/50 bg-card/40"}
+		                                  `}
+		                                >
+		                                  <input 
+		                                    type="checkbox"
+		                                    checked={isSelected}
+		                                    onChange={() => {}} // Tratado no onClick do container
+		                                    className="h-3.5 w-3.5 rounded border-border text-accent focus:ring-accent mt-0.5 pointer-events-none"
+		                                  />
+		                                  <div className="space-y-0.5 text-left">
+		                                    <div className="text-xs font-bold text-primary">{med.name}</div>
+		                                    <div className="text-[10px] text-muted-foreground leading-normal">{med.desc}</div>
+		                                  </div>
+		                                </div>
+		                              );
+		                            })}
+		                          </div>
+		                        </div>
+
+		                        <div className="bg-secondary/50 dark:bg-secondary/20 p-4 rounded-lg border border-border/60 font-mono text-xs overflow-x-auto whitespace-pre-wrap text-left">
+		                          {section.content.replace(/```/g, "")}
+		                          {(selectedAdjuvants[section.title] || []).length > 0 && (
+		                            <div className="mt-4 pt-4 border-t border-dashed border-border/80 text-accent font-mono">
+		                              <span className="font-bold uppercase tracking-wider block mb-2 text-[10px]">[+] Medicamentos Adjuvantes Injetados:</span>
+		                              {(selectedAdjuvants[section.title] || []).map((adj, idx) => (
+		                                <div key={idx} className="pl-2 border-l-2 border-accent/40 mb-1">
+		                                  {idx + 1}. {adj}
+		                                </div>
+		                              ))}
+		                            </div>
+		                          )}
+		                        </div>
+		                      </div>
+		                    ) : isSecretary ? (
 	                      <div className="bg-amber-500/[0.02] dark:bg-amber-500/[0.05] p-5 rounded-xl border border-amber-500/10 space-y-2">
 	                        <Streamdown>{section.content}</Streamdown>
 	                      </div>
