@@ -100,6 +100,7 @@ interface Paciente {
   proximoContato?: string; // Data agendada para o próximo acompanhamento comercial (AAAA-MM-DD)
   faturamentoReal?: number; // Faturamento real do paciente (cirurgia/consulta paga)
   custoHospitalarReal?: number; // Custo hospitalar real incorrido de fato (taxas, insumos, OPME)
+  desdobramentoCustos?: string; // Histórico de desdobramento de custos adicionais (taxas extras, OPME detalhado, etc.)
   auditorias_alta?: Record<string, any>; // Auditoria de checklists de alta de protocolos
 }
 
@@ -116,7 +117,7 @@ interface SecretáriaTarefa {
 export default function Patients() {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "hema_critical" | "psa_critical" | "followup_late" | "contact_overdue" | "origin_instagram" | "origin_google" | "origin_indicacao">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "hema_critical" | "psa_critical" | "followup_late" | "contact_overdue" | "origin_instagram" | "origin_google" | "origin_indicacao" | "alta_auditada">("all");
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -137,6 +138,7 @@ export default function Patients() {
   const [proximoContato, setProximoContato] = useState(""); // Data agendada para o próximo contato (AAAA-MM-DD)
   const [faturamentoReal, setFaturamentoReal] = useState(""); // Faturamento real do paciente
   const [custoHospitalarReal, setCustoHospitalarReal] = useState(""); // Custo hospitalar real do paciente
+  const [desdobramentoCustos, setDesdobramentoCustos] = useState(""); // Histórico de desdobramento de custos do paciente
   const [activeView, setActiveView] = useState<"list" | "crm">("list"); // Visualização ativa (Lista vs CRM Kanban)
   const [tarefasSecretaria, setTarefasSecretaria] = useState<SecretáriaTarefa[]>([]);
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
@@ -515,6 +517,7 @@ export default function Patients() {
             proximoContato: proximoContato,
             faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined,
             custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined,
+            desdobramentoCustos: desdobramentoCustos.trim() || undefined,
             comercialHist: updatedHist
           };
         }
@@ -554,7 +557,8 @@ export default function Patients() {
         origem: origem,
         proximoContato: proximoContato,
         faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined,
-        custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined
+        custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined,
+        desdobramentoCustos: desdobramentoCustos.trim() || undefined
       };
       saveToStorage([novo, ...pacientes]);
       toast.success("Paciente cadastrado com sucesso!");
@@ -583,6 +587,7 @@ export default function Patients() {
     setProximoContato(p.proximoContato || "");
     setFaturamentoReal(p.faturamentoReal !== undefined ? p.faturamentoReal.toString() : "");
     setCustoHospitalarReal(p.custoHospitalarReal !== undefined ? p.custoHospitalarReal.toString() : "");
+    setDesdobramentoCustos(p.desdobramentoCustos || "");
     setIsAdding(true);
   };
 
@@ -722,6 +727,7 @@ export default function Patients() {
     setProximoContato("");
     setFaturamentoReal("");
     setCustoHospitalarReal("");
+    setDesdobramentoCustos("");
   };
 
   const handleCancel = () => {
@@ -1227,6 +1233,14 @@ export default function Patients() {
       if (p.origem !== "google_ads") return false;
     } else if (activeFilter === "origin_indicacao") {
       if (p.origem !== "indicacao") return false;
+    } else if (activeFilter === "alta_auditada") {
+      if (!p.auditorias_alta) return false;
+      const protocols = Object.keys(p.auditorias_alta);
+      const hasCompletedAudit = protocols.some(protoId => {
+        const items = p.auditorias_alta ? p.auditorias_alta[protoId] || [] : [];
+        return items.length > 0 && items.every((item: any) => item.checked);
+      });
+      if (!hasCompletedAudit) return false;
     }
 
     // Terceiro aplicar filtro de período (com base na data de cadastro)
@@ -1542,6 +1556,16 @@ export default function Patients() {
                       className="rounded-xl h-11"
                     />
                   </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="desdobramentoCustos" className="text-xs font-bold text-primary uppercase tracking-wider">Desdobramento de Custos / OPME / Notas Extras</Label>
+                    <Textarea 
+                      id="desdobramentoCustos" 
+                      placeholder="Ex: OPME: R$ 3.500 | Taxa de Sala Day Hospital: R$ 1.000" 
+                      value={desdobramentoCustos}
+                      onChange={(e) => setDesdobramentoCustos(e.target.value)}
+                      className="rounded-xl min-h-[44px] h-11 py-2"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4 border-t border-border/40 pt-5">
@@ -1799,6 +1823,24 @@ export default function Patients() {
                   className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "origin_indicacao" ? "copper-gradient text-white border-0" : "border-border text-primary hover:bg-secondary/40"}`}
                 >
                   🤝 Indicação ({pacientes.filter(p => p.origem === "indicacao").length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeFilter === "alta_auditada" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("alta_auditada")}
+                  className={`h-8 rounded-full text-xs font-bold px-4 gap-1.5 ${activeFilter === "alta_auditada" ? "bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-sm" : "border-amber-200/40 text-amber-600 hover:bg-amber-50/40"}`}
+                >
+                  <CheckSquare className="w-3.5 h-3.5 text-current" />
+                  ✨ Alta Auditada OK ({
+                    pacientes.filter(p => {
+                      if (!p.auditorias_alta) return false;
+                      const protocols = Object.keys(p.auditorias_alta);
+                      return protocols.some(protoId => {
+                        const items = p.auditorias_alta ? p.auditorias_alta[protoId] || [] : [];
+                        return items.length > 0 && items.every((item: any) => item.checked);
+                      });
+                    }).length
+                  })
                 </Button>
               </div>
             </div>
@@ -2505,6 +2547,39 @@ export default function Patients() {
                           <p className="text-muted-foreground leading-relaxed text-justify line-clamp-3 font-mono">
                             {p.notas}
                           </p>
+                        </div>
+                      )}
+
+                      {(p.faturamentoReal !== undefined || p.custoHospitalarReal !== undefined || p.desdobramentoCustos) && (
+                        <div className="space-y-2 pt-2.5 border-t border-border/40 text-xs bg-emerald-500/[0.02] p-2.5 rounded-xl border border-emerald-500/10">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-emerald-700 uppercase tracking-wider text-[9px]">Análise Financeira Real:</span>
+                            {p.faturamentoReal !== undefined && p.custoHospitalarReal !== undefined && (
+                              <span className="text-[9px] font-bold text-emerald-600 uppercase">
+                                Lucro Líquido: {(p.faturamentoReal - p.custoHospitalarReal).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                              </span>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-[11px]">
+                            {p.faturamentoReal !== undefined && (
+                              <div className="flex justify-between items-center bg-card p-1.5 rounded border border-border/30">
+                                <span className="text-muted-foreground">Faturamento Real:</span>
+                                <span className="font-bold text-emerald-600">{p.faturamentoReal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                              </div>
+                            )}
+                            {p.custoHospitalarReal !== undefined && (
+                              <div className="flex justify-between items-center bg-card p-1.5 rounded border border-border/30">
+                                <span className="text-muted-foreground">Custo Hosp. Real:</span>
+                                <span className="font-bold text-red-600">{p.custoHospitalarReal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                              </div>
+                            )}
+                          </div>
+                          {p.desdobramentoCustos && (
+                            <div className="space-y-1 bg-card p-2 rounded border border-border/30">
+                              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Desdobramento de Custos / OPME:</span>
+                              <p className="text-[10px] text-foreground/80 leading-relaxed font-mono whitespace-pre-wrap">{p.desdobramentoCustos}</p>
+                            </div>
+                          )}
                         </div>
                       )}
 

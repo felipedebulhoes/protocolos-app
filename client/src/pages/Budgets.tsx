@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip as RechartsTooltip, 
+  ResponsiveContainer,
+  Cell
+} from "recharts";
+import { 
   FileText, 
   Search, 
   Trash2, 
@@ -166,6 +176,76 @@ export default function Budgets() {
       countTotal,
       countAprovado
     };
+  }, [todosOrçamentos]);
+
+  // Agrupar dados por procedimento para o gráfico de barras de margem por procedimento
+  const dadosGraficoMargem = React.useMemo(() => {
+    const agrupamento: Record<string, { faturamento: number; custo: number; count: number }> = {};
+
+    todosOrçamentos.forEach(orc => {
+      if (orc.status !== "aprovado") return;
+
+      const procedimentoRaw = orc.titulo.replace("Orçamento CPP: ", "");
+      // Normalizar nome do procedimento
+      let procedimento = "Outros";
+      if (procedimentoRaw.toLowerCase().includes("holep") || procedimentoRaw.toLowerCase().includes("enucleação")) {
+        procedimento = "HoLEP (Laser Próstata)";
+      } else if (procedimentoRaw.toLowerCase().includes("sling")) {
+        procedimento = "Sling Uretral";
+      } else if (procedimentoRaw.toLowerCase().includes("botox") || procedimentoRaw.toLowerCase().includes("toxina")) {
+        procedimento = "Toxina Botulínica";
+      } else if (procedimentoRaw.toLowerCase().includes("prótese") || procedimentoRaw.toLowerCase().includes("implante")) {
+        procedimento = "Implante de Prótese";
+      } else if (procedimentoRaw.toLowerCase().includes("peyronie")) {
+        procedimento = "Cirurgia Peyronie";
+      } else if (procedimentoRaw.toLowerCase().includes("ondas de choque") || procedimentoRaw.toLowerCase().includes("eswt")) {
+        procedimento = "Ondas de Choque";
+      } else if (procedimentoRaw.trim()) {
+        procedimento = procedimentoRaw.trim();
+      }
+
+      // 1. Obter valor orçado
+      const matchTotal = orc.conteudo.match(/Valor Total:\s*R\$\s*([\d.,]+)/i);
+      const valClean = matchTotal && matchTotal[1] ? matchTotal[1].replace(/\./g, "").replace(",", ".") : "0";
+      const valorOrcado = parseFloat(valClean) || 0;
+
+      // 2. Extrair estimativas de custos do orçamento se dados reais estiverem ausentes
+      const matchHospital = orc.conteudo.match(/Hospital:\s*R\$\s*([\d.,]+)/i);
+      const matchMateriais = orc.conteudo.match(/Materiais.*?:\s*R\$\s*([\d.,]+)/i);
+      const hospEst = matchHospital && matchHospital[1] ? parseFloat(matchHospital[1].replace(/\./g, "").replace(",", ".")) : 0;
+      const matEst = matchMateriais && matchMateriais[1] ? parseFloat(matchMateriais[1].replace(/\./g, "").replace(",", ".")) : 0;
+      const custoOrcadoEstimado = hospEst + matEst;
+
+      // 3. Determinar faturamento e custo real (prioriza preenchimento real do CRM, senão usa dados do orçamento)
+      const faturamentoReal = orc.faturamentoReal !== undefined ? orc.faturamentoReal : valorOrcado;
+      const custoReal = orc.custoHospitalarReal !== undefined ? orc.custoHospitalarReal : custoOrcadoEstimado;
+
+      if (!agrupamento[procedimento]) {
+        agrupamento[procedimento] = { faturamento: 0, custo: 0, count: 0 };
+      }
+
+      agrupamento[procedimento].faturamento += faturamentoReal;
+      agrupamento[procedimento].custo += custoReal;
+      agrupamento[procedimento].count += 1;
+    });
+
+    return Object.keys(agrupamento).map(proc => {
+      const { faturamento, custo, count } = agrupamento[proc];
+      const lucroTotal = faturamento - custo;
+      const margemMedia = count > 0 ? lucroTotal / count : 0;
+      const faturamentoMedio = count > 0 ? faturamento / count : 0;
+      const custoMedio = count > 0 ? custo / count : 0;
+      const percentualMargem = faturamento > 0 ? (lucroTotal / faturamento) * 100 : 0;
+
+      return {
+        procedimento: proc,
+        lucroMedio: Math.round(margemMedia),
+        faturamentoMedio: Math.round(faturamentoMedio),
+        custoMedio: Math.round(custoMedio),
+        margemPercentual: Math.round(percentualMargem),
+        casos: count
+      };
+    }).sort((a, b) => b.lucroMedio - a.lucroMedio);
   }, [todosOrçamentos]);
 
   // Função para alterar o status de um orçamento
@@ -734,6 +814,109 @@ export default function Budgets() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Gráfico Visual de Margem por Procedimento */}
+        {dadosGraficoMargem.length > 0 && (
+          <Card className="bg-card border border-border/40 shadow-sm overflow-hidden">
+            <CardHeader className="p-5 pb-3 border-b border-border/40 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-serif font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-[#B87333] animate-pulse" />
+                  Margem de Lucro Líquido Médio por Procedimento (Casos Aprovados)
+                </CardTitle>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Comparativo de retorno financeiro líquido real por tipo de cirurgia/tratamento
+                </p>
+              </div>
+              <Badge variant="outline" className="text-[9px] font-bold uppercase border-emerald-500/20 text-emerald-600 bg-emerald-500/5">
+                Análise de ROI
+              </Badge>
+            </CardHeader>
+            <CardContent className="p-5">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                {/* Gráfico Recharts */}
+                <div className="lg:col-span-2 h-72 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={dadosGraficoMargem}
+                      margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis 
+                        dataKey="procedimento" 
+                        tick={{ fill: "#64748B", fontSize: 9, fontWeight: "bold" }} 
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis 
+                        tickFormatter={(v) => `R$ ${v >= 1000 ? `${v/1000}k` : v}`}
+                        tick={{ fill: "#1C3D5A", fontSize: 9, fontWeight: "bold" }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <RechartsTooltip 
+                        formatter={(value: any, name: any) => {
+                          if (name === "lucroMedio") return [value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), "Lucro Médio"];
+                          if (name === "faturamentoMedio") return [value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), "Faturamento Médio"];
+                          if (name === "custoMedio") return [value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), "Custo Médio"];
+                          return [value, name];
+                        }}
+                        labelStyle={{ fontWeight: "bold", color: "#1C3D5A", fontSize: "11px" }}
+                        contentStyle={{ borderRadius: "8px", border: "1px solid #E2E8F0", fontSize: "11px" }}
+                      />
+                      <Bar 
+                        dataKey="lucroMedio" 
+                        name="Lucro Médio (R$)" 
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={50}
+                      >
+                        {dadosGraficoMargem.map((entry, index) => {
+                          // Cores alternadas ou degradê premium
+                          const cores = ["#1C3D5A", "#B87333", "#3B82F6", "#10B981", "#8B5CF6", "#F59E0B"];
+                          return <Cell key={`cell-${index}`} fill={cores[index % cores.length]} />;
+                        })}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Tabela de Dados e Insights */}
+                <div className="space-y-4">
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">
+                    Ranking de Rentabilidade Média:
+                  </span>
+                  <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                    {dadosGraficoMargem.map((item, idx) => (
+                      <div 
+                        key={`rank_${idx}`} 
+                        className="bg-secondary/10 border border-border/40 p-2.5 rounded-xl flex flex-col gap-1 text-xs"
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-primary truncate max-w-[180px]">{item.procedimento}</span>
+                          <Badge variant="outline" className="text-[8px] font-bold py-0 px-1.5 border-accent/20 text-accent bg-accent/5">
+                            {item.casos} {item.casos === 1 ? "caso" : "casos"}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-[10px] text-muted-foreground pt-1 border-t border-border/30 mt-1">
+                          <div>
+                            Margem Líquida: <strong className="text-emerald-600 block text-xs">{item.lucroMedio.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+                          </div>
+                          <div className="text-right">
+                            Faturamento Médio: <strong className="text-primary block">{item.faturamentoMedio.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-[9px] text-muted-foreground mt-0.5">
+                          <span>Custo Hosp. Médio: <strong>{item.custoMedio.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong></span>
+                          <span className="font-bold text-[#B87333] bg-[#B87333]/5 px-1.5 py-0.5 rounded">Margem: {item.margemPercentual}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          )}
 
         {/* Barra de Busca */}
         <div className="relative">
