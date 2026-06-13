@@ -63,6 +63,14 @@ interface SintomaRegistro {
   adamPositivo?: boolean;
 }
 
+interface DiarioMiccionalRegistro {
+  data: string; // Data ou Identificador da Consulta/Retorno
+  frequenciaDiurna: number; // Número de micções durante o dia
+  nocturia: number; // Número de micções durante a noite (noctúria)
+  volumeMedio: number; // Volume miccional médio estimado em mL
+  ingestaoLiquidos?: number; // Ingestão estimada de líquidos em mL
+}
+
 interface DocumentoVinculado {
   id: string;
   titulo: string;
@@ -105,6 +113,7 @@ interface Paciente {
   estradiol?: string; // Nível de Estradiol sérico (pg/mL)
   insuficienciaCardiaca?: boolean; // Histórico de Insuficiência Cardíaca Congestiva (ICC)
   usoNitratos?: boolean; // Uso concomitante de Nitratos (Isordil, Monocordil, Nitroglicerina, etc.)
+  historicoDiarioMiccional?: DiarioMiccionalRegistro[]; // Histórico do Diário Miccional (LUTS/HPB)
 }
 
 interface SecretáriaTarefa {
@@ -228,6 +237,13 @@ export default function Patients() {
   const [newAdam, setNewAdam] = useState(false);
   const [newDataSintoma, setNewDataSintoma] = useState(new Date().toLocaleDateString("pt-BR").substring(0, 5));
 
+  // Estados para inserção de novo ponto do Diário Miccional (LUTS/HPB)
+  const [newDiarioData, setNewDiarioData] = useState(new Date().toLocaleDateString("pt-BR").substring(0, 5));
+  const [newDiarioDiurna, setNewDiarioDiurna] = useState("");
+  const [newDiarioNocturia, setNewDiarioNocturia] = useState("");
+  const [newDiarioVolume, setNewDiarioVolume] = useState("");
+  const [newDiarioIngestao, setNewDiarioIngestao] = useState("");
+
   // Estados para novos registros de contatos comerciais (CRM Linha do Tempo)
   const [newContatoTipo, setNewContatoTipo] = useState<"whatsapp" | "ligacao" | "email" | "retorno">("whatsapp");
   const [newContatoNotas, setNewContatoNotas] = useState("");
@@ -347,7 +363,25 @@ export default function Patients() {
    Posologia: Aplicar 1 pump (equivalente a 50mg de testosterona) sobre a pele limpa e seca do ombro, braço ou abdômen, preferencialmente pela manhã, massageando levemente até completa absorção. Lavar as mãos imediatamente após a aplicação e evitar contato da área com mulheres ou crianças por pelo menos 4 horas.
 
 2. Sabonete líquido neutro --------------------------------- 150 mL
-   Posologia: Lavar o local de aplicação após 6 horas para remoção de resíduos e máxima segurança.`
+   Posologia: Lavar o local de aplicação após 6 horas para remoção de resíduos e máxima segurança.`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - TRT (GEL DE TESTOSTERONA)
+--------------------------------------------------------------------------------
+1. COMO APLICAR (PASSO A PASSO):
+   • Aplique preferencialmente pela manhã, após o banho, sobre a pele limpa e seca.
+   • Locais ideais: Ombros, braços ou abdômen. Nunca aplique na região genital/escrotal.
+   • Espere secar por 5 minutos antes de se vestir.
+   • Lave as mãos com água e sabão imediatamente após a aplicação.
+   • Evite banho, natação ou sudorese intensa por pelo menos 4 a 6 horas após a aplicação para garantir a absorção máxima.
+
+2. MEDICINA DE ESTILO DE VIDA (MEV) E SUPLEMENTAÇÃO:
+   • Pratique musculação de alta intensidade (3 a 5 vezes por semana) para otimizar os receptores androgênicos.
+   • Mantenha o percentual de gordura corporal controlado (gordura visceral inibe a testosterona livre e aumenta a aromatização para estradiol).
+   • Considere a suplementação de Zinco (30mg/dia) e Vitamina D3 (2.000 UI/dia) para suporte metabólico.
+
+3. CRONOGRAMA DE EXAMES E SEGUIMENTO:
+   • Coleta de Exames: Realizar Testosterona Total, Testosterona Livre, SHBG, Hematócrito, PSA Total e Estradiol a cada 3 meses no primeiro ano, e depois a cada 6 meses.
+   • Agendamento de Retorno: Agendar consulta de retorno em D+90 (após os exames de controle) para ajuste de dose.
+   • Alerta de Segurança: Se houver surgimento de mastalgia (dor nos mamilos), edema acentuado ou cansaço extremo, entre em contato imediatamente.`
     },
     {
       id: "undecilato_nebido",
@@ -357,7 +391,22 @@ export default function Patients() {
 1. Undecilato de Testosterona 250 mg/mL (Ampola de 4 mL) ---- 1 ampola
    Posologia: Aplicar 1 ampola (1000 mg) por via intramuscular profunda na região glútea, lentamente (durante pelo menos 60 segundos), com intervalo de 10 a 14 semanas, conforme orientação médica e controle laboratorial periódico.
 
-* Nota: A primeira aplicação de reforço (segunda dose) pode ser recomendada após 6 semanas para saturação mais rápida do compartimento de reserva.`
+* Nota: A primeira aplicação de reforço (segunda dose) pode ser recomendada após 6 semanas para saturação mais rápida do compartimento de reserva.`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - TRT (UNDECILATO DE TESTOSTERONA / NEBIDO)
+--------------------------------------------------------------------------------
+1. COMO APLICAR (PASSO A PASSO):
+   • A aplicação deve ser realizada exclusivamente por via intramuscular profunda na região glútea.
+   • A injeção deve ser extremamente lenta (durante pelo menos 60 segundos) para evitar microembolia pulmonar oleosa (que causa tosse reflexa e sensação de sufocamento transitória).
+   • Respeite rigorosamente a janela de aplicação (dose de reforço com 6 semanas, e depois a cada 10 a 14 semanas).
+
+2. MEDICINA DE ESTILO DE VIDA (MEV) E SUPLEMENTAÇÃO:
+   • Mantenha hidratação abundante (mínimo de 35mL/kg de água por dia) para ajudar a modular a viscosidade sanguínea (hematócrito).
+   • Pratique exercícios aeróbicos regulares (cardio) para saúde cardiovascular e controle pressórico.
+   • Considere a suplementação de Coenzima Q10 (100mg/dia) para suporte mitocondrial e endotelial.
+
+3. CRONOGRAMA DE EXAMES E SEGUIMENTO:
+   • Coleta de Exames: Realizar exames laboratoriais (Testosterona, Hematócrito, PSA, Estradiol) sempre na semana imediatamente anterior à próxima aplicação (ponto mais baixo do vale).
+   • Retorno Clínico: Agendar consulta de retorno após a coleta de exames para avaliar a necessidade de encurtamento ou extensão do intervalo entre as ampolas.`
     },
     {
       id: "cipionato_deposteron",
@@ -365,7 +414,20 @@ export default function Patients() {
       conteudo: `USO INTRAMUSCULAR
 
 1. Cipionato de Testosterona 200 mg / 2 mL (Ampola) --------- 3 ampolas
-   Posologia: Aplicar 1 ampola (200 mg) por via intramuscular profunda na região glútea a cada 14 dias (duas semanas) para manutenção de níveis fisiológicos de testosterona. Realizar exames de controle de Testosterona Total e Hematócrito antes da 4ª aplicação.`
+   Posologia: Aplicar 1 ampola (200 mg) por via intramuscular profunda na região glútea a cada 14 dias (duas semanas) para manutenção de níveis fisiológicos de testosterona. Realizar exames de controle de Testosterona Total e Hematócrito antes da 4ª aplicação.`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - TRT (CIPIONATO DE TESTOSTERONA / DEPOSTERON)
+--------------------------------------------------------------------------------
+1. COMO APLICAR (PASSO A PASSO):
+   • Aplicação por via intramuscular profunda glútea com técnica asséptica estrita.
+   • Se houver oscilações severas de humor ou libido (efeito montanha-russa), converse com o Dr. Felipe sobre o fracionamento da dose (ex: aplicar meia ampola / 100mg a cada 7 dias por via subcutânea ou intramuscular rasa).
+
+2. MEDICINA DE ESTILO DE VIDA (MEV) E SUPLEMENTAÇÃO:
+   • Evite o consumo excessivo de álcool (o álcool aumenta a atividade da enzima aromatase, convertendo mais testosterona em estradiol, o que pode causar ginecomastia e retenção hídrica).
+   • Consuma vegetais crucíferos (brócolis, couve-flor) que contêm indol-3-carbinol, auxiliando na metabolização saudável do estrogênio.
+
+3. CRONOGRAMA DE EXAMES E SEGUIMENTO:
+   • Coleta de Exames: Coletar exames de sangue (Testosterona, Hematócrito, PSA, Estradiol) no meio do intervalo das aplicações (ex: no 7º dia após a última injeção) para avaliar a média real.
+   • Alerta de Segurança: Monitorar pressão arterial semanalmente. Se a pressão sistólica ultrapassar 140 mmHg de forma persistente, agende uma reavaliação.`
     },
     {
       id: "clomifeno_estimulo",
@@ -384,7 +446,22 @@ export default function Patients() {
 1. Tadalafila 5 mg ------------------------------------------ 30 comprimidos
    Posologia: Tomar 1 comprimido por via oral, uma vez ao dia, sempre no mesmo horário (preferencialmente à noite ou 2 horas antes de dormir). Uso contínuo.
 
-* Benefícios: Melhora da função erétil e redução dos sintomas urinários obstrutivos (IPSS) por hiperplasia prostática benigna (HPB).`
+* Benefícios: Melhora da função erétil e redução dos sintomas urinários obstrutivos (IPSS) por hiperplasia prostática benigna (HPB).`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - TADALAFILA DIÁRIA 5MG
+--------------------------------------------------------------------------------
+1. ORIENTAÇÕES DE USO (PASSO A PASSO):
+   • Tome o comprimido diariamente, preferencialmente à noite. O uso contínuo acumula o medicamento no sangue, atingindo níveis terapêuticos estáveis após 5 dias.
+   • Não depende de alimentação. Pode ser tomado com ou sem alimentos.
+   • Evite o uso concomitante de nitratos (medicação para o coração como isordil, monocordil) - risco de queda severa de pressão.
+
+2. MEDICINA DE ESTILO DE VIDA (MEV) E DIÁRIO MICCIONAL:
+   • Para pacientes com sintomas urinários (HPB/LUTS): Evite a ingestão excessiva de líquidos nas 3 horas anteriores ao sono para reduzir a noctúria (acordar à noite para urinar).
+   • Evite cafeína e bebidas alcoólicas à noite, pois são irritantes vesicais potentes.
+   • Preencha o Diário Miccional do ProtoUro por 3 dias consecutivos antes da próxima consulta.
+
+3. SEGUIMENTO CLÍNICO:
+   • Reavaliação: Retorno em D+30 para aplicar novamente os escores IPSS e IIEF-5 e medir a melhora objetiva dos sintomas.
+   • Efeitos Colaterais Comuns: Cefaleia leve, rubor facial ou dor lombar/mialgia podem ocorrer nos primeiros dias e costumam desaparecer espontaneamente com o uso contínuo.`
     },
     {
       id: "flukkahormo_hcg_preservacao",
@@ -399,7 +476,22 @@ export default function Patients() {
 * Racional Clínico: Mimetiza o LH para estimular as células de Leydig, mantendo a produção de testosterona intratesticular, preservando o volume testicular e a fertilidade durante a TRT.
 
 🛒 Adquira de forma segura na Flukka: https://flukka.com.br/hormo
-🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - HCG (PRESERVAÇÃO DE FERTILIDADE / FLUKKAHORMO)
+--------------------------------------------------------------------------------
+1. COMO PREPARAR E APLICAR (PASSO A PASSO):
+   • Reconstituição: Aspire o diluente com a seringa e injete-o lentamente no frasco contendo o pó liofilizado de HCG (5.000 UI). Faça movimentos circulares suaves. Nunca agite vigorosamente.
+   • Armazenamento: Após a reconstituição, o frasco-ampola deve ser mantido obrigatoriamente sob refrigeração (entre 2°C e 8°C). Não congelar. Validade máxima de 30 dias após diluído.
+   • Aplicação: Use seringas de insulina de 1mL/100 UI. Uma dose de 500 UI equivale a 10 divisões (ou 10 UI) na seringa de insulina padrão de 1mL.
+   • Local de Aplicação: Via subcutânea na região periumbilical (abdômen), com técnica asséptica e prega cutânea.
+
+2. SUPLEMENTAÇÃO E ESTILO DE VIDA:
+   • Mantenha a ingestão de gorduras saudáveis (azeite, abacate, castanhas) que são precursoras de hormônios esteroides.
+   • Considere suplementar com Coenzima Q10 (100mg/dia) e L-Carnitina L-Tartrato (2g/dia) para suporte de motilidade e morfologia espermática.
+
+3. CRONOGRAMA DE EXAMES E SEGUIMENTO:
+   • Coleta de Exames: Se o objetivo for estritamente fertilidade, realizar Espermograma com morfologia de Kruger e fragmentação de DNA espermático a cada 3 meses.
+   • Retorno Clínico: Consulta em D+90 para reavaliação de volume testicular por ultrassonografia ou exame físico e ajuste de dose.`
     },
     {
       id: "flukkahormo_nandrolona",
@@ -415,7 +507,20 @@ export default function Patients() {
 * Indicação: Tratamento adjuvante de sarcopenia, osteoporose e dores articulares crônicas refratárias em pacientes hipogonádicos.
 
 🛒 Adquira de forma segura na Flukka: https://flukka.com.br/hormo
-🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - NANDROLONA (SARCOPENIA / FLUKKAHORMO)
+--------------------------------------------------------------------------------
+1. COMO APLICAR (PASSO A PASSO):
+   • Aplicação por via intramuscular profunda glútea.
+   • Nunca use nandrolona isolada! Ela deve ser sempre associada a uma dose base de testosterona (gel ou injetável) para manter a libido e a função erétil fisiológicas.
+
+2. SUPLEMENTAÇÃO E ESTILO DE VIDA (MEV):
+   • O uso de nandrolona exige treinamento de força resistido (musculação) de alta intensidade e ingestão proteica adequada (mínimo de 1.8g a 2.0g/kg de proteína por dia) para reversão de sarcopenia e ganho de massa magra.
+   • Considere suplementar com Creatina Monohidratada (5g/dia) de forma contínua para sinergia no ganho de força e hidratação intramuscular.
+
+3. CRONOGRAMA DE EXAMES E SEGUIMENTO:
+   • Coleta de Exames: Monitorar estritamente o perfil lipídico (Colesterol Total, HDL, LDL, Triglicerídeos), Transaminases Hepáticas (AST/ALT) e Hematócrito a cada 3 meses.
+   • Retorno Clínico: Consulta de retorno em D+60 para bioimpedanciometria corporal e avaliação de melhora de dores articulares.`
     },
     {
       id: "flukkamen_dapoxetina_ep",
@@ -430,7 +535,20 @@ export default function Patients() {
 * Mecanismo: Inibidor seletivo da recaptação de serotonina (ISRS) de ação rápida e eliminação ultrarrápida, ideal para controle da ejaculação precoce sem os efeitos colaterais da descontinuação diária.
 
 🛒 Adquira de forma segura na Flukka: https://flukka.com.br/men
-🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - DAPOXETINA (EJACULAÇÃO PRECOCE / FLUKKAMEN)
+--------------------------------------------------------------------------------
+1. ORIENTAÇÕES DE USO (PASSO A PASSO):
+   • Tome 1 cápsula com um copo cheio de água, cerca de 1 a 3 horas antes da relação sexual prevista.
+   • Pode ser tomada com ou sem alimentos. Evite o consumo de bebidas alcoólicas junto com a medicação, pois aumenta o risco de tonturas, sonolência ou síncope.
+   • Não use diariamente. A medicação foi desenvolvida exclusivamente para uso sob demanda (conforme a necessidade).
+
+2. EXERCÍCIOS DE REABILITAÇÃO (MEV):
+   • Pratique exercícios de fortalecimento da musculatura do assoalho pélvico (Exercícios de Kegel): Contraia o músculo pubococcígeo (como se fosse interromper o fluxo urinário) por 5 segundos, relaxe por 5 segundos. Repita 10 a 15 vezes, 3 vezes ao dia.
+   • Utilize técnicas comportamentais de controle de ansiedade e dessensibilização (técnica de "start-stop" e "squeeze").
+
+3. SEGUIMENTO CLÍNICO:
+   • Reavaliação: Retorno em D+30 para avaliar o ganho de tempo de latência ejaculatória intravaginal (IELT) e tolerabilidade à medicação.`
     },
     {
       id: "flukkamen_spray_sublingual",
@@ -447,7 +565,20 @@ export default function Patients() {
 * Vantagem: A absorção sublingual evita o metabolismo de primeira passagem hepática, proporcionando início de ação mais rápido e potente devido à associação sinérgica com a Fentolamina.
 
 🛒 Adquira de forma segura na Flukka: https://flukka.com.br/men
-🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - SPRAY SUBLINGUAL (FLUKKAMEN)
+--------------------------------------------------------------------------------
+1. COMO APLICAR (PASSO A PASSO):
+   • Agite bem o frasco antes de usar.
+   • Aplique o spray sob a língua (região sublingual). Mantenha o líquido sob a língua por pelo menos 1 a 2 minutos antes de engolir, para garantir a absorção transmucosa máxima.
+   • Evite beber água ou escovar os dentes nos 15 minutos seguintes à aplicação.
+
+2. MEDICINA DE ESTILO DE VIDA (MEV) E SAÚDE VASCULAR:
+   • Pratique exercícios aeróbicos regulares (cardio) - a saúde erétil depende diretamente da saúde endotelial e do fluxo sanguíneo microvascular.
+   • Evite tabagismo e controle rigorosamente os níveis de colesterol e glicemia.
+
+3. SEGUIMENTO CLÍNICO:
+   • Reavaliação: Consulta de retorno em D+30 para avaliar a resposta terapêutica com o score IIEF-5/SHIM e ajustar o número de jatos se necessário.`
     },
     {
       id: "flukkamen_ocitocina_anorgasmia",
@@ -462,7 +593,22 @@ export default function Patients() {
 * Indicação: Tratamento adjuvante para anorgasmia masculina ou retardo ejaculatório crônico. Melhora a dimensão orgásmica e a percepção de satisfação pós-coito.
 
 🛒 Adquira de forma segura na Flukka: https://flukka.com.br/men
-🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - OCITOCINA SPRAY NASAL (FLUKKAMEN)
+--------------------------------------------------------------------------------
+1. COMO APLICAR (PASSO A PASSO):
+   • Assoe o nariz suavemente antes de aplicar.
+   • Mantenha a cabeça ereta e insira o aplicador em uma narina, fechando a outra com o dedo.
+   • Pressione o spray firmemente enquanto inspira suavemente pelo nariz. Repita na outra narina.
+   • Limpe o aplicador após o uso e feche bem o frasco.
+   • Aplique estritamente de 5 a 10 minutos antes da relação sexual.
+
+2. ASPECTOS COMPORTAMENTAIS (MEV):
+   • A ocitocina atua na modulação do sistema nervoso central, promovendo relaxamento, conexão emocional e reduzindo a ansiedade de performance.
+   • Mantenha um ambiente acolhedor e foque na intimidade com a parceria, reduzindo cobranças e pressões de desempenho.
+
+3. SEGUIMENTO CLÍNICO:
+   • Reavaliação: Retorno em D+30 para avaliar a percepção subjetiva de melhora da intensidade orgásmica e redução do tempo para ejaculação.`
     },
     {
       id: "flukkamen_verapamil_peyronie",
@@ -477,7 +623,21 @@ export default function Patients() {
 * Objetivo: Terapia antifibrótica tópica de suporte para estabilização e redução da curvatura peniana na fase aguda da Doença de Peyronie.
 
 🛒 Adquira de forma segura na Flukka: https://flukka.com.br/men
-🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - TRATAMENTO DE PEYRONIE (VERAPAMIL TÓPICO)
+--------------------------------------------------------------------------------
+1. COMO APLICAR (PASSO A PASSO):
+   • Aplique uma fina camada do creme diretamente sobre a área da placa fibrótica (nódulo endurecido que causa a curvatura), com o pênis flácido.
+   • Realize uma massagem circular suave e contínua por 2 a 3 minutos para favorecer a permeação cutânea do Verapamil e da Papaína.
+   • Aplique duas vezes ao dia, de forma consistente (manhã e noite).
+
+2. FISIOTERAPIA E REABILITAÇÃO PENIANA (MEV):
+   • O uso do creme de Verapamil apresenta melhores resultados quando associado ao uso de dispositivos de tração peniana ou terapia de vácuo (sob orientação do Dr. Felipe) na fase ativa/inflamatória da doença.
+   • Evite dobrar ou forçar o pênis durante a relação sexual para prevenir novas microlesões na túnica albugínea.
+
+3. CRONOGRAMA DE EXAMES E SEGUIMENTO:
+   • Monitoramento: Avaliação da curvatura por foto-goniometria domiciliar a cada 30 dias.
+   • Retorno Clínico: Consulta em D+90 para realizar Ultrassonografia de pênis com fármaco-indução para medir a espessura da placa e estabilização da curvatura.`
     },
     {
       id: "flukkanutri_combo_infertilidade",
@@ -496,7 +656,21 @@ export default function Patients() {
 * Racional: Antioxidantes de alta evidência científica para otimização da motilidade, concentração e morfologia espermática, além de redução do estresse oxidativo seminal (ECR Cochrane).
 
 🛒 Adquira de forma segura na Flukka: https://flukka.com.br/nutri
-🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - PROTOCOLO PRÓ-FERTILIDADE MASCULINA
+--------------------------------------------------------------------------------
+1. ORIENTAÇÕES DE SUPLEMENTAÇÃO (PASSO A PASSO):
+   • CoQ10 e Ômega 3 são lipossolúveis. Devem ser ingeridos obrigatoriamente junto com refeições que contenham gorduras saudáveis (almoço ou jantar) para garantir a absorção ideal.
+   • A Vitamina D3 pode ser ingerida pela manhã, junto ao café da manhã.
+
+2. MEDICINA DE ESTILO DE VIDA (MEV) PARA FERTILIDADE:
+   • Evite o aquecimento escrotal: Não utilize notebook diretamente no colo, evite banhos de ofurô, saunas e roupas íntimas excessivamente apertadas.
+   • Pratique atividades físicas regulares moderadas. Evite o sedentarismo e o sobrepeso, que elevam a fragmentação do DNA espermático.
+   • Cessação absoluta do tabagismo e limitação do consumo de bebidas alcoólicas.
+
+3. SEGUIMENTO LABORATORIAL:
+   • Exame de Controle: Realizar novo Espermograma completo com morfologia de Kruger e índice de Fragmentação do DNA espermático após 90 dias de tratamento (tempo necessário para um ciclo completo de espermatogênese).
+   • Retorno Clínico: Consulta em D+90 com os resultados dos exames.`
     },
     {
       id: "flukkanutri_cranberry_itu",
@@ -511,7 +685,20 @@ export default function Patients() {
 * Indicação: Profilaxia não-antibiótica de infecções do trato urinário (ITU) recorrentes. Inibe a adesão das fímbrias da bactéria Escherichia coli ao urotélio vesical (Grau de Evidência Forte - Cochrane).
 
 🛒 Adquira de forma segura na Flukka: https://flukka.com.br/nutri
-🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`
+🎟️ Cupom de Desconto do Dr. Felipe: DRFELIPE10 (Ganhe 10% de Desconto)`,
+      planoContinuado: `📋 DIRETRIZES DE CUIDADO CONTINUADO - PREVENÇÃO DE ITU RECORRENTE (CRANBERRY)
+--------------------------------------------------------------------------------
+1. ORIENTAÇÕES DE USO (PASSO A PASSO):
+   • Tome 1 cápsula a cada 12 horas, de forma consistente, com água.
+   • O tratamento preventivo deve ser mantido de forma contínua por pelo menos 3 a 6 meses para permitir a descamação e proteção celular contínua do urotélio.
+
+2. MEDICINA DE ESTILO DE VIDA (MEV) PARA SAÚDE VESICAL:
+   • Ingestão Hídrica: Beba pelo menos 2.5 a 3.0 litros de água por dia. A diluição urinária e o fluxo urinário constante são a principal barreira mecânica contra infecções.
+   • Hábito Miccional: Urine imediatamente após as relações sexuais (profilaxia pós-coito). Nunca "segure" a urina por longos períodos (esvazie a bexiga a cada 3 horas).
+   • Higiene adequada e regulação do trânsito intestinal (constipação crônica favorece a translocação bacteriana e ITUs).
+
+3. SEGUIMENTO CLÍNICO:
+   • Monitoramento: Se apresentar disúria (dor ao urinar), polaciúria (aumento da frequência) ou febre, realize exames de Urina Tipo 1 e Urocultura com Antibiograma e entre em contato.`
     }
   ];
 
@@ -808,6 +995,37 @@ export default function Patients() {
     setNewIief("");
     setNewIpss("");
     setNewAdam(false);
+  };
+
+  const handleAddDiarioPonto = (pacienteId: string) => {
+    if (!newDiarioDiurna && !newDiarioNocturia && !newDiarioVolume) {
+      toast.error("Preencha pelo menos um parâmetro do Diário Miccional.");
+      return;
+    }
+
+    const updated = pacientes.map(p => {
+      if (p.id === pacienteId) {
+        const hist = p.historicoDiarioMiccional || [];
+        const novoPonto: DiarioMiccionalRegistro = {
+          data: newDiarioData || new Date().toLocaleDateString("pt-BR").substring(0, 5),
+          frequenciaDiurna: newDiarioDiurna ? parseInt(newDiarioDiurna) : 0,
+          nocturia: newDiarioNocturia ? parseInt(newDiarioNocturia) : 0,
+          volumeMedio: newDiarioVolume ? parseInt(newDiarioVolume) : 0,
+          ingestaoLiquidos: newDiarioIngestao ? parseInt(newDiarioIngestao) : undefined
+        };
+        return {
+          ...p,
+          historicoDiarioMiccional: [...hist, novoPonto]
+        };
+      }
+      return p;
+    });
+    saveToStorage(updated);
+    toast.success("Diário miccional registrado com sucesso!");
+    setNewDiarioDiurna("");
+    setNewDiarioNocturia("");
+    setNewDiarioVolume("");
+    setNewDiarioIngestao("");
   };
 
   const handleAddContato = (pacienteId: string) => {
@@ -2528,7 +2746,7 @@ export default function Patients() {
                                 <button
                                   disabled={col.id === "operado"}
                                   onClick={() => {
-                                    const stages: Array<"lead" | "agendado" | "realizado" | "proposto" | "operado"> = ["lead", "agendado", "realizado", "proposto", "operado"];
+                                    const stages: ("lead" | "agendado" | "realizado" | "proposto" | "operado")[] = ["lead", "agendado", "realizado", "proposto", "operado"];
                                     const currIdx = stages.indexOf(col.id as any);
                                     if (currIdx < stages.length - 1) {
                                       const updated = pacientes.map(pac => {
@@ -3772,6 +3990,146 @@ export default function Patients() {
                             </div>
                           </div>
 
+                          {/* Diário Miccional Clínico (LUTS/HPB) */}
+                          <div className="space-y-3 pt-2 border-t border-border/40">
+                            <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                              <Activity className="w-4 h-4 text-accent animate-pulse" />
+                              Diário Miccional Clínico (Padrão-Ouro LUTS/HPB)
+                            </span>
+                            
+                            {p.historicoDiarioMiccional && p.historicoDiarioMiccional.length > 0 ? (
+                              <div className="bg-secondary/10 border border-border/50 p-4 rounded-xl space-y-4">
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart 
+                                      data={p.historicoDiarioMiccional}
+                                      margin={{ top: 10, right: 5, left: -10, bottom: 0 }}
+                                    >
+                                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                      <XAxis 
+                                        dataKey="data" 
+                                        tick={{ fill: "#64748B", fontSize: 10, fontWeight: "bold" }} 
+                                        tickLine={false}
+                                      />
+                                      {/* Eixo Y Esquerdo: Frequência Diurna e Noctúria (Micções) */}
+                                      <YAxis 
+                                        yAxisId="left"
+                                        domain={[0, 'auto']}
+                                        tick={{ fill: "#1C3D5A", fontSize: 10, fontWeight: "bold" }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                      />
+                                      {/* Eixo Y Direito: Volume Miccional Médio (mL) */}
+                                      <YAxis 
+                                        yAxisId="right"
+                                        orientation="right"
+                                        domain={[0, 'auto']}
+                                        tick={{ fill: "#B87333", fontSize: 10, fontWeight: "bold" }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                      />
+                                      <RechartsTooltip 
+                                        contentStyle={{ backgroundColor: "#FEFEFE", borderRadius: "12px", border: "1px solid #E2E8F0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}
+                                        labelStyle={{ fontWeight: "bold", color: "#1C3D5A", fontSize: "11px" }}
+                                        itemStyle={{ fontSize: "11px", padding: "2px 0" }}
+                                      />
+                                      {/* Linhas de Dados */}
+                                      <Line 
+                                        yAxisId="left"
+                                        type="monotone" 
+                                        dataKey="frequenciaDiurna" 
+                                        name="Frequência Diurna" 
+                                        stroke="#3B82F6" 
+                                        strokeWidth={3}
+                                        activeDot={{ r: 6 }}
+                                        dot={{ r: 4, strokeWidth: 2, fill: "#FEFEFE" }}
+                                      />
+                                      <Line 
+                                        yAxisId="left"
+                                        type="monotone" 
+                                        dataKey="nocturia" 
+                                        name="Noctúria (Acordar à Noite)" 
+                                        stroke="#EF4444" 
+                                        strokeWidth={3}
+                                        activeDot={{ r: 6 }}
+                                        dot={{ r: 4, strokeWidth: 2, fill: "#FEFEFE" }}
+                                      />
+                                      <Line 
+                                        yAxisId="right"
+                                        type="monotone" 
+                                        dataKey="volumeMedio" 
+                                        name="Vol. Miccional Médio (mL)" 
+                                        stroke="#F59E0B" 
+                                        strokeWidth={3}
+                                        activeDot={{ r: 6 }}
+                                        dot={{ r: 4, strokeWidth: 2, fill: "#FEFEFE" }}
+                                      />
+                                    </LineChart>
+                                  </ResponsiveContainer>
+                                </div>
+                                
+                                {/* Legenda do Gráfico do Diário Miccional */}
+                                <div className="flex justify-center flex-wrap gap-4 text-[10px] font-bold border-t border-border/40 pt-2">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-1.5 bg-[#3B82F6] inline-block rounded-full"></span>
+                                    <span className="text-[#3B82F6]">Freq. Diurna (Eixo Esq.)</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-1.5 bg-[#EF4444] inline-block rounded-full"></span>
+                                    <span className="text-[#EF4444]">Noctúria (Eixo Esq.)</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-1.5 bg-[#F59E0B] inline-block rounded-full"></span>
+                                    <span className="text-[#F59E0B]">Vol. Miccional Médio mL (Eixo Dir.)</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="p-6 text-center border border-dashed border-border rounded-xl text-xs text-muted-foreground">
+                                Registre pelo menos um ponto do diário miccional para gerar o gráfico de evolução.
+                              </div>
+                            )}
+
+                            {/* Formulário rápido para adicionar ponto do diário */}
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
+                              <Input 
+                                type="text" 
+                                placeholder="Data/Consulta (ex: 15/06)" 
+                                value={newDiarioData}
+                                onChange={(e) => setNewDiarioData(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Input 
+                                type="number" 
+                                placeholder="Freq. Diurna" 
+                                value={newDiarioDiurna}
+                                onChange={(e) => setNewDiarioDiurna(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Input 
+                                type="number" 
+                                placeholder="Noctúria" 
+                                value={newDiarioNocturia}
+                                onChange={(e) => setNewDiarioNocturia(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Input 
+                                type="number" 
+                                placeholder="Vol. Médio (mL)" 
+                                value={newDiarioVolume}
+                                onChange={(e) => setNewDiarioVolume(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleAddDiarioPonto(p.id)}
+                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white col-span-2 sm:col-span-1"
+                              >
+                                Registrar Diário
+                              </Button>
+                            </div>
+                          </div>
+
                           {/* Histórico de Documentos Vinculados */}
                           <div className="space-y-3 pt-2">
                             <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
@@ -4393,13 +4751,23 @@ export default function Patients() {
                     <!-- Conteúdo da Receita -->
                     <div class="prescription-content">${prescricaoConteudo}</div>
 
-                    <!-- Assinatura ICP-Brasil -->
-                    <div class="signature-area">
-                      ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" />` : `<div style="height: 45px;"></div>`}
-                      <div class="signature-line"></div>
-                      <strong style="font-size: 11px; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</strong><br>
-                      <span style="font-size: 9px; color: #64748B;">Urologista - CRM-SP 241.135 | RQE 112.445</span><br>
-                      <span style="font-size: 7px; color: #94A3B8; margin-top: 6px; display: block; font-family: monospace;">Assinado digitalmente via ICP-Brasil (e-CPF) • Hash SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+                    <!-- Área de Autenticação e Assinatura -->
+                    <div class="signature-area" style="bottom: 80px; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; position: absolute;">
+                      <div class="qr-code-box" style="display: flex; align-items: center; gap: 10px; border: 1px solid #E2E8F0; border-radius: 10px; padding: 8px; background: #FFF; max-width: 220px; text-align: left;">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://www.doctoralia.com.br/felipe-de-bulhoes-ojeda-2/urologista/campinas" class="qr-code-img" style="width: 50px; height: 50px;" alt="QR Code de Validação" />
+                        <div class="qr-code-text" style="font-size: 7px; color: #64748B; line-height: 1.3; font-weight: 600;">
+                          <strong>RECEITA AUTÊNTICA</strong><br>
+                          Valide as informações de registro profissional e agendamento de consultas do Dr. Felipe apontando a câmera do celular.
+                        </div>
+                      </div>
+                      
+                      <div class="signature-box" style="text-align: center;">
+                        ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" style="max-height: 50px; margin-bottom: 5px;" />` : `<div style="height: 40px;"></div>`}
+                        <div class="signature-line" style="width: 220px; border-top: 1px solid #CBD5E1; margin: 0 auto 8px auto;"></div>
+                        <strong style="font-size: 11px; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</strong><br>
+                        <span style="font-size: 9px; color: #64748B;">Urologista - CRM-SP 241.135 | RQE 112.445</span><br>
+                        <span style="font-size: 7px; color: #94A3B8; margin-top: 4px; display: block; font-family: monospace;">Hash ICP-Brasil SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+                      </div>
                     </div>
 
                     <!-- Rodapé Fixo -->

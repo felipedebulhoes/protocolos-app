@@ -15,6 +15,18 @@ export default function Calculators() {
   const [iiefAnswers, setIiefAnswers] = useState<Record<number, number>>({});
   const [iiefResult, setIiefResult] = useState<{ score: number; severity: string; color: string } | null>(null);
 
+  // --- ESTADO SHIM (Sexual Health Inventory for Men) ---
+  const [shimAnswers, setShimAnswers] = useState<Record<number, number>>({});
+  const [shimResult, setShimResult] = useState<{ score: number; severity: string; color: string } | null>(null);
+
+  // --- ESTADO IPSS ---
+  const [ipssAnswers, setIpssAnswers] = useState<Record<number, number>>({});
+  const [ipssResult, setIpssResult] = useState<{ score: number; qol: number; severity: string; color: string } | null>(null);
+
+  // --- ESTADO NIH-CPSI (Prostatite Crônica) ---
+  const [nihAnswers, setNihAnswers] = useState<Record<number | string, number | boolean>>({});
+  const [nihResult, setNihResult] = useState<{ painScore: number; urinaryScore: number; qolScore: number; totalScore: number; severity: string; color: string } | null>(null);
+
   const iiefQuestions = [
     {
       id: 1,
@@ -99,6 +111,320 @@ export default function Calculators() {
   const resetIIEF = () => {
     setIiefAnswers({});
     setIiefResult(null);
+  };
+
+  // --- LÓGICA SHIM ---
+  const shimQuestions = [
+    {
+      id: 1,
+      q: "Como você classifica a sua confiança em obter e manter uma ereção?",
+      options: [
+        { val: 1, text: "Muito baixa" },
+        { val: 2, text: "Baixa" },
+        { val: 3, text: "Moderada" },
+        { val: 4, text: "Alta" },
+        { val: 5, text: "Muito alta" }
+      ]
+    },
+    {
+      id: 2,
+      q: "Quando você teve ereções com estimulação sexual, com que frequência a sua ereção foi suficientemente rígida para penetração?",
+      options: [
+        { val: 0, text: "Sem atividade sexual" },
+        { val: 1, text: "Quase nunca ou nunca" },
+        { val: 2, text: "Poucas vezes (menos da metade das vezes)" },
+        { val: 3, text: "Algumas vezes (cerca de metade das vezes)" },
+        { val: 4, text: "A maioria das vezes (muito mais da metade das vezes)" },
+        { val: 5, text: "Quase sempre ou sempre" }
+      ]
+    },
+    {
+      id: 3,
+      q: "Durante a relação sexual, com que frequência você foi capaz de manter a ereção após penetrar o(a) parceiro(a)?",
+      options: [
+        { val: 0, text: "Sem atividade sexual" },
+        { val: 1, text: "Quase nunca ou nunca" },
+        { val: 2, text: "Poucas vezes (menos da metade das vezes)" },
+        { val: 3, text: "Algumas vezes (cerca de metade das vezes)" },
+        { val: 4, text: "A maioria das vezes (muito mais da metade das vezes)" },
+        { val: 5, text: "Quase sempre ou sempre" }
+      ]
+    },
+    {
+      id: 4,
+      q: "Durante a relação sexual, quão difícil foi manter a ereção até a conclusão da relação?",
+      options: [
+        { val: 0, text: "Sem atividade sexual" },
+        { val: 1, text: "Extremamente difícil" },
+        { val: 2, text: "Muito difícil" },
+        { val: 3, text: "Difícil" },
+        { val: 4, text: "Pouco difícil" },
+        { val: 5, text: "Nada difícil" }
+      ]
+    },
+    {
+      id: 5,
+      q: "Quando você tentou a relação sexual, com que frequência ela foi satisfatória para você?",
+      options: [
+        { val: 0, text: "Sem atividade sexual" },
+        { val: 1, text: "Quase nunca ou nunca" },
+        { val: 2, text: "Poucas vezes (menos da metade das vezes)" },
+        { val: 3, text: "Algumas vezes (cerca de metade das vezes)" },
+        { val: 4, text: "A maioria das vezes (muito mais da metade das vezes)" },
+        { val: 5, text: "Quase sempre ou sempre" }
+      ]
+    }
+  ];
+
+  const calculateSHIM = () => {
+    const answeredCount = Object.keys(shimAnswers).length;
+    if (answeredCount < 5) {
+      alert("Por favor, responda a todas as 5 perguntas do SHIM.");
+      return;
+    }
+    const score = Object.values(shimAnswers).reduce((a, b) => a + b, 0);
+    let severity = "";
+    let color = "";
+
+    if (score <= 7) { severity = "Disfunção Erétil Grave (SHIM)"; color = "bg-destructive/10 text-destructive border-destructive/20"; }
+    else if (score <= 11) { severity = "Disfunção Erétil Moderada (SHIM)"; color = "bg-orange-500/10 text-orange-600 border-orange-500/20"; }
+    else if (score <= 16) { severity = "Disfunção Erétil Leve a Moderada (SHIM)"; color = "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"; }
+    else if (score <= 21) { severity = "Disfunção Erétil Leve (SHIM)"; color = "bg-blue-500/10 text-blue-600 border-blue-500/20"; }
+    else { severity = "Função Erétil Normal (SHIM)"; color = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"; }
+
+    setShimResult({ score, severity, color });
+  };
+
+  const resetSHIM = () => {
+    setShimAnswers({});
+    setShimResult(null);
+  };
+
+  // --- LÓGICA IPSS ---
+  const ipssQuestions = [
+    { id: 1, q: "Esvaziamento Incompleto: Com que frequência você teve a sensação de não esvaziar a bexiga completamente?" },
+    { id: 2, q: "Frequência: Com que frequência você teve que urinar novamente menos de 2 horas após ter urinado?" },
+    { id: 3, q: "Intermitência: Com que frequência você percebeu que parou e recomeçou várias vezes enquanto urinava?" },
+    { id: 4, q: "Urgência: Com que frequência você achou difícil conter a urina (urgência para urinar)?" },
+    { id: 5, q: "Jato Fraco: Com que frequência você percebeu que o jato urinário estava fraco ou interrompido?" },
+    { id: 6, q: "Esforço: Com que frequência você teve que fazer força ou empurrar para começar a urinar?" },
+    { id: 7, q: "Noctúria: Com que frequência você teve que se levantar para urinar à noite, desde o momento em que se deitou até acordar de manhã?" }
+  ];
+
+  const ipssOptions = [
+    { val: 0, text: "Nenhuma vez" },
+    { val: 1, text: "Menos de 1 em cada 5 vezes" },
+    { val: 2, text: "Menos da metade das vezes" },
+    { val: 3, text: "Metade das vezes" },
+    { val: 4, text: "Mais da metade das vezes" },
+    { val: 5, text: "Quase sempre" }
+  ];
+
+  const ipssNocturiaOptions = [
+    { val: 0, text: "Nenhuma vez" },
+    { val: 1, text: "1 vez" },
+    { val: 2, text: "2 vezes" },
+    { val: 3, text: "3 vezes" },
+    { val: 4, text: "4 vezes" },
+    { val: 5, text: "5 ou mais vezes" }
+  ];
+
+  const ipssQolQuestions = {
+    q: "Qualidade de Vida (QoL): Se você tivesse que passar o resto da vida com os seus sintomas urinários atuais, como se sentiria?",
+    options: [
+      { val: 0, text: "Muito satisfeito" },
+      { val: 1, text: "Satisfeito" },
+      { val: 2, text: "Mais ou menos satisfeito" },
+      { val: 3, text: "Indiferente" },
+      { val: 4, text: "Mais ou menos insatisfeito" },
+      { val: 5, text: "Infeliz" },
+      { val: 6, text: "Terrível" }
+    ]
+  };
+
+  const calculateIPSS = () => {
+    const answeredCount = Object.keys(ipssAnswers).length;
+    if (answeredCount < 8) {
+      alert("Por favor, responda a todas as 7 perguntas de sintomas + a pergunta de Qualidade de Vida (QoL).");
+      return;
+    }
+
+    const symptomsScore = [1, 2, 3, 4, 5, 6, 7].reduce((acc, id) => acc + (ipssAnswers[id] || 0), 0);
+    const qol = ipssAnswers[8] || 0;
+
+    let severity = "";
+    let color = "";
+
+    if (symptomsScore <= 7) {
+      severity = "Sintomas Leves";
+      color = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    } else if (symptomsScore <= 19) {
+      severity = "Sintomas Moderados";
+      color = "bg-orange-500/10 text-orange-600 border-orange-500/20";
+    } else {
+      severity = "Sintomas Graves";
+      color = "bg-destructive/10 text-destructive border-destructive/20";
+    }
+
+    setIpssResult({ score: symptomsScore, qol, severity, color });
+  };
+
+  const resetIPSS = () => {
+    setIpssAnswers({});
+    setIpssResult(null);
+  };
+
+  // --- LÓGICA NIH-CPSI ---
+  const nihQuestions = [
+    {
+      id: 1,
+      q: "Dor ou Desconforto: Você sentiu qualquer dor ou desconforto em alguma das seguintes áreas na última semana?",
+      subQuestions: [
+        { key: 11, text: "Área entre o reto e os testículos (períneo)" },
+        { key: 12, text: "Testículos" },
+        { key: 13, text: "Ponta do pênis (não relacionada à micção)" },
+        { key: 14, text: "Área abaixo da cintura, na região púbica ou bexiga" }
+      ]
+    },
+    {
+      id: 2,
+      q: "Dor na Micção ou Ejaculação: Você sentiu dor ou desconforto em alguma das seguintes situações na última semana?",
+      subQuestions: [
+        { key: 21, text: "Dor ou queimação ao urinar?" },
+        { key: 22, text: "Dor ou desconforto durante ou após a ejaculação (orgasmo)?" }
+      ]
+    }
+  ];
+
+  const nihIntensityQuestion = {
+    id: 3,
+    q: "Intensidade da Dor: Com que frequência você sentiu dor ou desconforto em qualquer uma dessas áreas na última semana?",
+    options: [
+      { val: 0, text: "Nunca" },
+      { val: 1, text: "Raramente" },
+      { val: 2, text: "Algumas vezes" },
+      { val: 3, text: "Muitas vezes" },
+      { val: 4, text: "Quase sempre" },
+      { val: 5, text: "Sempre" }
+    ]
+  };
+
+  const nihPainScaleQuestion = {
+    id: 4,
+    q: "Escala de Dor: Qual número de 0 a 10 melhor descreve a sua dor ou desconforto MÉDIO na última semana?",
+    options: Array.from({ length: 11 }, (_, i) => ({ val: i, text: i.toString() }))
+  };
+
+  const nihUrinaryQuestions = [
+    {
+      id: 5,
+      q: "Micção Incompleta: Com que frequência você teve a sensação de não esvaziar a bexiga completamente após urinar na última semana?",
+      options: [
+        { val: 0, text: "Nenhuma vez" },
+        { val: 1, text: "Menos de 1 em cada 5 vezes" },
+        { val: 2, text: "Menos da metade das vezes" },
+        { val: 3, text: "Metade das vezes" },
+        { val: 4, text: "Mais da metade das vezes" },
+        { val: 5, text: "Quase sempre" }
+      ]
+    },
+    {
+      id: 6,
+      q: "Frequência: Com que frequência você teve que urinar novamente menos de 2 horas após ter urinado na última semana?",
+      options: [
+        { val: 0, text: "Nenhuma vez" },
+        { val: 1, text: "Menos de 1 em cada 5 vezes" },
+        { val: 2, text: "Menos da metade das vezes" },
+        { val: 3, text: "Metade das vezes" },
+        { val: 4, text: "Mais da metade das vezes" },
+        { val: 5, text: "Quase sempre" }
+      ]
+    }
+  ];
+
+  const nihImpactQuestions = [
+    {
+      id: 7,
+      q: "Impacto nos Sintomas: Quanto os seus sintomas o impediram de fazer as coisas que você costuma fazer na última semana?",
+      options: [
+        { val: 0, text: "Nada" },
+        { val: 1, text: "Pouco" },
+        { val: 2, text: "Moderadamente" },
+        { val: 3, text: "Muito" }
+      ]
+    },
+    {
+      id: 8,
+      q: "Preocupação: Quanto você pensou nos seus sintomas na última semana?",
+      options: [
+        { val: 0, text: "Nada" },
+        { val: 1, text: "Pouco" },
+        { val: 2, text: "Moderadamente" },
+        { val: 3, text: "Muito" }
+      ]
+    },
+    {
+      id: 9,
+      q: "Qualidade de Vida (QoL): Se você tivesse que passar o resto da vida com os seus sintomas atuais, como se sentiria?",
+      options: [
+        { val: 0, text: "Muito satisfeito" },
+        { val: 1, text: "Satisfeito" },
+        { val: 2, text: "Mais ou menos satisfeito" },
+        { val: 3, text: "Indiferente" },
+        { val: 4, text: "Mais ou menos insatisfeito" },
+        { val: 5, text: "Infeliz" },
+        { val: 6, text: "Terrível" }
+      ]
+    }
+  ];
+
+  const calculateNIHCPSI = () => {
+    // Verificar se todas as respostas necessárias estão presentes
+    const requiredKeys = [11, 12, 13, 14, 21, 22, 3, 4, 5, 6, 7, 8, 9];
+    const missing = requiredKeys.filter(k => nihAnswers[k] === undefined);
+    if (missing.length > 0) {
+      alert("Por favor, responda a todas as perguntas do NIH-CPSI.");
+      return;
+    }
+
+    // 1. Dor (Subtotal de 0 a 21)
+    // Perguntas 1a-1d (0 ou 1 cada) + 2a-2b (0 ou 1 cada) + Pergunta 3 (0 a 5) + Pergunta 4 (0 a 10)
+    const painLocationScore = [11, 12, 13, 14].reduce((acc, k) => acc + (nihAnswers[k] ? 1 : 0), 0);
+    const painUrinaryEjacScore = [21, 22].reduce((acc, k) => acc + (nihAnswers[k] ? 1 : 0), 0);
+    const painFreqScore = Number(nihAnswers[3] || 0);
+    const painScaleScore = Number(nihAnswers[4] || 0);
+    const painScore = painLocationScore + painUrinaryEjacScore + painFreqScore + painScaleScore;
+
+    // 2. Sintomas Urinários (Subtotal de 0 a 10)
+    // Perguntas 5 e 6 (0 a 5 cada)
+    const urinaryScore = Number(nihAnswers[5] || 0) + Number(nihAnswers[6] || 0);
+
+    // 3. Impacto na Qualidade de Vida (Subtotal de 0 a 12)
+    // Perguntas 7, 8 (0 a 3 cada) + Pergunta 9 (0 a 6)
+    const qolScore = Number(nihAnswers[7] || 0) + Number(nihAnswers[8] || 0) + Number(nihAnswers[9] || 0);
+
+    const totalScore = painScore + urinaryScore + qolScore;
+
+    let severity = "";
+    let color = "";
+
+    if (totalScore <= 9) {
+      severity = "Sintomas Leves (Prostatite Crônica)";
+      color = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    } else if (totalScore <= 18) {
+      severity = "Sintomas Moderados (Prostatite Crônica)";
+      color = "bg-orange-500/10 text-orange-600 border-orange-500/20";
+    } else {
+      severity = "Sintomas Graves (Prostatite Crônica)";
+      color = "bg-destructive/10 text-destructive border-destructive/20";
+    }
+
+    setNihResult({ painScore, urinaryScore, qolScore, totalScore, severity, color });
+  };
+
+  const resetNIHCPSI = () => {
+    setNihAnswers({});
+    setNihResult(null);
   };
 
   // --- ESTADO QUESTIONÁRIO ADAM ---
@@ -463,28 +789,40 @@ export default function Calculators() {
         </div>
 
         <Tabs defaultValue="iief" className="space-y-6">
-          <TabsList className="grid grid-cols-2 md:grid-cols-6 bg-secondary rounded-xl p-1 h-auto gap-1">
-            <TabsTrigger value="iief" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+          <TabsList className="grid grid-cols-3 md:grid-cols-9 bg-secondary rounded-xl p-1 h-auto gap-1">
+            <TabsTrigger value="iief" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
               <Calculator className="w-3.5 h-3.5 shrink-0" />
-              IIEF-5 (Ereção)
+              IIEF-5
             </TabsTrigger>
-            <TabsTrigger value="adam" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+            <TabsTrigger value="shim" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
+              <Calculator className="w-3.5 h-3.5 shrink-0" />
+              SHIM
+            </TabsTrigger>
+            <TabsTrigger value="ipss" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
+              <Calculator className="w-3.5 h-3.5 shrink-0" />
+              IPSS (HPB)
+            </TabsTrigger>
+            <TabsTrigger value="nih" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
+              <Calculator className="w-3.5 h-3.5 shrink-0" />
+              NIH-CPSI
+            </TabsTrigger>
+            <TabsTrigger value="adam" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
               <Scale className="w-3.5 h-3.5 shrink-0" />
-              ADAM (Rastreio)
+              ADAM
             </TabsTrigger>
-            <TabsTrigger value="trt" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+            <TabsTrigger value="trt" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
               <Activity className="w-3.5 h-3.5 shrink-0" />
-              TRT (Ajuste)
+              TRT
             </TabsTrigger>
-            <TabsTrigger value="padtest" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+            <TabsTrigger value="padtest" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
               <Scale className="w-3.5 h-3.5 shrink-0" />
-              Pad Test 24h
+              Pad Test
             </TabsTrigger>
-            <TabsTrigger value="clearance" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+            <TabsTrigger value="clearance" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
               <Calculator className="w-3.5 h-3.5 shrink-0" />
-              ClCr (Função Renal)
+              ClCr
             </TabsTrigger>
-            <TabsTrigger value="reimbursement" className="rounded-lg py-2 w-full text-[10px] sm:text-xs font-semibold gap-1">
+            <TabsTrigger value="reimbursement" className="rounded-lg py-2 w-full text-[10px] sm:text-[11px] font-semibold gap-1">
               <ClipboardList className="w-3.5 h-3.5 shrink-0" />
               Reembolso
             </TabsTrigger>
@@ -528,16 +866,382 @@ export default function Calculators() {
                       <h4 className="text-xl font-serif font-bold leading-none">{iiefResult.severity}</h4>
                       <p className="text-xs opacity-90">Escore Total: <strong>{iiefResult.score} / 25</strong> pontos</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={resetIIEF} className="gap-2 border-current/20 hover:bg-black/5 rounded-xl">
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      Refazer
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      {localStorage.getItem("protoUro_active_patient") && (
+                        <Button 
+                          onClick={() => {
+                            const activePatient = JSON.parse(localStorage.getItem("protoUro_active_patient") || "{}");
+                            const patientsDb = JSON.parse(localStorage.getItem("protouro_pacientes_db") || "[]");
+                            const updatedDb = patientsDb.map((p: any) => {
+                              if (p.id === activePatient.id) {
+                                const newPonto = {
+                                  data: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+                                  iief: iiefResult.score.toString(),
+                                  ipss: p.historicoSintomas?.[p.historicoSintomas.length - 1]?.ipss || ""
+                                };
+                                return {
+                                  ...p,
+                                  historicoSintomas: [...(p.historicoSintomas || []), newPonto]
+                                };
+                              }
+                              return p;
+                            });
+                            localStorage.setItem("protouro_pacientes_db", JSON.stringify(updatedDb));
+                            toast.success(`Escore IIEF-5 (${iiefResult.score} pts) sincronizado com ${activePatient.nome}!`);
+                          }}
+                          className="gap-2 rounded-xl text-xs font-semibold copper-gradient text-white shadow-md shadow-accent/15"
+                        >
+                          Sincronizar CRM
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" onClick={resetIIEF} className="gap-2 border-current/20 hover:bg-black/5 rounded-xl">
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Refazer
+                      </Button>
+                    </div>
                   </div>
                 )}
 
                 {!iiefResult && (
                   <Button onClick={calculateIIEF} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md shadow-accent/15">
                     Calcular Escore IIEF-5
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ABA SHIM */}
+          <TabsContent value="shim" className="space-y-6">
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-6 pb-4 border-b border-border/40">
+                <CardTitle className="text-lg font-serif font-bold text-primary">Sexual Health Inventory for Men (SHIM)</CardTitle>
+                <CardDescription className="text-xs">Versão resumida e validada de 5 perguntas do IIEF para triagem rápida.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {shimQuestions.map((q) => (
+                  <div key={q.id} className="space-y-3 border-b border-border/40 pb-5 last:border-0 last:pb-0">
+                    <Label className="text-sm font-semibold text-foreground leading-snug">
+                      {q.id}. {q.q}
+                    </Label>
+                    <RadioGroup 
+                      value={shimAnswers[q.id]?.toString()} 
+                      onValueChange={(val) => setShimAnswers({ ...shimAnswers, [q.id]: parseInt(val) })}
+                      className="space-y-2 pt-1"
+                    >
+                      {q.options.map((opt) => (
+                        <div key={opt.val} className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value={opt.val.toString()} id={`shim-q${q.id}-o${opt.val}`} />
+                          <Label htmlFor={`shim-q${q.id}-o${opt.val}`} className="text-xs font-medium cursor-pointer w-full">
+                            {opt.val} - {opt.text}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                ))}
+
+                {shimResult && (
+                  <div className={`p-5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 ${shimResult.color}`}>
+                    <div className="space-y-1 text-center md:text-left">
+                      <p className="text-xs font-bold uppercase tracking-wider opacity-80">Resultado da Avaliação</p>
+                      <h4 className="text-xl font-serif font-bold leading-none">{shimResult.severity}</h4>
+                      <p className="text-xs opacity-90">Escore Total: <strong>{shimResult.score} / 25</strong> pontos</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      {localStorage.getItem("protoUro_active_patient") && (
+                        <Button 
+                          onClick={() => {
+                            const activePatient = JSON.parse(localStorage.getItem("protoUro_active_patient") || "{}");
+                            const patientsDb = JSON.parse(localStorage.getItem("protouro_pacientes_db") || "[]");
+                            const updatedDb = patientsDb.map((p: any) => {
+                              if (p.id === activePatient.id) {
+                                const newPonto = {
+                                  data: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+                                  iief: shimResult.score.toString(), // SHIM e IIEF-5 compartilham a mesma escala de 25 pontos
+                                  ipss: p.historicoSintomas?.[p.historicoSintomas.length - 1]?.ipss || ""
+                                };
+                                return {
+                                  ...p,
+                                  historicoSintomas: [...(p.historicoSintomas || []), newPonto]
+                                };
+                              }
+                              return p;
+                            });
+                            localStorage.setItem("protouro_pacientes_db", JSON.stringify(updatedDb));
+                            toast.success(`Escore SHIM (${shimResult.score} pts) sincronizado com ${activePatient.nome}!`);
+                          }}
+                          className="gap-2 rounded-xl text-xs font-semibold copper-gradient text-white shadow-md shadow-accent/15"
+                        >
+                          Sincronizar CRM
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" onClick={resetSHIM} className="gap-2 border-current/20 hover:bg-black/5 rounded-xl">
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Refazer
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {!shimResult && (
+                  <Button onClick={calculateSHIM} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md shadow-accent/15">
+                    Calcular Escore SHIM
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ABA IPSS */}
+          <TabsContent value="ipss" className="space-y-6">
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-6 pb-4 border-b border-border/40">
+                <CardTitle className="text-lg font-serif font-bold text-primary">International Prostate Symptom Score (IPSS)</CardTitle>
+                <CardDescription className="text-xs">Avaliação de sintomas miccionais e impacto na qualidade de vida (HPB/LUTS).</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {ipssQuestions.map((q) => (
+                  <div key={q.id} className="space-y-3 border-b border-border/40 pb-5 last:border-0 last:pb-0">
+                    <Label className="text-sm font-semibold text-foreground leading-snug">
+                      {q.id}. {q.q}
+                    </Label>
+                    <RadioGroup 
+                      value={ipssAnswers[q.id]?.toString()} 
+                      onValueChange={(val) => setIpssAnswers({ ...ipssAnswers, [q.id]: parseInt(val) })}
+                      className="space-y-2 pt-1"
+                    >
+                      {(q.id === 7 ? ipssNocturiaOptions : ipssOptions).map((opt) => (
+                        <div key={opt.val} className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value={opt.val.toString()} id={`ipss-q${q.id}-o${opt.val}`} />
+                          <Label htmlFor={`ipss-q${q.id}-o${opt.val}`} className="text-xs font-medium cursor-pointer w-full">
+                            {opt.val} - {opt.text}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                ))}
+
+                {/* Pergunta de QoL */}
+                <div className="space-y-3 border-b border-border/40 pb-5">
+                  <Label className="text-sm font-semibold text-foreground leading-snug">
+                    8. {ipssQolQuestions.q}
+                  </Label>
+                  <RadioGroup 
+                    value={ipssAnswers[8]?.toString()} 
+                    onValueChange={(val) => setIpssAnswers({ ...ipssAnswers, 8: parseInt(val) })}
+                    className="space-y-2 pt-1"
+                  >
+                    {ipssQolQuestions.options.map((opt) => (
+                      <div key={opt.val} className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                        <RadioGroupItem value={opt.val.toString()} id={`ipss-q8-o${opt.val}`} />
+                        <Label htmlFor={`ipss-q8-o${opt.val}`} className="text-xs font-medium cursor-pointer w-full">
+                          {opt.val} - {opt.text}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                {ipssResult && (
+                  <div className={`p-5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 ${ipssResult.color}`}>
+                    <div className="space-y-1 text-center md:text-left">
+                      <p className="text-xs font-bold uppercase tracking-wider opacity-80">Resultado da Avaliação</p>
+                      <h4 className="text-xl font-serif font-bold leading-none">{ipssResult.severity}</h4>
+                      <p className="text-xs opacity-90">Escore de Sintomas: <strong>{ipssResult.score} / 35</strong> pontos | Qualidade de Vida (QoL): <strong>{ipssResult.qol} / 6</strong></p>
+                      {ipssResult.score >= 8 && (
+                        <p className="text-[10px] mt-1 text-primary font-medium bg-white/40 dark:bg-black/20 p-2 rounded-lg border border-primary/10">
+                          💡 <strong>Sugestão Flukkamen:</strong> Considerar formulação de Tadalafila Diária (Flukkamen) + Fitoterapia (FlukkaNutri Cranberry/CoQ10) para controle de LUTS e proteção endotelial.
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      {localStorage.getItem("protoUro_active_patient") && (
+                        <Button 
+                          onClick={() => {
+                            const activePatient = JSON.parse(localStorage.getItem("protoUro_active_patient") || "{}");
+                            const patientsDb = JSON.parse(localStorage.getItem("protouro_pacientes_db") || "[]");
+                            const updatedDb = patientsDb.map((p: any) => {
+                              if (p.id === activePatient.id) {
+                                const newPonto = {
+                                  data: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+                                  iief: p.historicoSintomas?.[p.historicoSintomas.length - 1]?.iief || "",
+                                  ipss: ipssResult.score.toString()
+                                };
+                                return {
+                                  ...p,
+                                  historicoSintomas: [...(p.historicoSintomas || []), newPonto]
+                                };
+                              }
+                              return p;
+                            });
+                            localStorage.setItem("protouro_pacientes_db", JSON.stringify(updatedDb));
+                            toast.success(`Escore IPSS (${ipssResult.score} pts) sincronizado com ${activePatient.nome}!`);
+                          }}
+                          className="gap-2 rounded-xl text-xs font-semibold copper-gradient text-white shadow-md shadow-accent/15"
+                        >
+                          Sincronizar CRM
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" onClick={resetIPSS} className="gap-2 border-current/20 hover:bg-black/5 rounded-xl">
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Refazer
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {!ipssResult && (
+                  <Button onClick={calculateIPSS} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md shadow-accent/15">
+                    Calcular Escore IPSS
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ABA NIH-CPSI */}
+          <TabsContent value="nih" className="space-y-6">
+            <Card className="border-border bg-card shadow-sm">
+              <CardHeader className="p-6 pb-4 border-b border-border/40">
+                <CardTitle className="text-lg font-serif font-bold text-primary">NIH - Chronic Prostatitis Symptom Index (NIH-CPSI)</CardTitle>
+                <CardDescription className="text-xs">Índice de sintomas de Prostatite Crônica e Síndrome da Dor Pélvica Crônica (SDPC).</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {/* Perguntas de Localização de Dor */}
+                {nihQuestions.map((q) => (
+                  <div key={q.id} className="space-y-3 border-b border-border/40 pb-5">
+                    <Label className="text-sm font-semibold text-foreground leading-snug">
+                      {q.q}
+                    </Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                      {q.subQuestions.map((sub) => (
+                        <div key={sub.key} className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            id={`nih-sub-${sub.key}`}
+                            checked={nihAnswers[sub.key] === true}
+                            onChange={(e) => setNihAnswers({ ...nihAnswers, [sub.key]: e.target.checked })}
+                            className="rounded border-border/50 text-primary focus:ring-primary h-4 w-4"
+                          />
+                          <Label htmlFor={`nih-sub-${sub.key}`} className="text-xs font-medium cursor-pointer w-full">
+                            {sub.text}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Pergunta de Frequência de Dor */}
+                <div className="space-y-3 border-b border-border/40 pb-5">
+                  <Label className="text-sm font-semibold text-foreground leading-snug">
+                    3. {nihIntensityQuestion.q}
+                  </Label>
+                  <RadioGroup 
+                    value={nihAnswers[3]?.toString()} 
+                    onValueChange={(val) => setNihAnswers({ ...nihAnswers, 3: parseInt(val) })}
+                    className="space-y-2 pt-1"
+                  >
+                    {nihIntensityQuestion.options.map((opt) => (
+                      <div key={opt.val} className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                        <RadioGroupItem value={opt.val.toString()} id={`nih-q3-o${opt.val}`} />
+                        <Label htmlFor={`nih-q3-o${opt.val}`} className="text-xs font-medium cursor-pointer w-full">
+                          {opt.val} - {opt.text}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                {/* Pergunta de Escala de Dor */}
+                <div className="space-y-3 border-b border-border/40 pb-5">
+                  <Label className="text-sm font-semibold text-foreground leading-snug">
+                    4. {nihPainScaleQuestion.q}
+                  </Label>
+                  <RadioGroup 
+                    value={nihAnswers[4]?.toString()} 
+                    onValueChange={(val) => setNihAnswers({ ...nihAnswers, 4: parseInt(val) })}
+                    className="flex flex-wrap gap-2 pt-1"
+                  >
+                    {nihPainScaleQuestion.options.map((opt) => (
+                      <div key={opt.val} className="flex items-center justify-center rounded-lg border border-border/50 p-3 w-10 h-10 hover:bg-secondary/40 transition-all cursor-pointer relative">
+                        <RadioGroupItem value={opt.val.toString()} id={`nih-q4-o${opt.val}`} className="absolute opacity-0" />
+                        <Label htmlFor={`nih-q4-o${opt.val}`} className={`text-xs font-bold cursor-pointer absolute inset-0 flex items-center justify-center rounded-lg ${nihAnswers[4] === opt.val ? 'bg-primary text-white' : ''}`}>
+                          {opt.text}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                {/* Perguntas Urinárias */}
+                {nihUrinaryQuestions.map((q) => (
+                  <div key={q.id} className="space-y-3 border-b border-border/40 pb-5">
+                    <Label className="text-sm font-semibold text-foreground leading-snug">
+                      {q.id}. {q.q}
+                    </Label>
+                    <RadioGroup 
+                      value={nihAnswers[q.id]?.toString()} 
+                      onValueChange={(val) => setNihAnswers({ ...nihAnswers, [q.id]: parseInt(val) })}
+                      className="space-y-2 pt-1"
+                    >
+                      {q.options.map((opt) => (
+                        <div key={opt.val} className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value={opt.val.toString()} id={`nih-q${q.id}-o${opt.val}`} />
+                          <Label htmlFor={`nih-q${q.id}-o${opt.val}`} className="text-xs font-medium cursor-pointer w-full">
+                            {opt.val} - {opt.text}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                ))}
+
+                {/* Perguntas de Impacto e QoL */}
+                {nihImpactQuestions.map((q) => (
+                  <div key={q.id} className="space-y-3 border-b border-border/40 pb-5 last:border-0 last:pb-0">
+                    <Label className="text-sm font-semibold text-foreground leading-snug">
+                      {q.id}. {q.q}
+                    </Label>
+                    <RadioGroup 
+                      value={nihAnswers[q.id]?.toString()} 
+                      onValueChange={(val) => setNihAnswers({ ...nihAnswers, [q.id]: parseInt(val) })}
+                      className="space-y-2 pt-1"
+                    >
+                      {q.options.map((opt) => (
+                        <div key={opt.val} className="flex items-center space-x-3 rounded-lg border border-border/50 p-3 hover:bg-secondary/40 transition-all cursor-pointer">
+                          <RadioGroupItem value={opt.val.toString()} id={`nih-q${q.id}-o${opt.val}`} />
+                          <Label htmlFor={`nih-q${q.id}-o${opt.val}`} className="text-xs font-medium cursor-pointer w-full">
+                            {opt.val} - {opt.text}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                ))}
+
+                {nihResult && (
+                  <div className={`p-5 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-4 ${nihResult.color}`}>
+                    <div className="space-y-1 text-center md:text-left">
+                      <p className="text-xs font-bold uppercase tracking-wider opacity-80">Resultado da Avaliação</p>
+                      <h4 className="text-xl font-serif font-bold leading-none">{nihResult.severity}</h4>
+                      <p className="text-xs opacity-90">
+                        Escore Total: <strong>{nihResult.totalScore} / 43</strong> pontos 
+                        (Dor: <strong>{nihResult.painScore}/21</strong> | Urinário: <strong>{nihResult.urinaryScore}/10</strong> | Qualidade de Vida: <strong>{nihResult.qolScore}/12</strong>)
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={resetNIHCPSI} className="gap-2 border-current/20 hover:bg-black/5 rounded-xl">
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Refazer
+                    </Button>
+                  </div>
+                )}
+
+                {!nihResult && (
+                  <Button onClick={calculateNIHCPSI} className="w-full py-6 rounded-xl text-sm font-semibold copper-gradient text-white shadow-md shadow-accent/15">
+                    Calcular Escore NIH-CPSI
                   </Button>
                 )}
               </CardContent>
