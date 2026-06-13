@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Calculator, ClipboardList, Scale, Info, Check, RefreshCw, Activity } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -772,10 +773,91 @@ export default function Calculators() {
                           </div>
                         </div>
 
-                        <Button variant="outline" size="sm" onClick={resetTRT} className="w-full gap-2 border-border hover:bg-secondary rounded-xl mt-2">
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          Limpar e Nova Análise
-                        </Button>
+                        {(() => {
+                          const activePatientName = localStorage.getItem("protoUro_active_patient");
+                          if (!activePatientName) return null;
+                          
+                          return (
+                            <Button 
+                              onClick={() => {
+                                try {
+                                  const dbStr = localStorage.getItem("protouro_pacientes_db");
+                                  if (!dbStr) {
+                                    toast.error("Banco de dados de pacientes não encontrado.");
+                                    return;
+                                  }
+                                  
+                                  const pacientes = JSON.parse(dbStr);
+                                  const matchedIdx = pacientes.findIndex((p: any) => p.nome === activePatientName);
+                                  
+                                  if (matchedIdx === -1) {
+                                    toast.error(`Paciente "${activePatientName}" não encontrado no CRM.`);
+                                    return;
+                                  }
+                                  
+                                  const p = pacientes[matchedIdx];
+                                  
+                                  // 1. Atualizar exames laboratoriais no prontuário do paciente com os inputs da calculadora
+                                  p.testosterona = trtSerumTesto;
+                                  if (trtHematocrit) p.hematocrito = trtHematocrit;
+                                  if (trtPSA) p.psa = trtPSA;
+                                  if (trtEstradiol) p.estradiol = trtEstradiol;
+                                  
+                                  // 2. Registrar um ponto no histórico hormonal do paciente
+                                  if (!p.historicoHormonal) p.historicoHormonal = [];
+                                  
+                                  const dataPonto = new Date().toLocaleDateString("pt-BR").substring(0, 5);
+                                  const intervencaoTexto = trtResult.hcgDose 
+                                    ? `TRT: ${trtResult.suggestedDose} + HCG: ${trtResult.hcgDose}`
+                                    : `TRT: ${trtResult.suggestedDose}`;
+                                    
+                                  p.historicoHormonal.push({
+                                    data: dataPonto,
+                                    total: parseFloat(trtSerumTesto),
+                                    livre: p.testoLivre ? parseFloat(p.testoLivre) : undefined,
+                                    shbg: p.shbg ? parseFloat(p.shbg) : undefined,
+                                    hematocrito: trtHematocrit ? parseFloat(trtHematocrit) : undefined,
+                                    intervencao: intervencaoTexto
+                                  });
+                                  
+                                  // 3. Adicionar notas clínicas de sincronização de TRT
+                                  const notaSinc = `[Sincronização TRT ${dataPonto}] Conduta Calculada: ${trtResult.suggestedDose}.${trtResult.hcgDose ? ` HCG Calculado: ${trtResult.hcgDose}.` : ""} Exames: Testo: ${trtSerumTesto} ng/dL, Ht: ${trtHematocrit || "N/A"}%, PSA: ${trtPSA || "N/A"} ng/mL, Estradiol: ${trtEstradiol || "N/A"} pg/mL.`;
+                                  p.notas = p.notas ? `${p.notas}\n\n${notaSinc}` : notaSinc;
+                                  
+                                  // 4. Salvar de volta no localStorage
+                                  pacientes[matchedIdx] = p;
+                                  localStorage.setItem("protouro_pacientes_db", JSON.stringify(pacientes));
+                                  
+                                  // 5. Salvar payload temporário para auto-preenchimento do modelo de receita Flukkahormo
+                                  const payloadSinc = {
+                                    pacienteNome: p.nome,
+                                    trtDose: trtResult.suggestedDose,
+                                    hcgDose: trtResult.hcgDose || null,
+                                    frequencia: trtResult.frequency,
+                                    data: dataPonto
+                                  };
+                                  localStorage.setItem("protoUro_trt_sync_payload", JSON.stringify(payloadSinc));
+                                  
+                                  toast.success(`Dados sincronizados com sucesso no prontuário de ${p.nome}! O modelo de receita Flukkahormo foi atualizado.`);
+                                } catch (err) {
+                                  console.error(err);
+                                  toast.error("Erro ao sincronizar dados com o CRM.");
+                                }
+                              }}
+                              className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl mt-2 font-bold shadow-sm"
+                            >
+                              <Activity className="w-3.5 h-3.5 animate-pulse" />
+                              Sincronizar com {activePatientName}
+                            </Button>
+                          );
+                        })()}
+
+                        <div className="flex gap-2 mt-2">
+                          <Button variant="outline" size="sm" onClick={resetTRT} className="flex-1 gap-2 border-border hover:bg-secondary rounded-xl">
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            Limpar
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <div className="h-full min-h-[250px] border border-dashed border-border/80 rounded-2xl flex flex-col items-center justify-center p-6 text-center bg-secondary/[0.05]">

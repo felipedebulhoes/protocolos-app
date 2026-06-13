@@ -103,6 +103,8 @@ interface Paciente {
   desdobramentoCustos?: string; // Histórico de desdobramento de custos adicionais (taxas extras, OPME detalhado, etc.)
   auditorias_alta?: Record<string, any>; // Auditoria de checklists de alta de protocolos
   estradiol?: string; // Nível de Estradiol sérico (pg/mL)
+  insuficienciaCardiaca?: boolean; // Histórico de Insuficiência Cardíaca Congestiva (ICC)
+  usoNitratos?: boolean; // Uso concomitante de Nitratos (Isordil, Monocordil, Nitroglicerina, etc.)
 }
 
 interface SecretáriaTarefa {
@@ -141,6 +143,8 @@ export default function Patients() {
   const [custoHospitalarReal, setCustoHospitalarReal] = useState(""); // Custo hospitalar real do paciente
   const [desdobramentoCustos, setDesdobramentoCustos] = useState(""); // Histórico de desdobramento de custos do paciente
   const [estradiol, setEstradiol] = useState(""); // Nível de Estradiol sérico (pg/mL)
+  const [insuficienciaCardiaca, setInsuficienciaCardiaca] = useState(false); // Histórico de Insuficiência Cardíaca Congestiva (ICC)
+  const [usoNitratos, setUsoNitratos] = useState(false); // Uso concomitante de Nitratos (Isordil, Monocordil, Nitroglicerina, etc.)
   const [activeView, setActiveView] = useState<"list" | "crm">("list"); // Visualização ativa (Lista vs CRM Kanban)
   const [tarefasSecretaria, setTarefasSecretaria] = useState<SecretáriaTarefa[]>([]);
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
@@ -648,7 +652,9 @@ export default function Patients() {
             custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined,
             desdobramentoCustos: desdobramentoCustos.trim() || undefined,
             comercialHist: updatedHist,
-            estradiol: estradiol.trim() || undefined
+            estradiol: estradiol.trim() || undefined,
+            insuficienciaCardiaca,
+            usoNitratos
           };
         }
         return p;
@@ -689,7 +695,9 @@ export default function Patients() {
         faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined,
         custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined,
         desdobramentoCustos: desdobramentoCustos.trim() || undefined,
-        estradiol: estradiol.trim() || undefined
+        estradiol: estradiol.trim() || undefined,
+        insuficienciaCardiaca,
+        usoNitratos
       };
       saveToStorage([novo, ...pacientes]);
       toast.success("Paciente cadastrado com sucesso!");
@@ -720,6 +728,8 @@ export default function Patients() {
     setCustoHospitalarReal(p.custoHospitalarReal !== undefined ? p.custoHospitalarReal.toString() : "");
     setDesdobramentoCustos(p.desdobramentoCustos || "");
     setEstradiol(p.estradiol || "");
+    setInsuficienciaCardiaca(p.insuficienciaCardiaca || false);
+    setUsoNitratos(p.usoNitratos || false);
     setIsAdding(true);
   };
 
@@ -861,6 +871,8 @@ export default function Patients() {
     setCustoHospitalarReal("");
     setDesdobramentoCustos("");
     setEstradiol("");
+    setInsuficienciaCardiaca(false);
+    setUsoNitratos(false);
   };
 
   const handleCancel = () => {
@@ -1794,6 +1806,44 @@ export default function Patients() {
                     onChange={(e) => setNotas(e.target.value)}
                     className="w-full min-h-[120px] rounded-xl border border-border p-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 border-t border-border/40 pt-5 pb-2">
+                  <div className="flex items-start space-x-3 p-3 rounded-xl border border-border/50 bg-card hover:bg-secondary/20 transition-all">
+                    <input
+                      type="checkbox"
+                      id="icc-checkbox"
+                      checked={insuficienciaCardiaca}
+                      onChange={(e) => setInsuficienciaCardiaca(e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent/20 cursor-pointer"
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label htmlFor="icc-checkbox" className="text-xs font-bold text-primary uppercase tracking-wider cursor-pointer">
+                        Insuficiência Cardíaca (ICC)
+                      </Label>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        Histórico ou diagnóstico ativo de Insuficiência Cardíaca Congestiva.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3 p-3 rounded-xl border border-border/50 bg-card hover:bg-secondary/20 transition-all">
+                    <input
+                      type="checkbox"
+                      id="nitratos-checkbox"
+                      checked={usoNitratos}
+                      onChange={(e) => setUsoNitratos(e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent/20 cursor-pointer"
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label htmlFor="nitratos-checkbox" className="text-xs font-bold text-primary uppercase tracking-wider cursor-pointer">
+                        Uso de Nitratos
+                      </Label>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        Uso concomitante de nitratos (ex: Isordil, Monocordil, Nitroglicerina).
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4 border-t border-border/40">
@@ -2792,6 +2842,95 @@ export default function Patients() {
                               </div>
                             </div>
                           )}
+
+                          {/* Módulo Inteligente de Sugestão de Fórmulas Flukkamen (ICI) baseadas no IIEF-5 */}
+                          {(() => {
+                            // Obter o último score de IIEF-5 do histórico de sintomas ou do cadastro
+                            const histSintomas = p.historicoSintomas || [];
+                            let iiefScore: number | undefined = undefined;
+                            
+                            if (histSintomas.length > 0) {
+                              // Encontrar o último registro com iief5 preenchido
+                              const sortedSintomas = [...histSintomas].reverse();
+                              const lastIiefReg = sortedSintomas.find(s => s.iief5 !== undefined);
+                              if (lastIiefReg) iiefScore = lastIiefReg.iief5;
+                            }
+
+                            if (iiefScore === undefined) return null;
+
+                            // Mapeamento de Fórmulas Flukkamen (R1 a R12) por Gravidade de DE
+                            let formulaSugerida = "";
+                            let composicaoFormula = "";
+                            let justificativaClinica = "";
+                            let gravidadeLabel = "";
+                            let gravidadeColor = "";
+
+                            if (iiefScore <= 7) {
+                              gravidadeLabel = "Disfunção Erétil Grave";
+                              gravidadeColor = "text-red-600 bg-red-500/10 border-red-500/20";
+                              formulaSugerida = "Flukkamen R10 ou R12 (Tri-Mix de Alta Potência)";
+                              composicaoFormula = "Alprostadil 20 mcg/mL + Papaverina 30 mg/mL + Fentolamina 1 mg/mL ou 2 mg/mL";
+                              justificativaClinica = "Para Disfunção Erétil Grave (IIEF-5 ≤ 7), a diretriz da EAU/SBU recomenda o uso de Tri-Mix (R10/R12) para máxima eficácia vasodilatadora intracavernosa, superando a taquifilaxia e a insuficiência arterial severa.";
+                            } else if (iiefScore <= 11) {
+                              gravidadeLabel = "Disfunção Erétil Moderada";
+                              gravidadeColor = "text-orange-600 bg-orange-500/10 border-orange-500/20";
+                              formulaSugerida = "Flukkamen R6 ou R8 (Tri-Mix de Média Potência)";
+                              composicaoFormula = "Alprostadil 10 mcg/mL + Papaverina 30 mg/mL + Fentolamina 1 mg/mL";
+                              justificativaClinica = "Para Disfunção Erétil Moderada (IIEF-5 8-11), o Tri-Mix de dose intermediária (R6/R8) oferece excelente taxa de rigidez axial satisfatória com menor incidência de priapismo ou dor peniana associada ao Alprostadil.";
+                            } else if (iiefScore <= 16) {
+                              gravidadeLabel = "Disfunção Erétil Leve a Moderada";
+                              gravidadeColor = "text-yellow-600 bg-yellow-500/10 border-yellow-500/20";
+                              formulaSugerida = "Flukkamen R3 ou R4 (Bi-Mix Padrão)";
+                              composicaoFormula = "Papaverina 30 mg/mL + Fentolamina 1 mg/mL ou 2 mg/mL";
+                              justificativaClinica = "Para Disfunção Erétil Leve a Moderada (IIEF-5 12-16), a terapia com Bi-Mix (Papaverina + Fentolamina) é ideal, pois elimina o Alprostadil, reduzindo a zero a queixa de dor/ardência peniana pós-injeção.";
+                            } else if (iiefScore <= 21) {
+                              gravidadeLabel = "Disfunção Erétil Leve";
+                              gravidadeColor = "text-blue-600 bg-blue-500/10 border-blue-500/20";
+                              formulaSugerida = "Flukkamen R1 (Alprostadil Monoterapia)";
+                              composicaoFormula = "Alprostadil 10 mcg/mL ou 20 mcg/mL";
+                              justificativaClinica = "Para Disfunção Erétil Leve (IIEF-5 17-21) com indicação de terapia intracavernosa (ex: reabilitação pós-prostatectomia radical), o Alprostadil em monoterapia (R1) estimula a oxigenação dos corpos cavernosos e previne a fibrose.";
+                            } else {
+                              gravidadeLabel = "Função Erétil Normal";
+                              gravidadeColor = "text-emerald-600 bg-emerald-500/10 border-emerald-500/20";
+                              formulaSugerida = "Nenhuma indicação de Terapia Intracavernosa (ICI)";
+                              composicaoFormula = "N/A";
+                              justificativaClinica = "Paciente apresenta função erétil preservada (IIEF-5 ≥ 22). Terapia intracavernosa não indicada clinicamente.";
+                            }
+
+                            return (
+                              <div className="space-y-3 bg-slate-500/[0.02] p-4 rounded-xl border border-border/50">
+                                <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                                  ⚡ Sugestão de Terapia Intracavernosa Inteligente (Flukkamen-ICI)
+                                </span>
+                                <div className="space-y-3 text-xs">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground">Escore IIEF-5 Recente:</span>
+                                    <span className="font-bold text-primary">{iiefScore} pontos</span>
+                                    <Badge className={`${gravidadeColor} text-[10px] font-bold border rounded-full px-2 py-0.5`}>
+                                      {gravidadeLabel}
+                                    </Badge>
+                                  </div>
+
+                                  {iiefScore <= 21 && (
+                                    <div className="grid grid-cols-1 gap-2.5 bg-card p-3 rounded-lg border border-border/40">
+                                      <div>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase block">Fórmula Flukkamen Recomendada:</span>
+                                        <span className="font-bold text-[#B87333] text-sm">{formulaSugerida}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase block">Composição da Fórmula:</span>
+                                        <span className="font-medium text-foreground/90 font-mono">{composicaoFormula}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase block">Racional Clínico (Baseado em Diretrizes):</span>
+                                        <p className="text-foreground/70 leading-relaxed text-justify mt-0.5">{justificativaClinica}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
 
                           {/* Gráfico de Evolução Hormonal */}
                           <div className="space-y-3">
@@ -3917,7 +4056,52 @@ export default function Patients() {
           <div className="space-y-4 my-4">
             {/* Seletor de Modelo */}
             <div className="space-y-1.5">
-              <Label htmlFor="modelo-prescricao" className="text-xs font-bold text-primary uppercase tracking-wider">Modelo de Protocolo Clínico:</Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="modelo-prescricao" className="text-xs font-bold text-primary uppercase tracking-wider">Modelo de Protocolo Clínico:</Label>
+                {(() => {
+                  if (!prescricaoPaciente) return null;
+                  const payloadStr = localStorage.getItem("protoUro_trt_sync_payload");
+                  if (!payloadStr) return null;
+                  try {
+                    const payload = JSON.parse(payloadStr);
+                    if (payload.pacienteNome === prescricaoPaciente.nome) {
+                      return (
+                        <Button
+                          onClick={() => {
+                            // Encontrar o modelo de Flukkahormo HCG
+                            const hcgModel = modelosPrescricao.find(m => m.id === "flukkahormo_hcg_preservacao");
+                            if (hcgModel) {
+                              setPrescricaoPacienteModelo("flukkahormo_hcg_preservacao");
+                              
+                              // Substituir os placeholders com os dados calculados e sincronizados
+                              let customized = hcgModel.conteudo;
+                              customized = customized.replace(/Testosterona Enantato.*\(.*\) intramuscular/g, `Testosterona Enantato (ou Cipionato) - ${payload.trtDose} intramuscular`);
+                              if (payload.hcgDose) {
+                                customized = customized.replace(/HCG.*UI/g, `HCG (Flukkahormo) - ${payload.hcgDose}`);
+                              }
+                              customized = customized.replace(/Aplicação.*/g, `Aplicação: ${payload.frequencia}.`);
+                              
+                              setPrescricaoConteudo(customized);
+                              toast.success("Dose calculada de TRT/HCG aplicada com sucesso ao modelo!");
+                            } else {
+                              toast.error("Modelo de receita Flukkahormo não encontrado.");
+                            }
+                          }}
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[10px] font-bold bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-700 border-emerald-500/20 rounded-lg gap-1 px-2 py-0.5"
+                        >
+                          <Activity className="w-3 h-3 animate-pulse" />
+                          Carregar Dose Calculada da TRT
+                        </Button>
+                      );
+                    }
+                  } catch (err) {
+                    console.error(err);
+                  }
+                  return null;
+                })()}
+              </div>
               <select
                 id="modelo-prescricao"
                 value={prescricaoModelo}
@@ -3939,6 +4123,37 @@ export default function Patients() {
                 ))}
               </select>
             </div>
+
+            {/* Alertas Críticos de Contraindicação Cruzada (Flukkamen-Safety) */}
+            {(() => {
+              if (!prescricaoPaciente) return null;
+              const isDapoxetina = prescricaoModelo === "flukkamen_dapoxetina_ep";
+              if (!isDapoxetina) return null;
+
+              const hasICC = prescricaoPaciente.insuficienciaCardiaca === true;
+              const hasNitratos = prescricaoPaciente.usoNitratos === true;
+
+              if (hasICC || hasNitratos) {
+                return (
+                  <div className="bg-red-500/10 border border-red-500/30 text-red-700 p-4 rounded-xl text-xs font-medium flex flex-col gap-1.5 animate-bounce">
+                    <span className="font-bold flex items-center gap-1.5 text-red-800 text-sm">
+                      🚨 CONTRAINDICAÇÃO CRÍTICA DETECTADA (Flukkamen-Safety)
+                    </span>
+                    <p className="font-semibold text-red-800 leading-relaxed">
+                      A prescrição de Dapoxetina (Flukkamen) está **terminantemente contraindicada** para este paciente devido ao seguinte histórico clínico registrado:
+                    </p>
+                    <ul className="list-disc pl-5 font-bold space-y-1 mt-1">
+                      {hasICC && <li>Insuficiência Cardíaca Congestiva (ICC) - Risco de síncope e colapso hemodinâmico.</li>}
+                      {hasNitratos && <li>Uso Concomitante de Nitratos - Risco de hipotensão severa e refratária.</li>}
+                    </ul>
+                    <p className="text-[11px] text-red-700/90 mt-1">
+                      *O botão de emissão de receita foi bloqueado por motivos de segurança do paciente.*
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             {/* Editor de Texto da Receita */}
             <div className="space-y-1.5">
@@ -3972,7 +4187,12 @@ export default function Patients() {
             </Button>
             <Button
               size="sm"
-              disabled={!prescricaoConteudo.trim() || !prescricaoPaciente}
+              disabled={
+                !prescricaoConteudo.trim() || 
+                !prescricaoPaciente || 
+                (prescricaoModelo === "flukkamen_dapoxetina_ep" && 
+                 (prescricaoPaciente.insuficienciaCardiaca === true || prescricaoPaciente.usoNitratos === true))
+              }
               onClick={() => {
                 if (!prescricaoPaciente || !prescricaoConteudo.trim()) return;
 
