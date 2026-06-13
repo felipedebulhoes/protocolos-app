@@ -3730,7 +3730,14 @@ export default function Patients() {
                             )}
 
                             {/* Formulário rápido para adicionar sintomas */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-secondary/10 p-3 rounded-xl border border-border/40">
+                              <Input 
+                                type="text" 
+                                placeholder="Data/Consulta (ex: 15/06)" 
+                                value={newDataSintoma}
+                                onChange={(e) => setNewDataSintoma(e.target.value)}
+                                className="h-9 rounded-lg text-xs bg-card"
+                              />
                               <Input 
                                 type="number" 
                                 placeholder="Escore IIEF-5 (1-25)" 
@@ -3745,7 +3752,7 @@ export default function Patients() {
                                 onChange={(e) => setNewIpss(e.target.value)}
                                 className="h-9 rounded-lg text-xs bg-card"
                               />
-                              <div className="flex items-center gap-2 px-2 h-9 bg-card rounded-lg border border-border/40">
+                              <div className="flex items-center gap-2 px-2 h-9 bg-card rounded-lg border border-border/40 justify-center">
                                 <input 
                                   type="checkbox" 
                                   id="adam-check"
@@ -3758,7 +3765,7 @@ export default function Patients() {
                               <Button 
                                 size="sm" 
                                 onClick={() => handleAddSintomaPonto(p.id)}
-                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white"
+                                className="h-9 rounded-lg text-xs font-bold copper-gradient text-white col-span-2 sm:col-span-1"
                               >
                                 Registrar Sintomas
                               </Button>
