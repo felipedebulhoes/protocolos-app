@@ -99,6 +99,7 @@ interface Paciente {
   origem?: "instagram" | "google_ads" | "indicacao" | "outros"; // Origem de Captação CPP
   proximoContato?: string; // Data agendada para o próximo acompanhamento comercial (AAAA-MM-DD)
   faturamentoReal?: number; // Faturamento real do paciente (cirurgia/consulta paga)
+  custoHospitalarReal?: number; // Custo hospitalar real incorrido de fato (taxas, insumos, OPME)
   auditorias_alta?: Record<string, any>; // Auditoria de checklists de alta de protocolos
 }
 
@@ -135,6 +136,7 @@ export default function Patients() {
   const [origem, setOrigem] = useState<"instagram" | "google_ads" | "indicacao" | "outros">("instagram"); // Origem de Captação CPP
   const [proximoContato, setProximoContato] = useState(""); // Data agendada para o próximo contato (AAAA-MM-DD)
   const [faturamentoReal, setFaturamentoReal] = useState(""); // Faturamento real do paciente
+  const [custoHospitalarReal, setCustoHospitalarReal] = useState(""); // Custo hospitalar real do paciente
   const [activeView, setActiveView] = useState<"list" | "crm">("list"); // Visualização ativa (Lista vs CRM Kanban)
   const [tarefasSecretaria, setTarefasSecretaria] = useState<SecretáriaTarefa[]>([]);
   const [expandedId, setEditingExpandedId] = useState<string | null>(null);
@@ -512,6 +514,7 @@ export default function Patients() {
             origem: origem,
             proximoContato: proximoContato,
             faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined,
+            custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined,
             comercialHist: updatedHist
           };
         }
@@ -550,7 +553,8 @@ export default function Patients() {
         leadStage: leadStage,
         origem: origem,
         proximoContato: proximoContato,
-        faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined
+        faturamentoReal: faturamentoReal ? parseFloat(faturamentoReal) : undefined,
+        custoHospitalarReal: custoHospitalarReal ? parseFloat(custoHospitalarReal) : undefined
       };
       saveToStorage([novo, ...pacientes]);
       toast.success("Paciente cadastrado com sucesso!");
@@ -578,6 +582,7 @@ export default function Patients() {
     setOrigem(p.origem || "instagram");
     setProximoContato(p.proximoContato || "");
     setFaturamentoReal(p.faturamentoReal !== undefined ? p.faturamentoReal.toString() : "");
+    setCustoHospitalarReal(p.custoHospitalarReal !== undefined ? p.custoHospitalarReal.toString() : "");
     setIsAdding(true);
   };
 
@@ -716,6 +721,7 @@ export default function Patients() {
     setOrigem("instagram");
     setProximoContato("");
     setFaturamentoReal("");
+    setCustoHospitalarReal("");
   };
 
   const handleCancel = () => {
@@ -1522,6 +1528,17 @@ export default function Patients() {
                       placeholder="Ex: 15000" 
                       value={faturamentoReal}
                       onChange={(e) => setFaturamentoReal(e.target.value)}
+                      className="rounded-xl h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="custoHospitalarReal" className="text-xs font-bold text-primary uppercase tracking-wider">Custo Hospitalar Real (R$)</Label>
+                    <Input 
+                      id="custoHospitalarReal" 
+                      type="number" 
+                      placeholder="Ex: 4500" 
+                      value={custoHospitalarReal}
+                      onChange={(e) => setCustoHospitalarReal(e.target.value)}
                       className="rounded-xl h-11"
                     />
                   </div>

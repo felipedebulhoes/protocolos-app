@@ -42,6 +42,8 @@ interface Paciente {
   idade: string;
   dataCadastro: string;
   documentos?: DocumentoVinculado[];
+  faturamentoReal?: number;
+  custoHospitalarReal?: number;
 }
 
 interface OrcamentoMapeado {
@@ -53,6 +55,8 @@ interface OrcamentoMapeado {
   data: string;
   conteudo: string;
   status?: "pendente" | "aprovado" | "recusado";
+  faturamentoReal?: number;
+  custoHospitalarReal?: number;
 }
 
 export default function Budgets() {
@@ -90,7 +94,9 @@ export default function Budgets() {
             titulo: doc.titulo,
             data: doc.data,
             conteudo: doc.conteudo,
-            status: savedStatus
+            status: savedStatus,
+            faturamentoReal: p.faturamentoReal,
+            custoHospitalarReal: p.custoHospitalarReal
           });
         }
       });
@@ -120,25 +126,43 @@ export default function Budgets() {
   const metricas = React.useMemo(() => {
     let totalValorOrcado = 0;
     let totalAprovado = 0;
+    let totalCustosReais = 0;
+    let totalLucroLiquido = 0;
     let countTotal = todosOrçamentos.length;
     let countAprovado = 0;
 
     todosOrçamentos.forEach(orc => {
-      const match = orc.conteudo.match(/Valor Total:\s*R\$\s*([\d.,]+)/i);
-      if (match && match[1]) {
-        const valClean = match[1].replace(/\./g, "").replace(",", ".");
-        const valor = parseFloat(valClean) || 0;
-        totalValorOrcado += valor;
-        if (orc.status === "aprovado") {
-          totalAprovado += valor;
-          countAprovado++;
-        }
+      // 1. Obter valor orçado
+      const matchTotal = orc.conteudo.match(/Valor Total:\s*R\$\s*([\d.,]+)/i);
+      const valClean = matchTotal && matchTotal[1] ? matchTotal[1].replace(/\./g, "").replace(",", ".") : "0";
+      const valorOrcado = parseFloat(valClean) || 0;
+      totalValorOrcado += valorOrcado;
+
+      // 2. Extrair estimativas de custos do orçamento se dados reais estiverem ausentes
+      const matchHospital = orc.conteudo.match(/Hospital:\s*R\$\s*([\d.,]+)/i);
+      const matchMateriais = orc.conteudo.match(/Materiais.*?:\s*R\$\s*([\d.,]+)/i);
+      
+      const hospEst = matchHospital && matchHospital[1] ? parseFloat(matchHospital[1].replace(/\./g, "").replace(",", ".")) : 0;
+      const matEst = matchMateriais && matchMateriais[1] ? parseFloat(matchMateriais[1].replace(/\./g, "").replace(",", ".")) : 0;
+      const custoOrcadoEstimado = hospEst + matEst;
+
+      // 3. Determinar faturamento e custo real (prioriza preenchimento real do CRM, senão usa dados do orçamento)
+      const faturamentoReal = orc.faturamentoReal !== undefined ? orc.faturamentoReal : (orc.status === "aprovado" ? valorOrcado : 0);
+      const custoReal = orc.custoHospitalarReal !== undefined ? orc.custoHospitalarReal : (orc.status === "aprovado" ? custoOrcadoEstimado : 0);
+
+      if (orc.status === "aprovado") {
+        totalAprovado += faturamentoReal;
+        totalCustosReais += custoReal;
+        totalLucroLiquido += (faturamentoReal - custoReal);
+        countAprovado++;
       }
     });
 
     return {
       totalValorOrcado,
       totalAprovado,
+      totalCustosReais,
+      totalLucroLiquido,
       countTotal,
       countAprovado
     };
@@ -653,7 +677,7 @@ export default function Budgets() {
         </div>
 
         {/* Cards de Métricas Consolidadas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="bg-card border border-border/40 shadow-sm overflow-hidden relative">
             <div className="absolute top-0 left-0 w-[4px] h-full bg-[#B87333]" />
             <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
@@ -691,6 +715,22 @@ export default function Budgets() {
                 {metricas.totalAprovado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
               </h3>
               <p className="text-xs text-muted-foreground mt-1">Faturamento real convertido de orçamentos</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border border-border/40 shadow-sm overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-[4px] h-full bg-[#1C3D5A]" />
+            <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Lucro Líquido Real</span>
+              <TrendingUp className="w-4 h-4 text-[#1C3D5A]" />
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              <h3 className={`text-3xl font-serif font-bold ${metricas.totalLucroLiquido >= 0 ? 'text-[#1C3D5A]' : 'text-destructive'}`}>
+                {metricas.totalLucroLiquido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Custos reais: {metricas.totalCustosReais.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </p>
             </CardContent>
           </Card>
         </div>

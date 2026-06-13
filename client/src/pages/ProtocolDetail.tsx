@@ -101,8 +101,55 @@ export default function ProtocolDetail() {
   const [selectedPostOpDay, setSelectedPostOpDay] = useState<"D1" | "D7" | "D30">("D1");
   const [postOpCopied, setPostOpCopied] = useState(false);
 
+  // Estado para a data do procedimento cirúrgico (Automação de Retornos)
+  const [procedureDate, setProcedureDate] = useState("");
+
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
+
+  // Função para calcular datas de retorno (D+7 e D+30) com dias da semana em português
+  const calculateReturnDates = (dateStr: string) => {
+    if (!dateStr) return null;
+    
+    try {
+      // Ajustar string de data local para evitar problemas de fuso horário
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return null;
+      
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      
+      const baseDate = new Date(year, month, day);
+      
+      const d7 = new Date(baseDate);
+      d7.setDate(baseDate.getDate() + 7);
+      
+      const d30 = new Date(baseDate);
+      d30.setDate(baseDate.getDate() + 30);
+      
+      const formatOption: Intl.DateTimeFormatOptions = { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        weekday: 'long'
+      };
+      
+      const formatter = new Intl.DateTimeFormat('pt-BR', formatOption);
+      
+      return {
+        d7: formatter.format(d7),
+        d30: formatter.format(d30),
+        d7Short: d7.toLocaleDateString('pt-BR'),
+        d30Short: d30.toLocaleDateString('pt-BR')
+      };
+    } catch (e) {
+      console.error("Erro ao calcular datas de retorno", e);
+      return null;
+    }
+  };
+
+  const returnDates = calculateReturnDates(procedureDate);
 
   // Inicializar o checklist específico deste protocolo se houver
   useEffect(() => {
@@ -1009,22 +1056,47 @@ export default function ProtocolDetail() {
                   Insira o nome do paciente para personalizar automaticamente todas as <strong>Prescrições Modelo</strong>, <strong>Atestados</strong>, <strong>Laudos</strong> e <strong>Scripts de WhatsApp</strong> deste protocolo.
                 </p>
               </div>
-              <div className="w-full md:w-80 flex gap-2">
-                <Input
-                  placeholder="Nome completo do paciente..."
-                  value={patientName}
-                  onChange={(e) => handlePatientNameChange(e.target.value)}
-                  className="py-5 bg-card border-border rounded-xl text-sm flex-1"
-                />
+              <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3 flex-1 justify-end">
+                <div className="w-full sm:w-64">
+                  <Input
+                    placeholder="Nome completo do paciente..."
+                    value={patientName}
+                    onChange={(e) => handlePatientNameChange(e.target.value)}
+                    className="py-5 bg-card border-border rounded-xl text-sm w-full"
+                  />
+                </div>
+                <div className="w-full sm:w-44">
+                  <Input
+                    type="date"
+                    value={procedureDate}
+                    onChange={(e) => setProcedureDate(e.target.value)}
+                    className="py-5 bg-card border-border rounded-xl text-xs w-full cursor-pointer text-muted-foreground"
+                    title="Data do Procedimento Cirúrgico"
+                  />
+                </div>
                 <Button 
                   onClick={savePatientToHistory}
                   disabled={!patientName.trim()}
-                  className="px-4 py-5 rounded-xl text-xs font-bold copper-gradient text-white shadow-sm"
+                  className="px-4 py-5 rounded-xl text-xs font-bold copper-gradient text-white shadow-sm w-full sm:w-auto shrink-0"
                 >
                   Salvar
                 </Button>
               </div>
             </div>
+
+            {/* Painel de Sugestão de Retorno Clínico Automático */}
+            {returnDates && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-accent/20 bg-accent/[0.01] text-left">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Sugestão de Retorno Clínico D+7 (Retirada de Pontos / Evolução)</span>
+                  <p className="text-xs font-medium text-primary capitalize">{returnDates.d7}</p>
+                </div>
+                <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-border/40 pt-3 sm:pt-0 sm:pl-4">
+                  <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Sugestão de Retorno Clínico D+30 (Retorno de Performance / NPS)</span>
+                  <p className="text-xs font-medium text-primary capitalize">{returnDates.d30}</p>
+                </div>
+              </div>
+            )}
 
             {/* Controles rápidos de PWA e Impressão */}
             <div className="flex flex-wrap gap-4 border-t border-border/40 pt-4 shrink-0">
@@ -1338,7 +1410,7 @@ export default function ProtocolDetail() {
 			                  ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nEstou entrando em contato para saber como foi sua primeira noite em casa após o procedimento de ${protocol.title}.\n\nLembre-se de manter o repouso recomendado, a hidratação abundante e de tomar as medicações prescritas nos horários corretos. É normal sentir um leve desconforto ou inchaço local nesta fase inicial.\n\nQualquer dúvida ou sintoma atípico, nossa equipe de suporte rápido está 100% de prontidão no número 11 98112-4455. Tenha um excelente dia de recuperação!`
 			                  : selectedPostOpDay === "D7"
 			                  ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja evoluindo super bem!\n\nHoje completamos 7 dias do seu procedimento de ${protocol.title}. Gostaria de saber como está a cicatrização local e o seu nível de conforto.\n\nSe houver pontos externos ou curativos, nossa equipe entrará em contato para agendar sua avaliação presencial de retirada ou revisão de cicatrização. Lembre-se de manter os cuidados de estilo de vida (alimentação anti-inflamatória e hidratação celular) para acelerar a cicatrização.\n\nEstou à inteira disposição no número 11 98112-4455. Forte abraço!`
-			                  : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`
+				                  : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nAproveito este momento para pedir a sua valiosa opinião sobre a nossa jornada de atendimento premium (da recepção ao pós-operatório). Se puder, avalie-nos em nosso canal oficial e deixe seu depoimento (leva menos de 1 minuto e nos ajuda a manter a excelência):\n👉 link.felipebulhoes.com/avaliacao\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`
 			                }
 			              </div>
 			            </div>
@@ -1352,7 +1424,7 @@ export default function ProtocolDetail() {
 			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nEstou entrando em contato para saber como foi sua primeira noite em casa após o procedimento de ${protocol.title}.\n\nLembre-se de manter o repouso recomendado, a hidratação abundante e de tomar as medicações prescritas nos horários corretos. É normal sentir um leve desconforto ou inchaço local nesta fase inicial.\n\nQualquer dúvida ou sintoma atípico, nossa equipe de suporte rápido está 100% de prontidão no número 11 98112-4455. Tenha um excelente dia de recuperação!`
 			                    : selectedPostOpDay === "D7"
 			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja evoluindo super bem!\n\nHoje completamos 7 dias do seu procedimento de ${protocol.title}. Gostaria de saber como está a cicatrização local e o seu nível de conforto.\n\nSe houver pontos externos ou curativos, nossa equipe entrará em contato para agendar sua avaliação presencial de retirada ou revisão de cicatrização. Lembre-se de manter os cuidados de estilo de vida (alimentação anti-inflamatória e hidratação celular) para acelerar a cicatrização.\n\nEstou à inteira disposição no número 11 98112-4455. Forte abraço!`
-			                    : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`;
+			                    : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nAproveito este momento para pedir a sua valiosa opinião sobre a nossa jornada de atendimento premium (da recepção ao pós-operatório). Se puder, avalie-nos em nosso canal oficial e deixe seu depoimento (leva menos de 1 minuto e nos ajuda a manter a excelência):\n👉 link.felipebulhoes.com/avaliacao\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`;
 			                  navigator.clipboard.writeText(text);
 			                  setPostOpCopied(true);
 			                  toast.success(`Mensagem ${selectedPostOpDay} copiada com sucesso!`);
@@ -1368,7 +1440,7 @@ export default function ProtocolDetail() {
 			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nEstou entrando em contato para saber como foi sua primeira noite em casa após o procedimento de ${protocol.title}.\n\nLembre-se de manter o repouso recomendado, a hidratação abundante e de tomar as medicações prescritas nos horários corretos. É normal sentir um leve desconforto ou inchaço local nesta fase inicial.\n\nQualquer dúvida ou sintoma atípico, nossa equipe de suporte rápido está 100% de prontidão no número 11 98112-4455. Tenha um excelente dia de recuperação!`
 			                    : selectedPostOpDay === "D7"
 			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja evoluindo super bem!\n\nHoje completamos 7 dias do seu procedimento de ${protocol.title}. Gostaria de saber como está a cicatrização local e o seu nível de conforto.\n\nSe houver pontos externos ou curativos, nossa equipe entrará em contato para agendar sua avaliação presencial de retirada ou revisão de cicatrização. Lembre-se de manter os cuidados de estilo de vida (alimentação anti-inflamatória e hidratação celular) para acelerar a cicatrização.\n\nEstou à inteira disposição no número 11 98112-4455. Forte abraço!`
-			                    : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`;
+			                    : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nAproveito este momento para pedir a sua valiosa opinião sobre a nossa jornada de atendimento premium (da recepção ao pós-operatório). Se puder, avalie-nos em nosso canal oficial e deixe seu depoimento (leva menos de 1 minuto e nos ajuda a manter a excelência):\n👉 link.felipebulhoes.com/avaliacao\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`;
 			                  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
 			                  window.open(url, "_blank");
 			                  toast.success("Abrindo WhatsApp...");
