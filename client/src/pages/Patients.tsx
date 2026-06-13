@@ -3992,10 +3992,386 @@ export default function Patients() {
 
                           {/* Diário Miccional Clínico (LUTS/HPB) */}
                           <div className="space-y-3 pt-2 border-t border-border/40">
-                            <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
-                              <Activity className="w-4 h-4 text-accent animate-pulse" />
-                              Diário Miccional Clínico (Padrão-Ouro LUTS/HPB)
-                            </span>
+                            <div className="flex justify-between items-center">
+                              <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                                <Activity className="w-4 h-4 text-accent animate-pulse" />
+                                Diário Miccional Clínico (Padrão-Ouro LUTS/HPB)
+                              </span>
+                              <Button
+                                onClick={() => {
+                                  // Gerar PDF do Diário Miccional para o Paciente preencher em casa
+                                  const printFrame = document.createElement("iframe");
+                                  printFrame.style.position = "fixed";
+                                  printFrame.style.right = "0";
+                                  printFrame.style.bottom = "0";
+                                  printFrame.style.width = "0";
+                                  printFrame.style.height = "0";
+                                  printFrame.style.border = "0";
+                                  document.body.appendChild(printFrame);
+
+                                  const docToday = new Date().toLocaleDateString("pt-BR");
+                                  const signatureUrl = localStorage.getItem("protoUro_signature_data") || "";
+                                  const useSignature = localStorage.getItem("protouro_use_signature") !== "false";
+
+                                  const htmlContent = `
+                                    <!DOCTYPE html>
+                                    <html lang="pt-BR">
+                                    <head>
+                                      <meta charset="UTF-8">
+                                      <title>Diário Miccional de 3 Dias - Dr. Felipe de Bulhões</title>
+                                      <style>
+                                        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap');
+                                        
+                                        body {
+                                          font-family: 'Montserrat', sans-serif;
+                                          color: #1C3D5A;
+                                          margin: 0;
+                                          padding: 30px;
+                                          line-height: 1.5;
+                                          background-color: #FEFEFE;
+                                          min-height: 297mm;
+                                          box-sizing: border-box;
+                                          position: relative;
+                                        }
+                                        
+                                        .header {
+                                          display: flex;
+                                          justify-content: space-between;
+                                          align-items: center;
+                                          border-bottom: 2px solid #B87333;
+                                          padding-bottom: 12px;
+                                          margin-bottom: 20px;
+                                        }
+                                        
+                                        .logo-area {
+                                          display: flex;
+                                          align-items: center;
+                                          gap: 12px;
+                                        }
+                                        
+                                        .logo-text {
+                                          font-family: 'Playfair Display', serif;
+                                          font-size: 18px;
+                                          font-weight: 700;
+                                          color: #1C3D5A;
+                                          letter-spacing: 0.5px;
+                                        }
+                                        
+                                        .logo-sub {
+                                          font-size: 9px;
+                                          font-weight: 700;
+                                          color: #B87333;
+                                          text-transform: uppercase;
+                                          letter-spacing: 1px;
+                                          margin-top: 2px;
+                                        }
+                                        
+                                        .clinic-info {
+                                          text-align: right;
+                                          font-size: 9px;
+                                          color: #64748B;
+                                          line-height: 1.4;
+                                        }
+                                        
+                                        .title {
+                                          text-align: center;
+                                          font-family: 'Playfair Display', serif;
+                                          font-size: 20px;
+                                          font-weight: 700;
+                                          color: #1C3D5A;
+                                          margin-bottom: 15px;
+                                          letter-spacing: 0.5px;
+                                          text-transform: uppercase;
+                                          border-bottom: 1px dashed #E2E8F0;
+                                          padding-bottom: 8px;
+                                        }
+                                        
+                                        .patient-info {
+                                          background-color: #F8FAFC;
+                                          border: 1px solid #E2E8F0;
+                                          border-radius: 10px;
+                                          padding: 10px 15px;
+                                          margin-bottom: 15px;
+                                          font-size: 11px;
+                                        }
+                                        
+                                        .patient-name {
+                                          font-size: 14px;
+                                          font-weight: 700;
+                                          color: #1C3D5A;
+                                        }
+
+                                        .instructions {
+                                          background-color: #FFFDF9;
+                                          border: 1px solid #F59E0B/30;
+                                          border-left: 4px solid #B87333;
+                                          border-radius: 8px;
+                                          padding: 12px 15px;
+                                          margin-bottom: 20px;
+                                          font-size: 10px;
+                                          color: #334155;
+                                        }
+
+                                        .instructions h4 {
+                                          margin: 0 0 6px 0;
+                                          color: #B87333;
+                                          font-weight: 700;
+                                          text-transform: uppercase;
+                                          letter-spacing: 0.5px;
+                                        }
+
+                                        .instructions ol {
+                                          margin: 0;
+                                          padding-left: 15px;
+                                        }
+
+                                        .instructions li {
+                                          margin-bottom: 4px;
+                                        }
+                                        
+                                        .table-container {
+                                          display: flex;
+                                          gap: 15px;
+                                          margin-bottom: 80px;
+                                        }
+
+                                        .day-column {
+                                          flex: 1;
+                                          border: 1px solid #E2E8F0;
+                                          border-radius: 10px;
+                                          overflow: hidden;
+                                        }
+
+                                        .day-header {
+                                          background-color: #1C3D5A;
+                                          color: #FFF;
+                                          text-align: center;
+                                          font-weight: 700;
+                                          font-size: 11px;
+                                          padding: 8px;
+                                          text-transform: uppercase;
+                                          letter-spacing: 0.5px;
+                                        }
+
+                                        table {
+                                          width: 100%;
+                                          border-collapse: collapse;
+                                          font-size: 9px;
+                                        }
+
+                                        th, td {
+                                          border: 1px solid #E2E8F0;
+                                          padding: 5px;
+                                          text-align: center;
+                                        }
+
+                                        th {
+                                          background-color: #F8FAFC;
+                                          color: #1C3D5A;
+                                          font-weight: 700;
+                                        }
+
+                                        tr:nth-child(even) {
+                                          background-color: #F8FAFC/50;
+                                        }
+
+                                        .bottom-area {
+                                          position: absolute;
+                                          bottom: 60px;
+                                          left: 30px;
+                                          right: 30px;
+                                          display: flex;
+                                          justify-content: space-between;
+                                          align-items: flex-end;
+                                        }
+
+                                        .qr-code-box {
+                                          display: flex;
+                                          align-items: center;
+                                          gap: 10px;
+                                          border: 1px solid #E2E8F0;
+                                          border-radius: 10px;
+                                          padding: 8px;
+                                          background: #FFF;
+                                          max-width: 220px;
+                                        }
+
+                                        .qr-code-img {
+                                          width: 45px;
+                                          height: 45px;
+                                        }
+
+                                        .qr-code-text {
+                                          font-size: 7px;
+                                          color: #64748B;
+                                          line-height: 1.3;
+                                          font-weight: 600;
+                                        }
+                                        
+                                        .signature-box {
+                                          text-align: center;
+                                        }
+                                        
+                                        .signature-img {
+                                          max-height: 45px;
+                                          margin-bottom: 4px;
+                                        }
+                                        
+                                        .signature-line {
+                                          width: 200px;
+                                          border-top: 1px solid #CBD5E1;
+                                          margin: 0 auto 6px auto;
+                                        }
+                                        
+                                        .footer {
+                                          position: absolute;
+                                          bottom: 20px;
+                                          left: 30px;
+                                          right: 30px;
+                                          display: flex;
+                                          justify-content: space-between;
+                                          font-size: 8px;
+                                          color: #94A3B8;
+                                          border-top: 1px solid #E2E8F0;
+                                          padding-top: 8px;
+                                        }
+                                        
+                                        @media print {
+                                          body {
+                                            padding: 10px;
+                                          }
+                                        }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <!-- Cabeçalho Oficial -->
+                                      <div class="header">
+                                        <div class="logo-area">
+                                          <svg width="28" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 20H50C65 20 75 30 75 45C75 60 65 70 50 70H35V90H20V20ZM35 32V58H50C58 58 62 53 62 45C62 37 58 32 50 32H35Z" fill="#1C3D5A"/>
+                                            <path d="M45 40H65C73 40 80 47 80 55C80 63 73 70 65 70H45V40Z" fill="#B87333" opacity="0.85"/>
+                                          </svg>
+                                          <div>
+                                            <div class="logo-text" style="font-size: 15px;">DR. FELIPE DE BULHÕES</div>
+                                            <div class="logo-sub" style="font-size: 8px;">Urologia & Andrologia de Alta Performance</div>
+                                          </div>
+                                        </div>
+                                        <div class="clinic-info">
+                                          <strong>CRM-SP 241.135 | RQE 112.445</strong><br>
+                                          drfelipebulhoes@bulhoesurohealth.com
+                                        </div>
+                                      </div>
+
+                                      <div class="title">Diário Miccional de 3 Dias (Padrão-Ouro SBU/EAU)</div>
+
+                                      <!-- Ficha do Paciente -->
+                                      <div class="patient-info">
+                                        <div class="patient-name">Paciente: ${p.nome}</div>
+                                        <div style="color: #64748B; margin-top: 2px;">Idade: ${p.idade ? `${p.idade} anos` : "N/A"} • Data de Emissão: ${docToday} • Retorno: D+30</div>
+                                      </div>
+
+                                      <!-- Instruções ao Paciente -->
+                                      <div class="instructions">
+                                        <h4>Como Preencher o Seu Diário Miccional:</h4>
+                                        <ol>
+                                          <li>Escolha 3 dias típicos da sua semana (preferencialmente consecutivos) para fazer o registro.</li>
+                                          <li>Anote o volume aproximado de <strong>líquido ingerido</strong> (água, café, suco) em cada copo/garrafa (em mL).</li>
+                                          <li>Toda vez que urinar, meça o volume usando um copo graduado (em mL) e anote na coluna <strong>Volume (mL)</strong>.</li>
+                                          <li>Se sentir um desejo urgente e incontrolável de urinar, marque "Sim" na coluna <strong>Urgência</strong>.</li>
+                                          <li>Se perder urina involuntariamente (perda de controle), marque "Sim" na coluna <strong>Perda</strong>.</li>
+                                        </ol>
+                                      </div>
+
+                                      <!-- Tabelas de 3 Dias -->
+                                      <div class="table-container">
+                                        ${[1, 2, 3].map(day => `
+                                          <div class="day-column">
+                                            <div class="day-header">Dia ${day} (Data: ___/___)</div>
+                                            <table>
+                                              <thead>
+                                                <tr>
+                                                  <th>Período</th>
+                                                  <th>Ingestão (mL)</th>
+                                                  <th>Volume (mL)</th>
+                                                  <th>Urgência</th>
+                                                  <th>Perda</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                ${["Manhã (06h - 12h)", "Tarde (12h - 18h)", "Noite (18h - 00h)", "Sono (00h - 06h)"].map(period => `
+                                                  <tr>
+                                                    <td style="font-weight: 600; text-align: left; padding-left: 6px;">${period}</td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                  </tr>
+                                                `).join("")}
+                                                <tr style="background-color: #F8FAFC; font-weight: bold;">
+                                                  <td style="text-align: left; padding-left: 6px;">Total do Dia</td>
+                                                  <td></td>
+                                                  <td></td>
+                                                  <td colspan="2" style="font-size: 7px; color: #64748B;">Noctúria (Vezes acordou): ____</td>
+                                                </tr>
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        `).join("")}
+                                      </div>
+
+                                      <!-- Área de Autenticação e Assinatura -->
+                                      <div class="bottom-area">
+                                        <div class="qr-code-box">
+                                          <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://www.doctoralia.com.br/felipe-de-bulhoes-ojeda-2/urologista/campinas" class="qr-code-img" alt="QR Code de Validação" />
+                                          <div class="qr-code-text">
+                                            <strong>PROTOCOLO HPB/LUTS</strong><br>
+                                            Devolva este diário preenchido na sua próxima consulta ou envie por WhatsApp para agilizar o seu tratamento.
+                                          </div>
+                                        </div>
+                                        
+                                        <div class="signature-box">
+                                          ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" />` : `<div style="height: 35px;"></div>`}
+                                          <div class="signature-line"></div>
+                                          <strong style="font-size: 10px; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</strong><br>
+                                          <span style="font-size: 8px; color: #64748B;">Urologista - CRM-SP 241.135</span>
+                                        </div>
+                                      </div>
+
+                                      <!-- Rodapé Fixo -->
+                                      <div class="footer">
+                                        <span>Diário Miccional • Gerado via ProtoUro App</span>
+                                        <span>Campinas Day Hospital • Clinovi Paulista • Clinovi Moema</span>
+                                        <span>Página 1 de 1</span>
+                                      </div>
+                                    </body>
+                                    </html>
+                                  `;
+
+                                  const doc = printFrame.contentWindow?.document || printFrame.contentDocument;
+                                  if (doc) {
+                                    doc.open();
+                                    doc.write(htmlContent);
+                                    doc.close();
+
+                                    setTimeout(() => {
+                                      printFrame.contentWindow?.focus();
+                                      printFrame.contentWindow?.print();
+                                      setTimeout(() => {
+                                        document.body.removeChild(printFrame);
+                                      }, 1000);
+                                    }, 500);
+
+                                    toast.success("Diário Miccional de 3 Dias enviado para impressão/PDF!");
+                                  }
+                                }}
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-[10px] font-bold border-accent/20 hover:bg-accent/5 text-accent rounded-lg gap-1 px-2.5 py-0.5"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                Exportar Diário Miccional (PDF)
+                              </Button>
+                            </div>
                             
                             {p.historicoDiarioMiccional && p.historicoDiarioMiccional.length > 0 ? (
                               <div className="bg-secondary/10 border border-border/50 p-4 rounded-xl space-y-4">
