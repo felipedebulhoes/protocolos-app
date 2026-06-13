@@ -41,7 +41,8 @@ import {
   PlayCircle,
   Video,
   Printer,
-  Trash2
+  Trash2,
+  MapPin
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,6 +93,13 @@ export default function ProtocolDetail() {
   
   // Tom selecionado para a mensagem MEV (formal, acolhedor, pratico)
   const [mevTone, setMevTone] = useState<"formal" | "acolhedor" | "pratico">("acolhedor");
+  
+  // Local de atendimento para o cabeçalho do receituário customizável
+  const [localAtendimento, setLocalAtendimento] = useState<"clinovi_paulista" | "clinovi_moema" | "campinas_day" | "sem_logo">("clinovi_paulista");
+
+  // Estado para a fila de mensagens de pós-operatório agendado (D+1, D+7, D+30)
+  const [selectedPostOpDay, setSelectedPostOpDay] = useState<"D1" | "D7" | "D30">("D1");
+  const [postOpCopied, setPostOpCopied] = useState(false);
 
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
@@ -805,17 +813,39 @@ export default function ProtocolDetail() {
           <div class="container">
             <div>
               <div class="header">
-                <div class="logo-area">
-                  <div class="logo-monograma">FB</div>
-                  <div class="logo-text">
-                    <span class="logo-name">Dr. Felipe de Bulhões</span>
-                    <span class="logo-sub">Urologista & Andrologista</span>
+                ${localAtendimento === "sem_logo" ? `
+                  <div style="height: 40px;"></div>
+                ` : `
+                  <div class="logo-area">
+                    <div class="logo-monograma" style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: bold; color: #1C3D5A; border: 2px solid #B87333; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">FB</div>
+                    <div class="logo-text">
+                      <span class="logo-name" style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: bold; color: #1C3D5A; letter-spacing: 0.5px;">Dr. Felipe de Bulhões</span>
+                      <span class="logo-sub" style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #B87333; font-weight: bold;">Urologista & Andrologista</span>
+                    </div>
                   </div>
-                </div>
-                <div class="header-info">
-                  Urologista formado pelo IDOR<br>
-                  Cirurgião Geral TCBC<br>
-                  Campinas - SP | São Paulo - SP
+                `}
+                <div class="header-info" style="text-align: right; font-size: 10px; color: #64748b; line-height: 1.4;">
+                  ${localAtendimento === "clinovi_paulista" ? `
+                    <strong>CLINOVI PAULISTA</strong><br>
+                    Av. Paulista, 2064 - Bela Vista, São Paulo/SP<br>
+                    Particular (Acompanhamento Premium)<br>
+                    Contato: (11) 98112-4455
+                  ` : localAtendimento === "clinovi_moema" ? `
+                    <strong>CLINOVI MOEMA</strong><br>
+                    Av. Moema, 170 - Moema, São Paulo/SP<br>
+                    Particular (Acompanhamento Premium)<br>
+                    Contato: (11) 98112-4455
+                  ` : localAtendimento === "campinas_day" ? `
+                    <strong>CAMPINAS DAY HOSPITAL</strong><br>
+                    Av. Barão de Itapura, 950 - Campinas/SP<br>
+                    Particular & Convênios Credenciados<br>
+                    Contato: (11) 98112-4455
+                  ` : `
+                    Dr. Felipe de Bulhões Ojeda<br>
+                    CRM-SP: 202.291 | RQE: 146.538<br>
+                    Urologista & Cirurgião Geral TCBC<br>
+                    Contato: (11) 98112-4455
+                  `}
                 </div>
               </div>
 
@@ -1268,8 +1298,91 @@ export default function ProtocolDetail() {
 	          </div>
 	        )}
 
-		        {/* Checklist de Auditoria de Alta CPP & Envio MEV WhatsApp */}
-		        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			        {/* Fila de Mensagens de Pós-Operatório Agendado (D+1, D+7, D+30) */}
+			        <Card className="border-amber-500/20 bg-amber-500/[0.01] shadow-sm mb-6">
+			          <CardHeader className="p-5 pb-3">
+			            <div className="space-y-1 text-left">
+			              <CardTitle className="text-sm font-serif font-bold text-primary flex items-center gap-1.5">
+			                <Clock className="w-4 h-4 text-amber-500" />
+			                Fila de Mensagens de Pós-Operatório Agendado
+			              </CardTitle>
+			              <p className="text-[10px] text-muted-foreground leading-normal">
+			                Acompanhamento ativo e humanizado programado para o pós-operatório de {protocol.title}.
+			              </p>
+			            </div>
+			          </CardHeader>
+			          <CardContent className="p-5 pt-0 space-y-4">
+			            {/* Seletores de Dias (D+1, D+7, D+30) */}
+			            <div className="flex gap-2 p-1 bg-secondary/40 rounded-lg border border-border/40">
+			              {[
+			                { id: "D1", label: "D+1 (Primeiro Dia)", sub: "Sintomas & Conforto" },
+			                { id: "D7", label: "D+7 (Evolução)", sub: "Pontos & Cicatrização" },
+			                { id: "D30", label: "D+30 (Alta/Performance)", sub: "Retorno de Atividades" }
+			              ].map((day) => (
+			                <button
+			                  key={day.id}
+			                  onClick={() => setSelectedPostOpDay(day.id as any)}
+			                  className={`flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-md transition-all ${selectedPostOpDay === day.id ? "bg-primary text-primary-foreground shadow-sm font-bold" : "text-muted-foreground hover:text-foreground"}`}
+			                >
+			                  <span className="text-xs font-bold">{day.label}</span>
+			                  <span className="text-[8px] opacity-80 font-medium">{day.sub}</span>
+			                </button>
+			              ))}
+			            </div>
+
+			            {/* Conteúdo da Mensagem com base no Dia Selecionado */}
+			            <div className="bg-secondary/30 rounded-xl p-4 border border-border/40 text-left space-y-2">
+			              <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">Prévia da Mensagem ({selectedPostOpDay}):</span>
+			              <div className="text-xs text-foreground/80 leading-relaxed font-mono whitespace-pre-wrap">
+			                {selectedPostOpDay === "D1" 
+			                  ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nEstou entrando em contato para saber como foi sua primeira noite em casa após o procedimento de ${protocol.title}.\n\nLembre-se de manter o repouso recomendado, a hidratação abundante e de tomar as medicações prescritas nos horários corretos. É normal sentir um leve desconforto ou inchaço local nesta fase inicial.\n\nQualquer dúvida ou sintoma atípico, nossa equipe de suporte rápido está 100% de prontidão no número 11 98112-4455. Tenha um excelente dia de recuperação!`
+			                  : selectedPostOpDay === "D7"
+			                  ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja evoluindo super bem!\n\nHoje completamos 7 dias do seu procedimento de ${protocol.title}. Gostaria de saber como está a cicatrização local e o seu nível de conforto.\n\nSe houver pontos externos ou curativos, nossa equipe entrará em contato para agendar sua avaliação presencial de retirada ou revisão de cicatrização. Lembre-se de manter os cuidados de estilo de vida (alimentação anti-inflamatória e hidratação celular) para acelerar a cicatrização.\n\nEstou à inteira disposição no número 11 98112-4455. Forte abraço!`
+			                  : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`
+			                }
+			              </div>
+			            </div>
+
+			            {/* Botões de Ação */}
+			            <div className="flex gap-2">
+			              <Button
+			                variant="outline"
+			                onClick={() => {
+			                  const text = selectedPostOpDay === "D1"
+			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nEstou entrando em contato para saber como foi sua primeira noite em casa após o procedimento de ${protocol.title}.\n\nLembre-se de manter o repouso recomendado, a hidratação abundante e de tomar as medicações prescritas nos horários corretos. É normal sentir um leve desconforto ou inchaço local nesta fase inicial.\n\nQualquer dúvida ou sintoma atípico, nossa equipe de suporte rápido está 100% de prontidão no número 11 98112-4455. Tenha um excelente dia de recuperação!`
+			                    : selectedPostOpDay === "D7"
+			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja evoluindo super bem!\n\nHoje completamos 7 dias do seu procedimento de ${protocol.title}. Gostaria de saber como está a cicatrização local e o seu nível de conforto.\n\nSe houver pontos externos ou curativos, nossa equipe entrará em contato para agendar sua avaliação presencial de retirada ou revisão de cicatrização. Lembre-se de manter os cuidados de estilo de vida (alimentação anti-inflamatória e hidratação celular) para acelerar a cicatrização.\n\nEstou à inteira disposição no número 11 98112-4455. Forte abraço!`
+			                    : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`;
+			                  navigator.clipboard.writeText(text);
+			                  setPostOpCopied(true);
+			                  toast.success(`Mensagem ${selectedPostOpDay} copiada com sucesso!`);
+			                  setTimeout(() => setPostOpCopied(false), 2000);
+			                }}
+			                className="flex-1 rounded-xl text-xs h-10 font-semibold border-border"
+			              >
+			                {postOpCopied ? "Copiado!" : "Copiar Texto"}
+			              </Button>
+			              <Button
+			                onClick={() => {
+			                  const text = selectedPostOpDay === "D1"
+			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui.\n\nEstou entrando em contato para saber como foi sua primeira noite em casa após o procedimento de ${protocol.title}.\n\nLembre-se de manter o repouso recomendado, a hidratação abundante e de tomar as medicações prescritas nos horários corretos. É normal sentir um leve desconforto ou inchaço local nesta fase inicial.\n\nQualquer dúvida ou sintoma atípico, nossa equipe de suporte rápido está 100% de prontidão no número 11 98112-4455. Tenha um excelente dia de recuperação!`
+			                    : selectedPostOpDay === "D7"
+			                    ? `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Espero que esteja evoluindo super bem!\n\nHoje completamos 7 dias do seu procedimento de ${protocol.title}. Gostaria de saber como está a cicatrização local e o seu nível de conforto.\n\nSe houver pontos externos ou curativos, nossa equipe entrará em contato para agendar sua avaliação presencial de retirada ou revisão de cicatrização. Lembre-se de manter os cuidados de estilo de vida (alimentação anti-inflamatória e hidratação celular) para acelerar a cicatrização.\n\nEstou à inteira disposição no número 11 98112-4455. Forte abraço!`
+			                    : `Olá, ${patientName || "[Nome do Paciente]"}! Dr. Felipe de Bulhões aqui. Parabéns pela jornada de recuperação!\n\nHoje completamos 30 dias do seu procedimento de ${protocol.title}. Este é um marco importante onde normalmente iniciamos a transição para a alta clínica definitiva e a liberação para o retorno gradual de atividades físicas mais intensas e treinos de alta performance.\n\nGostaria de agendar seu retorno clínico presencial para avaliarmos os resultados finais e ajustarmos suas metas de estilo de vida e performance hormonal.\n\nPor favor, confirme com a minha secretária o melhor dia e horário para o seu retorno. Até breve!`;
+			                  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+			                  window.open(url, "_blank");
+			                  toast.success("Abrindo WhatsApp...");
+			                }}
+			                className="flex-1 rounded-xl text-xs h-10 font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+			              >
+			                Enviar WhatsApp
+			              </Button>
+			            </div>
+			          </CardContent>
+			        </Card>
+
+			        {/* Checklist de Auditoria de Alta CPP & Envio MEV WhatsApp */}
+			        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 		          {/* Checklist de Alta */}
 		          <Card className="border-emerald-500/20 bg-emerald-500/[0.01] shadow-sm">
 		            <CardHeader className="p-5 pb-3 flex flex-row items-center justify-between space-y-0">
@@ -1689,9 +1802,48 @@ export default function ProtocolDetail() {
 	                  </div>
 
 		                  <AccordionContent className="p-5 pt-4 text-sm leading-relaxed text-foreground/90 prose dark:prose-invert max-w-none">
-		                    {isPrescription ? (
-		                      <div className="space-y-4">
-		                        {/* Seletor de Medicamentos Adjuvantes / Sintomáticos */}
+			                    {isPrescription ? (
+			                      <div className="space-y-4">
+			                        {/* Seletor de Cabeçalho / Local de Atendimento */}
+			                        <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 space-y-3">
+			                          <div className="flex items-center justify-between">
+			                            <span className="text-xs font-bold text-[#1C3D5A] uppercase tracking-wider flex items-center gap-1.5">
+			                              <MapPin className="w-3.5 h-3.5 text-accent" />
+			                              Modelo de Cabeçalho / Local de Atendimento
+			                            </span>
+			                            <Badge variant="outline" className="border-accent/30 text-accent bg-accent/5 text-[9px] font-semibold uppercase tracking-wider">
+			                              Configuração de Impressão
+			                            </Badge>
+			                          </div>
+			                          <p className="text-[10px] text-muted-foreground">
+			                            Escolha qual cabeçalho timbrado e dados de contato devem aparecer no topo da sua receita de alta antes de imprimir.
+			                          </p>
+			                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1">
+			                            {[
+			                              { id: "clinovi_paulista", label: "Clinovi Paulista", sub: "São Paulo/SP" },
+			                              { id: "clinovi_moema", label: "Clinovi Moema", sub: "São Paulo/SP" },
+			                              { id: "campinas_day", label: "Campinas Day", sub: "Campinas/SP" },
+			                              { id: "sem_logo", label: "Receita Limpa", sub: "Apenas CRM/RQE" }
+			                            ].map((loc) => (
+			                              <div
+			                                key={loc.id}
+			                                onClick={() => setLocalAtendimento(loc.id as any)}
+			                                className={`
+			                                  flex flex-col items-center justify-center p-2 rounded-lg border cursor-pointer text-center transition-all duration-200
+			                                  ${localAtendimento === loc.id 
+			                                    ? "border-accent bg-accent/10 text-accent font-bold" 
+			                                    : "border-border bg-card text-muted-foreground hover:bg-secondary/50"
+			                                  }
+			                                `}
+			                              >
+			                                <span className="text-xs font-semibold">{loc.label}</span>
+			                                <span className="text-[9px] opacity-80">{loc.sub}</span>
+			                              </div>
+			                            ))}
+			                          </div>
+			                        </div>
+
+			                        {/* Seletor de Medicamentos Adjuvantes / Sintomáticos */}
 		                        <div className="bg-secondary/20 border border-border/60 rounded-xl p-4 space-y-3">
 		                          <div className="flex items-center justify-between">
 		                            <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">

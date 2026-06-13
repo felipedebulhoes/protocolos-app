@@ -16,7 +16,8 @@ import {
   MessageSquare,
   TrendingUp,
   CalendarClock,
-  FileSpreadsheet
+  FileSpreadsheet,
+  CheckSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -98,6 +99,7 @@ interface Paciente {
   origem?: "instagram" | "google_ads" | "indicacao" | "outros"; // Origem de Captação CPP
   proximoContato?: string; // Data agendada para o próximo acompanhamento comercial (AAAA-MM-DD)
   faturamentoReal?: number; // Faturamento real do paciente (cirurgia/consulta paga)
+  auditorias_alta?: Record<string, any>; // Auditoria de checklists de alta de protocolos
 }
 
 interface SecretáriaTarefa {
@@ -2221,6 +2223,28 @@ export default function Patients() {
                                     <span>R$ {p.faturamentoReal.toLocaleString("pt-BR")}</span>
                                   </div>
                                 )}
+                                {/* Selo de Alta Auditada se houver auditorias_alta concluídas */}
+                                {(() => {
+                                  if (p.auditorias_alta) {
+                                    const protocols = Object.keys(p.auditorias_alta);
+                                    const hasCompletedAudit = protocols.some(protoId => {
+                                      const items = p.auditorias_alta ? p.auditorias_alta[protoId] || [] : [];
+                                      return items.length > 0 && items.every((item: any) => item.checked);
+                                    });
+                                    if (hasCompletedAudit) {
+                                      return (
+                                        <div className="flex items-center justify-between text-[9px] font-bold text-[#B87333] bg-[#B87333]/5 border border-[#B87333]/20 p-1 rounded mt-1">
+                                          <span className="flex items-center gap-1">
+                                            <CheckSquare className="w-3 h-3 text-[#B87333]" />
+                                            Alta Auditada CPP
+                                          </span>
+                                          <span className="text-[8px] uppercase font-bold tracking-wider">100% OK</span>
+                                        </div>
+                                      );
+                                    }
+                                  }
+                                  return null;
+                                })()}
                               </div>
 
                               {/* Controles Rápidos de Estágio (Avanço/Retrocesso) */}
