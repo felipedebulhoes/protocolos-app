@@ -3992,13 +3992,93 @@ export default function Patients() {
 
                           {/* Diário Miccional Clínico (LUTS/HPB) */}
                           <div className="space-y-3 pt-2 border-t border-border/40">
-                            <div className="flex justify-between items-center">
+                            {/* Calculadora Cistométrica e Resumo Clínico do Diário */}
+                            {(() => {
+                              const registrosValidos = p.historicoDiarioMiccional?.filter(r => r.frequenciaDiurna > 0 || r.nocturia > 0 || r.volumeMedio > 0) || [];
+                              if (registrosValidos.length === 0) return null;
+
+                              const totalDias = registrosValidos.length;
+                              const somaDiurna = registrosValidos.reduce((acc, r) => acc + r.frequenciaDiurna, 0);
+                              const somaNocturia = registrosValidos.reduce((acc, r) => acc + r.nocturia, 0);
+                              const volumes = registrosValidos.filter(r => r.volumeMedio > 0).map(r => r.volumeMedio);
+                              
+                              const freqDiurnaMedia = Math.round((somaDiurna / totalDias) * 10) / 10;
+                              const nocturiaMedia = Math.round((somaNocturia / totalDias) * 10) / 10;
+                              const volMedio = volumes.length > 0 ? Math.round(volumes.reduce((acc, v) => acc + v, 0) / volumes.length) : 0;
+                              const volMaximo = volumes.length > 0 ? Math.max(...volumes) : 0;
+
+                              // Classificação Clínica da Capacidade Vesical (Normal: 300-500mL)
+                              let classificacaoCistometrica = "Normal (300-500mL)";
+                              let corClassificacao = "text-green-600 bg-green-500/10 border-green-500/20";
+                              if (volMaximo > 0) {
+                                if (volMaximo < 200) {
+                                  classificacaoCistometrica = "Capacidade Vesical Severamente Reduzida (<200mL)";
+                                  corClassificacao = "text-red-600 bg-red-500/10 border-red-500/20";
+                                } else if (volMaximo < 300) {
+                                  classificacaoCistometrica = "Capacidade Vesical Reduzida (200-300mL)";
+                                  corClassificacao = "text-amber-600 bg-amber-500/10 border-amber-500/20";
+                                } else if (volMaximo > 600) {
+                                  classificacaoCistometrica = "Bexiga Hipoativa / Retenção (>600mL)";
+                                  corClassificacao = "text-amber-600 bg-amber-500/10 border-amber-500/20";
+                                }
+                              }
+
+                              return (
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5 bg-slate-500/5 border border-border/40 p-3 rounded-xl text-xs font-semibold">
+                                  <div className="space-y-1">
+                                    <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">Capacidade Vesical Máxima</div>
+                                    <div className="text-sm font-extrabold text-primary">{volMaximo > 0 ? `${volMaximo} mL` : "N/A"}</div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">Volume Miccional Médio</div>
+                                    <div className="text-sm font-extrabold text-primary">{volMedio > 0 ? `${volMedio} mL` : "N/A"}</div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">Frequência Diária Média</div>
+                                    <div className="text-sm font-extrabold text-primary">Diurna: {freqDiurnaMedia}x • Noctúria: {nocturiaMedia}x</div>
+                                  </div>
+                                  <div className="space-y-1 md:col-span-1">
+                                    <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">Status Cistométrico (SBU)</div>
+                                    <Badge variant="outline" className={`text-[10px] font-bold border rounded-lg py-0.5 px-2 ${corClassificacao}`}>
+                                      {classificacaoCistometrica}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                               <span className="font-bold text-primary uppercase tracking-wider text-[10px] flex items-center gap-1.5">
                                 <Activity className="w-4 h-4 text-accent animate-pulse" />
                                 Diário Miccional Clínico (Padrão-Ouro LUTS/HPB)
                               </span>
-                              <Button
-                                onClick={() => {
+                              <div className="flex gap-1.5">
+                                <Button
+                                  onClick={() => {
+                                    const msg = `Olá, ${p.nome}! Aqui é da equipe do Dr. Felipe de Bulhões Ojeda. 
+
+Para podermos avaliar com precisão a sua queixa urinária e personalizar o seu tratamento, o Dr. Felipe solicita que você preencha o seu Diário Miccional de 3 dias.
+
+Você pode preencher o diário diretamente no seu celular pelo link abaixo:
+https://protocolos.felipebulhoes.com/diario-paciente/${p.id}
+
+Cada micção e copo de água registrado por você entrará em tempo real no seu prontuário clínico. Se preferir imprimir e preencher à mão, o Dr. Felipe também gerou um PDF oficial para você.
+
+Ficamos à disposição!`;
+                                    window.open(`https://api.whatsapp.com/send?phone=${p.telefone ? p.telefone.replace(/\D/g, "") : ""}&text=${encodeURIComponent(msg)}`, "_blank");
+                                    toast.success("Mensagem do Portal do Paciente enviada para o WhatsApp!");
+                                  }}
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-[10px] font-bold border-green-500/20 hover:bg-green-500/5 text-green-600 rounded-lg gap-1 px-2.5 py-0.5"
+                                >
+                                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.353-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.87 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.454 5.709 1.455h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                  </svg>
+                                  Enviar via WhatsApp
+                                </Button>
+                                <Button
+                                  onClick={() => {
                                   // Gerar PDF do Diário Miccional para o Paciente preencher em casa
                                   const printFrame = document.createElement("iframe");
                                   printFrame.style.position = "fixed";
@@ -4371,6 +4451,7 @@ export default function Patients() {
                                 <FileText className="w-3.5 h-3.5" />
                                 Exportar Diário Miccional (PDF)
                               </Button>
+                              </div>
                             </div>
                             
                             {p.historicoDiarioMiccional && p.historicoDiarioMiccional.length > 0 ? (
