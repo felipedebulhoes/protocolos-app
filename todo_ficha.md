@@ -63,3 +63,26 @@
 - [ ] CHECKPOINT
 - [ ] Orientar usuário: tornar site público (Settings) + revincular paciente.felipebulhoes.com
 - [ ] Registrar no cérebro
+
+
+## Fase Consolidação (Rota 1) — site do paciente unificado no protocolos-app
+- [x] Landing pública do paciente (PacienteLanding) estilo preportal
+- [x] Rotas /paciente, /cadastro, /login com modos (login/register)
+- [x] Detecção de hostname na raiz (paciente.* → landing; senão → app médico)
+- [x] Link "Voltar ao início" no AuthScreen do portal
+- [x] Correção de schema: tabela patients alinhada ao drizzle (snake_case + cpf/city/state/notes)
+- [x] Correção de schema: tabela intake_forms alinhada ao drizzle (renomeações + invited_email/reviewed_at/created_by_open_id)
+- [x] Validação no preview: cadastro, login, portal autenticado, ficha pública multi-etapas
+- [x] Limpeza de dados de teste
+- [x] 10 testes passando, 0 erros TS
+- [x] CHECKPOINT consolidação (3c3e2305)
+- [ ] PENDENTE (usuário): tornar site público em Settings → General → Visibility
+- [ ] PENDENTE (usuário): revincular paciente.felipebulhoes.com ao protocolos-app
+- [ ] PENDENTE (usuário): aposentar o preportal
+
+
+## Fase Melhorias (pós-consolidação)
+- [x] Notificação ao médico (notifyOwner) quando a ficha for enviada (submit, fire-and-forget)
+- [x] Botão "Enviar por WhatsApp" na geração do link da ficha (wa.me + mensagem pronta, no diálogo e nas linhas pendentes)
+- [x] Gráfico de evolução PSA/testosterona no detalhe do paciente (recharts; lógica em shared/examEvolution.ts)
+- [x] 14 testes passando (4 novos para examEvolution), 0 erros TS

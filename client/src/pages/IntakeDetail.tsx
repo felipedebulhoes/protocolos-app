@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { INTAKE_SECTIONS } from "@shared/intakeSchema";
 import { analyteLabel, CATEGORY_LABELS, categoryForAnalyte, type AnalyteCategory } from "@shared/analyteCategories";
+import ExamEvolutionChart from "@/components/intake/ExamEvolutionChart";
 
 type ProtocolSuggestion = {
   id: string;
@@ -201,6 +202,9 @@ export default function IntakeDetail() {
             </CardContent>
           </Card>
         )}
+
+        {/* Exam evolution chart (only renders when an analyte has 2+ dated points) */}
+        <ExamEvolutionChart results={examResults} />
 
         {/* Exam results */}
         {examResults.length > 0 && (

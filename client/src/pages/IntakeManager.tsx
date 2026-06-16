@@ -22,6 +22,7 @@ import {
   Loader2,
   ChevronRight,
   Link as LinkIcon,
+  MessageCircle,
 } from "lucide-react";
 
 function statusBadge(status: string) {
@@ -48,6 +49,26 @@ export default function IntakeManager() {
 
   function linkFor(token: string) {
     return `${window.location.origin}/ficha/${token}`;
+  }
+
+  // Build a wa.me URL with a pre-filled message. Strips non-digits from the phone
+  // and falls back to a generic share (no number) when none is available.
+  function whatsappFor(token: string, name?: string | null, phone?: string | null) {
+    const link = linkFor(token);
+    const greeting = name && name.trim() ? `Olá, ${name.trim()}!` : "Olá!";
+    const message =
+      `${greeting} Sou da equipe do Dr. Felipe de Bulhões (Urologia & Andrologia). ` +
+      `Para agilizar a sua consulta, preencha a ficha pré-consulta e envie seus exames por este link seguro:\n\n${link}\n\n` +
+      `Leva poucos minutos e ajuda o Dr. Felipe a te receber já conhecendo o seu caso.`;
+    const digits = (phone || "").replace(/\D/g, "");
+    // Default to Brazil country code when a local number without DDI is provided.
+    const intl = digits ? (digits.length <= 11 ? `55${digits}` : digits) : "";
+    const base = intl ? `https://wa.me/${intl}` : "https://wa.me/";
+    return `${base}?text=${encodeURIComponent(message)}`;
+  }
+
+  function openWhatsApp(token: string, name?: string | null, phone?: string | null) {
+    window.open(whatsappFor(token, name, phone), "_blank", "noopener,noreferrer");
   }
 
   async function handleCreate() {
@@ -148,9 +169,17 @@ export default function IntakeManager() {
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </Button>
                   </div>
+                  <Button
+                    onClick={() => openWhatsApp(createdToken, invitedName, invitedPhone)}
+                    className="w-full bg-[#25D366] hover:bg-[#1FB855] text-white font-semibold"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" /> Enviar por WhatsApp
+                  </Button>
                   <p className="text-xs text-muted-foreground">
-                    Envie esse link ao paciente por WhatsApp ou e-mail. Ao enviar a ficha, ele aparece na lista como
-                    "Recebida".
+                    {invitedPhone
+                      ? "O WhatsApp abrirá já com o número informado e a mensagem pronta."
+                      : "Sem telefone informado, o WhatsApp abrirá com a mensagem pronta para você escolher o contato."}
+                    {" "}Ao enviar a ficha, ela aparece na lista como "Recebida".
                   </p>
                 </div>
               )}
@@ -193,17 +222,29 @@ export default function IntakeManager() {
                     {isSubmitted ? (
                       <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
                     ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="bg-white shrink-0"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          copyLink(f.token);
-                        }}
-                      >
-                        <Copy className="w-4 h-4 mr-1" /> Copiar link
-                      </Button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="bg-white"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            copyLink(f.token);
+                          }}
+                        >
+                          <Copy className="w-4 h-4 mr-1" /> Copiar
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-[#25D366] hover:bg-[#1FB855] text-white"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            openWhatsApp(f.token, f.invitedName, f.invitedPhone);
+                          }}
+                        >
+                          <MessageCircle className="w-4 h-4 mr-1" /> WhatsApp
+                        </Button>
+                      </div>
                     )}
                   </CardContent>
                 </Card>

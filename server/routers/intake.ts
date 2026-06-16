@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import * as db from "../db";
 import { scoreProtocols, buildRapportSummary } from "../intelligence";
+import { notifyOwner } from "../_core/notification";
 
 function genToken(): string {
   return randomBytes(24).toString("base64url");
@@ -161,6 +162,33 @@ export const intakeRouter = router({
         rapportSummary: rapport,
         submittedAt: new Date(),
       });
+
+      // Notify the doctor (owner) that a new pre-consultation form was submitted.
+      // Fire-and-forget: never block or fail the patient submission on notification errors.
+      try {
+        const topProtocols = suggestions
+          .slice(0, 3)
+          .map((s) => s.title)
+          .filter(Boolean);
+        const patientName = patient.fullName || email;
+        const lines = [
+          `Paciente: ${patientName}`,
+          `E-mail: ${email}`,
+          patient.phone ? `Telefone: ${patient.phone}` : null,
+          intakeExamFiles.length
+            ? `Exames enviados: ${intakeExamFiles.length}`
+            : "Exames enviados: nenhum",
+          topProtocols.length
+            ? `Protocolos sugeridos: ${topProtocols.join(", ")}`
+            : null,
+        ].filter(Boolean) as string[];
+        await notifyOwner({
+          title: `Nova ficha pré-consulta: ${patientName}`,
+          content: lines.join("\n"),
+        });
+      } catch (e) {
+        console.error("[intake.submit] notifyOwner failed", e);
+      }
 
       return { ok: true, patientId: patient.id, email, hasPassword: !!patient.passwordHash };
     }),
