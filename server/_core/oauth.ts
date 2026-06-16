@@ -25,6 +25,11 @@ export function parseState(state: string | undefined | null): ParsedState {
  */
 export async function exchangeCodeForUser(code: string, redirectUri: string): Promise<ManusUser | null> {
   try {
+    console.log("[oauth] exchanging code for token");
+    console.log("[oauth] OAUTH_SERVER_URL:", env.OAUTH_SERVER_URL);
+    console.log("[oauth] client_id:", env.VITE_APP_ID);
+    console.log("[oauth] redirect_uri:", redirectUri);
+    
     const tokenResp = await fetch(`${env.OAUTH_SERVER_URL}/oauth/token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -35,8 +40,10 @@ export async function exchangeCodeForUser(code: string, redirectUri: string): Pr
         grant_type: "authorization_code",
       }),
     });
+    console.log("[oauth] token response status:", tokenResp.status);
     if (!tokenResp.ok) {
-      console.error("[oauth] token exchange failed", await tokenResp.text());
+      const errorText = await tokenResp.text();
+      console.error("[oauth] token exchange failed", tokenResp.status, errorText);
       return null;
     }
     const tokenData = (await tokenResp.json()) as { access_token?: string };
