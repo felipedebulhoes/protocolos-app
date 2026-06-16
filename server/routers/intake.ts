@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { randomBytes } from "crypto";
 import { TRPCError } from "@trpc/server";
-import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
+import { router, publicProcedure, ownerProcedure } from "../_core/trpc";
 import * as db from "../db";
 import { scoreProtocols, buildRapportSummary } from "../intelligence";
 import { notifyOwner } from "../_core/notification";
@@ -14,7 +14,7 @@ const answersSchema = z.record(z.string(), z.any());
 
 export const intakeRouter = router({
   // ----- Doctor: generate a new pre-consultation link -----------------------
-  createLink: protectedProcedure
+  createLink: ownerProcedure
     .input(
       z.object({
         invitedName: z.string().trim().max(255).optional(),
@@ -36,7 +36,7 @@ export const intakeRouter = router({
     }),
 
   // ----- Doctor: list all intake forms --------------------------------------
-  list: protectedProcedure.query(async () => {
+  list: ownerProcedure.query(async () => {
     const forms = await db.listIntakeForms();
     return forms.map((f) => ({
       id: f.id,
@@ -52,7 +52,7 @@ export const intakeRouter = router({
   }),
 
   // ----- Doctor: full detail of one intake form -----------------------------
-  detail: protectedProcedure
+  detail: ownerProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ input }) => {
       const form = await db.getIntakeById(input.id);
@@ -66,7 +66,7 @@ export const intakeRouter = router({
     }),
 
   // ----- Doctor: mark as reviewed / save notes ------------------------------
-  review: protectedProcedure
+  review: ownerProcedure
     .input(z.object({ id: z.number().int().positive(), notes: z.string().optional() }))
     .mutation(async ({ input }) => {
       const form = await db.getIntakeById(input.id);

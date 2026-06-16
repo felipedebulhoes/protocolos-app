@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { router, publicProcedure, protectedProcedure, patientProcedure } from "../_core/trpc";
+import { router, publicProcedure, ownerProcedure, patientProcedure } from "../_core/trpc";
 import * as db from "../db";
 import { readExamFile } from "../intelligence";
 import { storagePut } from "../_core/storageProxy";
@@ -201,7 +201,7 @@ export const examsRouter = router({
   }),
 
   // ----- Doctor: list exam files for an intake form -------------------------
-  listByIntake: protectedProcedure
+  listByIntake: ownerProcedure
     .input(z.object({ intakeFormId: z.number().int().positive() }))
     .query(async ({ input }) => {
       const files = await db.listExamFilesByIntake(input.intakeFormId);

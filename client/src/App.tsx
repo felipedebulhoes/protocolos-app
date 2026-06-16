@@ -18,6 +18,7 @@ import PortalPaciente from "./pages/PortalPaciente";
 import PacienteLanding from "./pages/PacienteLanding";
 import IntakeManager from "./pages/IntakeManager";
 import IntakeDetail from "./pages/IntakeDetail";
+import { DoctorGuard } from "./components/DoctorGuard";
 
 /**
  * Detect whether the current host is the patient-facing domain.
@@ -41,7 +42,14 @@ function PortalRoute() {
   return <PortalPaciente initialMode="login" />;
 }
 function RootRoute() {
-  return isPatientHost() ? <PacienteLanding /> : <Home />;
+  // On the patient domain the root serves the public patient landing page.
+  // On the physician domain it serves the doctor app, gated by DoctorGuard.
+  if (isPatientHost()) return <PacienteLanding />;
+  return (
+    <DoctorGuard>
+      <Home />
+    </DoctorGuard>
+  );
 }
 
 function Router() {
@@ -56,17 +64,37 @@ function Router() {
       <Route path="/portal" component={PortalRoute} />
       <Route path="/ficha/:token" component={FichaPublica} />
 
-      {/* Physician app routes */}
-      <Route path="/protocolo/:id" component={ProtocolDetail} />
-      <Route path="/favoritos" component={Favorites} />
-      <Route path="/calculadoras" component={Calculators} />
-      <Route path="/pacientes" component={Patients} />
-      <Route path="/orçamentos" component={Budgets} />
-      <Route path="/treinamento" component={SecretaryTraining} />
-      <Route path="/icp" component={ICP} />
+      {/* Patient-shareable diary (reads from local storage, no Manus login) */}
       <Route path="/diario-paciente/:id" component={DiarioPaciente} />
-      <Route path="/fichas" component={IntakeManager} />
-      <Route path="/fichas/:id" component={IntakeDetail} />
+
+      {/* Physician-only routes (gated by DoctorGuard / ownerProcedure on backend) */}
+      <Route path="/protocolo/:id">
+        <DoctorGuard><ProtocolDetail /></DoctorGuard>
+      </Route>
+      <Route path="/favoritos">
+        <DoctorGuard><Favorites /></DoctorGuard>
+      </Route>
+      <Route path="/calculadoras">
+        <DoctorGuard><Calculators /></DoctorGuard>
+      </Route>
+      <Route path="/pacientes">
+        <DoctorGuard><Patients /></DoctorGuard>
+      </Route>
+      <Route path="/orçamentos">
+        <DoctorGuard><Budgets /></DoctorGuard>
+      </Route>
+      <Route path="/treinamento">
+        <DoctorGuard><SecretaryTraining /></DoctorGuard>
+      </Route>
+      <Route path="/icp">
+        <DoctorGuard><ICP /></DoctorGuard>
+      </Route>
+      <Route path="/fichas">
+        <DoctorGuard><IntakeManager /></DoctorGuard>
+      </Route>
+      <Route path="/fichas/:id">
+        <DoctorGuard><IntakeDetail /></DoctorGuard>
+      </Route>
 
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}

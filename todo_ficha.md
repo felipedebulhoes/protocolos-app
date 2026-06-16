@@ -86,3 +86,18 @@
 - [x] Botão "Enviar por WhatsApp" na geração do link da ficha (wa.me + mensagem pronta, no diálogo e nas linhas pendentes)
 - [x] Gráfico de evolução PSA/testosterona no detalhe do paciente (recharts; lógica em shared/examEvolution.ts)
 - [x] 14 testes passando (4 novos para examEvolution), 0 erros TS
+
+## Fase SEGURANÇA (PRIORITÁRIA): isolar área do médico
+- [ ] Auditar proteção atual de rotas (frontend) e procedimentos (backend)
+- [ ] Backend: exigir owner em todos os procedimentos do médico (protocolos, pacientes, orçamentos, fichas/intake, treino)
+- [ ] Frontend: guard de rotas do médico (redireciona não-donos ao login)
+- [ ] Manter rotas do paciente 100% públicas (/, /paciente, /cadastro, /login, /portal, /ficha/:token)
+- [ ] Validar isolamento no preview + testes
+
+## Fase Melhorias 2 (comunicação + análise de exames)
+- [ ] Notificação ao paciente confirmando recebimento da ficha (tela de sucesso com botão WhatsApp + e-mail)
+- [ ] Filtro de período no gráfico de evolução (12/24 meses/tudo)
+- [ ] Exportação do histórico de exames em PDF no detalhe do paciente
+- [ ] Reordenar exames por data no detalhe
+- [ ] Marcar visualmente valores fora da faixa de referência (high/low)
+- [ ] Testes + checkpoint

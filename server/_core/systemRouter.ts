@@ -1,13 +1,16 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "./trpc";
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, isOwnerOpenId } from "@shared/const";
 import { getClearCookieOptions } from "./cookies";
 import { serialize } from "cookie";
 import { notifyOwner } from "./notification";
+import { env } from "./env";
 
 export const authRouter = router({
   me: publicProcedure.query(({ ctx }) => {
-    return ctx.user;
+    if (!ctx.user) return null;
+    const isOwner = isOwnerOpenId(ctx.user.openId, env.OWNER_OPEN_ID);
+    return { ...ctx.user, isOwner };
   }),
   logout: publicProcedure.mutation(({ ctx }) => {
     ctx.res.setHeader("Set-Cookie", serialize(COOKIE_NAME, "", getClearCookieOptions()));
