@@ -13,6 +13,7 @@ import Budgets from "./pages/Budgets";
 import SecretaryTraining from "./pages/SecretaryTraining";
 import ICP from "./pages/ICP";
 import DiarioPaciente from "./pages/DiarioPaciente";
+import FichaPublica from "./pages/FichaPublica";
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/treinamento" component={SecretaryTraining} />
       <Route path="/icp" component={ICP} />
       <Route path="/diario-paciente/:id" component={DiarioPaciente} />
+      <Route path="/ficha/:token" component={FichaPublica} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

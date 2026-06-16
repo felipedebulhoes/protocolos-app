@@ -24,12 +24,14 @@
 - [x] Upload de exames base64 -> S3 -> leitura IA multimodal -> exam_results padronizados
 - [x] Scoring de protocolo + rapport (server/intelligence.ts)
 - [x] Routers (intake, exams, patientAuth)
-- [ ] CHECKPOINT
+- [x] CHECKPOINT
 
 ## Fase 4 — Frontend público
-- [ ] /ficha/:token multi-etapas (dados, motivo, sintomas, histórico, expectativas, exames, conclusão)
-- [ ] Componentes IntakeField + ExamUploader
-- [ ] CHECKPOINT
+- [x] /ficha/:token multi-etapas (dados, motivo, sintomas, histórico, expectativas, exames, conclusão)
+- [x] Componentes IntakeField + ExamUploader + PatientBrandHeader
+- [x] Pós-envio: criação de senha do portal
+- [x] Rota registrada no App.tsx (fora do Layout)
+- [x] CHECKPOINT
 
 ## Fase 5 — Portal do paciente
 - [ ] /portal login/cadastro de senha
