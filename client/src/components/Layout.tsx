@@ -18,7 +18,8 @@ import {
   Users,
   GraduationCap,
   FileText,
-  Target
+  Target,
+  ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,6 +46,7 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/pacientes", label: "Pacientes", icon: Users },
     { href: "/orçamentos", label: "Orçamentos", icon: FileText },
     { href: "/treinamento", label: "Treinar Equipe", icon: GraduationCap },
+    { href: "/fichas", label: "Fichas Pré-Consulta", icon: ClipboardList },
     { href: "/icp", label: "Paciente Ideal (ICP)", icon: Target },
   ];
 

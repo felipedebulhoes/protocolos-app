@@ -41,10 +41,11 @@
 - [x] CHECKPOINT
 
 ## Fase 6 — Painel do médico
-- [ ] IntakeManager: gerar link + listar fichas
-- [ ] IntakeDetail: rapport + protocolo sugerido + respostas + exames + anotações
-- [ ] Menu no Layout
-- [ ] CHECKPOINT
+- [x] IntakeManager: gerar link + listar fichas
+- [x] IntakeDetail: rapport + protocolo sugerido + respostas + exames + anotações
+- [x] Item de menu "Fichas Pré-Consulta" no Layout
+- [x] Teste vitest do scoring (4 passando) + vitest.config dedicado
+- [x] CHECKPOINT
 
 ## Fase 7 — Domínio + testes + entrega
 - [ ] Apontar paciente.felipebulhoes.com para entrada pública
