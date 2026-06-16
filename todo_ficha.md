@@ -34,10 +34,11 @@
 - [x] CHECKPOINT
 
 ## Fase 5 — Portal do paciente
-- [ ] /portal login/cadastro de senha
-- [ ] Histórico de exames padronizados (timeline)
-- [ ] Envio de novos exames
-- [ ] CHECKPOINT
+- [x] /portal login/cadastro de senha
+- [x] Histórico de exames padronizados (agrupado por categoria)
+- [x] Envio de novos exames
+- [x] Lista de arquivos enviados
+- [x] CHECKPOINT
 
 ## Fase 6 — Painel do médico
 - [ ] IntakeManager: gerar link + listar fichas
