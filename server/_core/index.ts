@@ -42,17 +42,11 @@ async function startServer() {
       const baseOrigin = origin || `${req.protocol}://${req.get("host")}`;
       const redirectUri = `${baseOrigin}/api/oauth/callback`;
 
-      console.log("[oauth callback] state origin:", origin);
-      console.log("[oauth callback] req.protocol:", req.protocol);
-      console.log("[oauth callback] req.host:", req.get("host"));
-      console.log("[oauth callback] final redirectUri:", redirectUri);
-
       if (!code) {
         return res.redirect(`${baseOrigin}${returnPath || "/"}`);
       }
       const user = await exchangeCodeForUser(code, redirectUri);
       if (!user) {
-        console.log("[oauth callback] exchangeCodeForUser returned null");
         return res.status(401).send("OAuth failed");
       }
       const dbUser = await upsertUserByOpenId({
