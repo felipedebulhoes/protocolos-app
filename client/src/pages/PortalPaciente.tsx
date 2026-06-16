@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, LogOut, FlaskConical, FileText, AlertTriangle } from "lucide-react";
+import { Loader2, LogOut, FlaskConical, FileText, AlertTriangle, ArrowLeft } from "lucide-react";
 import { PatientBrandHeader } from "@/components/intake/PatientBrandHeader";
 import { ExamUploader, type UploadedExam } from "@/components/intake/ExamUploader";
 
@@ -19,7 +19,11 @@ function flagBadge(flag: string) {
   return null;
 }
 
-export default function PortalPaciente() {
+export default function PortalPaciente({
+  initialMode = "login",
+}: {
+  initialMode?: "login" | "register";
+}) {
   const utils = trpc.useUtils();
   const meQuery = trpc.patientAuth.me.useQuery(undefined, { retry: false });
   const isAuthed = !!meQuery.data && !meQuery.isError;
@@ -33,7 +37,12 @@ export default function PortalPaciente() {
   }
 
   if (!isAuthed) {
-    return <AuthScreen onAuthed={() => utils.patientAuth.me.invalidate()} />;
+    return (
+      <AuthScreen
+        initialMode={initialMode}
+        onAuthed={() => utils.patientAuth.me.invalidate()}
+      />
+    );
   }
 
   return <PortalContent patient={meQuery.data!} />;
@@ -42,8 +51,14 @@ export default function PortalPaciente() {
 // ---------------------------------------------------------------------------
 // Login / register screen
 // ---------------------------------------------------------------------------
-function AuthScreen({ onAuthed }: { onAuthed: () => void }) {
-  const [mode, setMode] = useState<"login" | "register">("login");
+function AuthScreen({
+  onAuthed,
+  initialMode = "login",
+}: {
+  onAuthed: () => void;
+  initialMode?: "login" | "register";
+}) {
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -74,6 +89,9 @@ function AuthScreen({ onAuthed }: { onAuthed: () => void }) {
     <div className="min-h-screen bg-slate-50">
       <PatientBrandHeader badge="Portal do Paciente" />
       <div className="max-w-md mx-auto px-4 mt-12">
+        <a href="/" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-[#1C3D5A] mb-4">
+          <ArrowLeft className="w-4 h-4" /> Voltar ao início
+        </a>
         <Card className="border-0 shadow-lg rounded-2xl bg-white">
           <CardContent className="p-6 space-y-5">
             <div className="text-center">

@@ -52,3 +52,14 @@
 - [x] Verificação de fluxos (typecheck 0 erros, rotas 200)
 - [x] CHECKPOINT final
 - [ ] Domínio paciente.felipebulhoes.com: orientar usuário (rota /ficha e /portal já públicas no domínio atual)
+
+## Fase 8 — Consolidação do preportal no protocolos-app (Rota 1 escolhida pelo usuário; preportal só tem testes, sem migração)
+- [ ] Auditar Home.tsx atual e roteamento (App.tsx) para rotas públicas do paciente
+- [ ] Criar landing page pública do paciente (estilo preportal: Criar Conta / Já tenho conta, "Como funciona")
+- [ ] Garantir rotas públicas: /cadastro e /login do paciente (além de /portal e /ficha/:token)
+- [ ] Verificar que patientAuth.me NÃO expõe passwordHash (auditar nosso router)
+- [ ] Validar fluxo completo no preview (cadastro -> ficha -> upload -> portal)
+- [ ] Testes vitest + typecheck
+- [ ] CHECKPOINT
+- [ ] Orientar usuário: tornar site público (Settings) + revincular paciente.felipebulhoes.com
+- [ ] Registrar no cérebro

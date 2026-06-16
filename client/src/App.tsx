@@ -15,13 +15,48 @@ import ICP from "./pages/ICP";
 import DiarioPaciente from "./pages/DiarioPaciente";
 import FichaPublica from "./pages/FichaPublica";
 import PortalPaciente from "./pages/PortalPaciente";
+import PacienteLanding from "./pages/PacienteLanding";
 import IntakeManager from "./pages/IntakeManager";
 import IntakeDetail from "./pages/IntakeDetail";
+
+/**
+ * Detect whether the current host is the patient-facing domain.
+ * On the patient domain the root path ("/") serves the patient landing page
+ * instead of the physician app.
+ */
+function isPatientHost(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host.startsWith("paciente.");
+}
+
+// Route wrappers so wouter's RouteComponentProps don't clash with our props.
+function PortalLogin() {
+  return <PortalPaciente initialMode="login" />;
+}
+function PortalRegister() {
+  return <PortalPaciente initialMode="register" />;
+}
+function PortalRoute() {
+  return <PortalPaciente initialMode="login" />;
+}
+function RootRoute() {
+  return isPatientHost() ? <PacienteLanding /> : <Home />;
+}
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={RootRoute} />
+
+      {/* Patient-facing public routes */}
+      <Route path="/paciente" component={PacienteLanding} />
+      <Route path="/cadastro" component={PortalRegister} />
+      <Route path="/login" component={PortalLogin} />
+      <Route path="/portal" component={PortalRoute} />
+      <Route path="/ficha/:token" component={FichaPublica} />
+
+      {/* Physician app routes */}
       <Route path="/protocolo/:id" component={ProtocolDetail} />
       <Route path="/favoritos" component={Favorites} />
       <Route path="/calculadoras" component={Calculators} />
@@ -30,10 +65,9 @@ function Router() {
       <Route path="/treinamento" component={SecretaryTraining} />
       <Route path="/icp" component={ICP} />
       <Route path="/diario-paciente/:id" component={DiarioPaciente} />
-      <Route path="/ficha/:token" component={FichaPublica} />
-      <Route path="/portal" component={PortalPaciente} />
       <Route path="/fichas" component={IntakeManager} />
       <Route path="/fichas/:id" component={IntakeDetail} />
+
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
