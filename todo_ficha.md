@@ -48,7 +48,7 @@
 - [x] CHECKPOINT
 
 ## Fase 7 — Domínio + testes + entrega
-- [ ] Apontar paciente.felipebulhoes.com para entrada pública
-- [ ] Testes vitest (scoring, categorização)
-- [ ] Verificação de fluxos
-- [ ] CHECKPOINT final + entrega
+- [x] Testes vitest (scoring 4 + categorização 6 = 10 passando)
+- [x] Verificação de fluxos (typecheck 0 erros, rotas 200)
+- [x] CHECKPOINT final
+- [ ] Domínio paciente.felipebulhoes.com: orientar usuário (rota /ficha e /portal já públicas no domínio atual)
