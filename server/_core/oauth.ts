@@ -25,7 +25,7 @@ export function parseState(state: string | undefined | null): ParsedState {
  */
 export async function exchangeCodeForUser(code: string, redirectUri: string): Promise<ManusUser | null> {
   try {
-    const tokenResp = await fetch(`${env.OAUTH_SERVER_URL}/v1/oauth/token`, {
+    const tokenResp = await fetch(`${env.OAUTH_SERVER_URL}/oauth/token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -42,7 +42,7 @@ export async function exchangeCodeForUser(code: string, redirectUri: string): Pr
     const tokenData = (await tokenResp.json()) as { access_token?: string };
     if (!tokenData.access_token) return null;
 
-    const userResp = await fetch(`${env.OAUTH_SERVER_URL}/v1/oauth/userinfo`, {
+    const userResp = await fetch(`${env.OAUTH_SERVER_URL}/oauth/userinfo`, {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
     if (!userResp.ok) {

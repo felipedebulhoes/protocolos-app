@@ -101,3 +101,13 @@
 - [ ] Reordenar exames por data no detalhe
 - [ ] Marcar visualmente valores fora da faixa de referência (high/low)
 - [ ] Testes + checkpoint
+
+## Fase Segurança — Proteção da área do médico (CONCLUÍDA)
+- [x] ownerProcedure em server/_core/trpc.ts (restringe ao OWNER_OPEN_ID)
+- [x] Procedimentos sensíveis (intake/exams) migrados para ownerProcedure
+- [x] auth.me retorna flag isOwner calculada no servidor
+- [x] Helper puro isOwnerOpenId em shared/const.ts
+- [x] DoctorGuard.tsx criado e aplicado a TODAS as rotas do médico no App.tsx
+- [x] Rotas do paciente mantidas públicas (/paciente, /cadastro, /login, /portal, /ficha/:token, /diario-paciente/:id)
+- [x] 5 testes dedicados de owner (shared/ownerGuard.test.ts) — 19 testes no total
+- [x] CHECKPOINT version_id=ad56854e
