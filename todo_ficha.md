@@ -1,29 +1,29 @@
 # TODO — Ficha Pré-Consulta Inteligente + Portal do Paciente (protocolos-app)
 
 ## Fase 1 — Fundação servidor/banco (reconstrução manual)
-- [ ] Ajustar package.json (scripts dev/build/db:push, deps)
-- [ ] Criar server/_core (env, cookies, oauth, context, trpc, sdk, vite, llm, storage, imageGeneration, notification, etc.)
-- [ ] Criar drizzle.config.ts + drizzle/schema.ts base (users)
-- [ ] Criar server/db.ts, server/routers.ts, client/src/lib/trpc.ts
-- [ ] Wire providers em client/src/main.tsx
-- [ ] Ajustar vite.config.ts (storage proxy, server bridge)
-- [ ] App compila e dev server roda sem erro
-- [ ] CHECKPOINT base
+- [x] Ajustar package.json (scripts dev/build/db:push, deps)
+- [x] Criar server/_core (env, cookies, oauth, context, trpc, sdk, vite, llm, storage, imageGeneration, notification, etc.)
+- [x] Criar drizzle.config.ts + drizzle/schema.ts base (users)
+- [x] Criar server/db.ts, server/routers.ts, client/src/lib/trpc.ts
+- [x] Wire providers em client/src/main.tsx
+- [x] Ajustar vite.config.ts (storage proxy, server bridge)
+- [x] App compila e dev server roda sem erro
+- [x] CHECKPOINT base
 
 ## Fase 2 — Schema + protocolos
-- [ ] Tabelas: patients, intake_forms, exam_files, exam_results (+ extensão users role)
-- [ ] pnpm db:push
-- [ ] Catálogo de protocolos com palavras-chave (server/protocolCatalog.ts)
-- [ ] Estrutura compartilhada da ficha (shared/intakeSchema.ts)
-- [ ] CHECKPOINT
+- [x] Tabelas: patients, intake_forms, exam_files, exam_results (+ extensão users role)
+- [x] pnpm db:push
+- [x] Catálogo de protocolos com palavras-chave (server/protocolCatalog.ts)
+- [x] Estrutura compartilhada da ficha (shared/intakeSchema.ts)
+- [x] CHECKPOINT
 
 ## Fase 3 — Backend
-- [ ] Auth do paciente (email/senha, sessão por cookie próprio)
-- [ ] Geração de link com token (médico)
-- [ ] Ficha pública por token (submeter sem login)
-- [ ] Upload de exames base64 -> S3 -> leitura IA multimodal -> exam_results padronizados
-- [ ] Scoring de protocolo + rapport (server/intelligence.ts)
-- [ ] Routers (intake, exams, patientAuth)
+- [x] Auth do paciente (email/senha, sessão por cookie próprio)
+- [x] Geração de link com token (médico)
+- [x] Ficha pública por token (submeter sem login)
+- [x] Upload de exames base64 -> S3 -> leitura IA multimodal -> exam_results padronizados
+- [x] Scoring de protocolo + rapport (server/intelligence.ts)
+- [x] Routers (intake, exams, patientAuth)
 - [ ] CHECKPOINT
 
 ## Fase 4 — Frontend público
