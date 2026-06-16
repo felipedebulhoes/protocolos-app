@@ -30,7 +30,7 @@ export async function exchangeCodeForUser(code: string, redirectUri: string): Pr
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         code,
-        app_id: env.VITE_APP_ID,
+        client_id: env.VITE_APP_ID,
         redirect_uri: redirectUri,
         grant_type: "authorization_code",
       }),
