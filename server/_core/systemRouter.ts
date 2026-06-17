@@ -16,6 +16,16 @@ export const authRouter = router({
     ctx.res.setHeader("Set-Cookie", serialize(COOKIE_NAME, "", getClearCookieOptions()));
     return { success: true };
   }),
+  debugOpenId: publicProcedure.query(({ ctx }) => {
+    if (!ctx.user) return { openId: null, message: "Not logged in" };
+    return {
+      openId: ctx.user.openId,
+      name: ctx.user.name,
+      email: ctx.user.email,
+      expectedOwnerId: env.OWNER_OPEN_ID,
+      isOwner: isOwnerOpenId(ctx.user.openId, env.OWNER_OPEN_ID),
+    };
+  }),
 });
 
 export const systemRouter = router({
