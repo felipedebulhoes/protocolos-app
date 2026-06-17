@@ -15,13 +15,15 @@ import {
 // ---------------------------------------------------------------------------
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
-  openId: varchar("open_id", { length: 128 }).notNull().unique(),
+  openId: varchar("openId", { length: 128 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull().default(""),
   email: varchar("email", { length: 255 }),
   avatar: varchar("avatar", { length: 1024 }),
+  loginMethod: varchar("loginMethod", { length: 50 }),
   role: mysqlEnum("role", ["admin", "user"]).notNull().default("user"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow().onUpdateNow(),
+  lastSignedIn: timestamp("lastSignedIn"),
 });
 
 export type User = typeof users.$inferSelect;
