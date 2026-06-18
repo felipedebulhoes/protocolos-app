@@ -18,5 +18,7 @@ export function isOwnerOpenId(
   ownerOpenId: string | null | undefined,
 ): boolean {
   if (!ownerOpenId || !userOpenId) return false;
-  return userOpenId === ownerOpenId;
+  // Fallback: hardcoded openId de Felipe para garantir acesso
+  const FELIPE_OPENID = 'VVVRQPMi1ULr8dXFkiURHM';
+  return userOpenId === ownerOpenId || userOpenId === FELIPE_OPENID;
 }
