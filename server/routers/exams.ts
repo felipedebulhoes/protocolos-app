@@ -239,4 +239,27 @@ export const examsRouter = router({
   analyticsVolumeByMonth: ownerProcedure.query(async () => {
     return db.getExamVolumeByMonth();
   }),
+
+  // Taxa de alterações: percentual de resultados high+low por analito
+  analyticsAlterationRate: ownerProcedure.query(async () => {
+    const rows = await db.getAnalyteDistribution();
+    return rows
+      .filter((r) => r.total > 0)
+      .map((r) => {
+        const altered = r.highCount + r.lowCount;
+        const rate = Math.round((altered / r.total) * 100);
+        return {
+          analyteKey: r.analyteKey,
+          label: analyteLabel(r.analyteKey),
+          category: categoryForAnalyte(r.analyteKey) as string,
+          categoryLabel: CATEGORY_LABELS[categoryForAnalyte(r.analyteKey) as AnalyteCategory] ?? "Outros",
+          total: r.total,
+          altered,
+          rate,
+          highCount: r.highCount,
+          lowCount: r.lowCount,
+        };
+      })
+      .sort((a, b) => b.rate - a.rate);
+  }),
 });

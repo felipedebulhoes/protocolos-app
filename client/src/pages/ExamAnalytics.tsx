@@ -458,19 +458,115 @@ function VinculationGuide() {
   );
 }
 
+// ---- Alteration rate chart -----------------------------------------------
+function AlterationRateChart({
+  data,
+}: {
+  data: {
+    analyteKey: string;
+    label: string;
+    total: number;
+    altered: number;
+    rate: number;
+    highCount: number;
+    lowCount: number;
+  }[];
+}) {
+  if (data.length === 0) {
+    return <EmptyState message="Nenhum resultado de exame ainda." />;
+  }
+
+  const top = data.slice(0, 12);
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-slate-500">
+        Percentual de resultados fora do intervalo de referência (alto ou baixo) por analito.
+      </p>
+      <div style={{ height: 320 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={top} layout="vertical" margin={{ top: 4, right: 60, bottom: 4, left: 120 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#eef2f6" horizontal={false} />
+            <XAxis
+              type="number"
+              domain={[0, 100]}
+              tick={{ fontSize: 11, fill: "#64748b" }}
+              tickLine={false}
+              axisLine={{ stroke: "#e2e8f0" }}
+              tickFormatter={(v) => `${v}%`}
+            />
+            <YAxis
+              type="category"
+              dataKey="label"
+              tick={{ fontSize: 11, fill: "#1C3D5A" }}
+              tickLine={false}
+              axisLine={false}
+              width={115}
+            />
+            <Tooltip
+              contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 12 }}
+              formatter={(v: number, _name: string, props) => [
+                `${v}% (${props.payload.altered} de ${props.payload.total})`,
+                "Taxa de alteração",
+              ]}
+            />
+            <Bar dataKey="rate" radius={[0, 4, 4, 0]}>
+              {top.map((entry, i) => (
+                <Cell
+                  key={i}
+                  fill={
+                    entry.rate >= 50
+                      ? FLAG_COLORS.high
+                      : entry.rate >= 25
+                        ? FLAG_COLORS.low
+                        : BRAND_TEAL
+                  }
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <p className="text-[11px] text-slate-400">
+        Vermelho ≥ 50% de alterações • Amarelo ≥ 25% • Verde &lt; 25%
+      </p>
+    </div>
+  );
+}
+
+// ---- Error state component ------------------------------------------------
+function QueryError({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-red-400 gap-2">
+      <AlertTriangle className="w-8 h-8 opacity-60" />
+      <p className="text-sm font-medium">Erro ao carregar dados</p>
+      <p className="text-xs text-slate-500">{message}</p>
+    </div>
+  );
+}
+
 // ---- Main page ------------------------------------------------------------
 export default function ExamAnalytics() {
   const summaryQ = trpc.exams.analyticsSummary.useQuery();
   const distributionQ = trpc.exams.analyticsDistribution.useQuery();
   const alertsQ = trpc.exams.analyticsCriticalAlerts.useQuery();
   const volumeQ = trpc.exams.analyticsVolumeByMonth.useQuery();
+  const alterationQ = trpc.exams.analyticsAlterationRate.useQuery();
 
   const isLoading = summaryQ.isLoading || distributionQ.isLoading || alertsQ.isLoading || volumeQ.isLoading;
+
+  // Safe defaults — only use real data when query succeeded
+  const summaryError = summaryQ.error?.message;
+  const distributionError = distributionQ.error?.message;
+  const alertsError = alertsQ.error?.message;
+  const volumeError = volumeQ.error?.message;
+  const alterationError = alterationQ.error?.message;
 
   const summary = summaryQ.data ?? { totalFiles: 0, totalResults: 0, criticalCount: 0, labsDistribution: [] };
   const distribution = distributionQ.data ?? [];
   const alerts = alertsQ.data ?? [];
   const volume = volumeQ.data ?? [];
+  const alteration = alterationQ.data ?? [];
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
@@ -492,6 +588,8 @@ export default function ExamAnalytics() {
             <div key={i} className="h-20 rounded-xl bg-slate-100 animate-pulse" />
           ))}
         </div>
+      ) : summaryError ? (
+        <QueryError message={summaryError} />
       ) : (
         <SummaryCards
           totalFiles={summary.totalFiles}
@@ -517,6 +615,9 @@ export default function ExamAnalytics() {
           <TabsTrigger value="volume" className="rounded-lg text-xs">
             Volume Mensal
           </TabsTrigger>
+          <TabsTrigger value="alteration" className="rounded-lg text-xs">
+            Taxa de Alterações
+          </TabsTrigger>
           <TabsTrigger value="labs" className="rounded-lg text-xs">
             Laboratórios
           </TabsTrigger>
@@ -534,6 +635,8 @@ export default function ExamAnalytics() {
             <CardContent>
               {distributionQ.isLoading ? (
                 <div className="h-64 bg-slate-50 animate-pulse rounded-lg" />
+              ) : distributionError ? (
+                <QueryError message={distributionError} />
               ) : (
                 <DistributionChart data={distribution} />
               )}
@@ -553,6 +656,8 @@ export default function ExamAnalytics() {
             <CardContent>
               {alertsQ.isLoading ? (
                 <div className="h-48 bg-slate-50 animate-pulse rounded-lg" />
+              ) : alertsError ? (
+                <QueryError message={alertsError} />
               ) : (
                 <CriticalAlertsTable alerts={alerts} />
               )}
@@ -569,6 +674,8 @@ export default function ExamAnalytics() {
             <CardContent>
               {volumeQ.isLoading ? (
                 <div className="h-56 bg-slate-50 animate-pulse rounded-lg" />
+              ) : volumeError ? (
+                <QueryError message={volumeError} />
               ) : (
                 <VolumeChart data={volume} />
               )}
@@ -585,8 +692,28 @@ export default function ExamAnalytics() {
             <CardContent>
               {summaryQ.isLoading ? (
                 <div className="h-48 bg-slate-50 animate-pulse rounded-lg" />
+              ) : summaryError ? (
+                <QueryError message={summaryError} />
               ) : (
                 <LabsPieChart data={summary.labsDistribution} />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="alteration" className="mt-4">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-bold text-[#1C3D5A]">Taxa de Alterações por Analito</CardTitle>
+              <p className="text-xs text-slate-500">Percentual de resultados fora do intervalo de referência (alto ou baixo) por marcador.</p>
+            </CardHeader>
+            <CardContent>
+              {alterationQ.isLoading ? (
+                <div className="h-64 bg-slate-50 animate-pulse rounded-lg" />
+              ) : alterationError ? (
+                <QueryError message={alterationError} />
+              ) : (
+                <AlterationRateChart data={alteration} />
               )}
             </CardContent>
           </Card>
