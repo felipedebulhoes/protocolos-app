@@ -135,9 +135,11 @@ export const intakeRouter = router({
       const suggestions = scoreProtocols(answers);
 
       // Attach any exam files that were uploaded against this intake to the patient.
-      const intakeExamFiles = await db.listExamFilesByIntake(form.id);
-      for (const ef of intakeExamFiles) {
-        if (!ef.patientId) await db.updateExamFile(ef.id, { patientId: patient.id });
+      const intakeExamFiles = form.id ? await db.listExamFilesByIntake(form.id) : [];
+      if (intakeExamFiles && intakeExamFiles.length > 0) {
+        for (const ef of intakeExamFiles) {
+          if (!ef.patientId) await db.updateExamFile(ef.id, { patientId: patient.id });
+        }
       }
       const examResults = await db.listExamResultsByPatient(patient.id);
 

@@ -182,11 +182,16 @@ export async function listExamFilesByPatient(patientId: number): Promise<ExamFil
 }
 
 export async function listExamFilesByIntake(intakeFormId: number): Promise<ExamFile[]> {
-  return db
-    .select()
-    .from(examFiles)
-    .where(eq(examFiles.intakeFormId, intakeFormId))
-    .orderBy(desc(examFiles.createdAt));
+  try {
+    return db
+      .select()
+      .from(examFiles)
+      .where(eq(examFiles.intakeFormId, intakeFormId))
+      .orderBy(desc(examFiles.createdAt));
+  } catch (error) {
+    console.error(`[DB] Error fetching exam files for intake ${intakeFormId}:`, error);
+    return [];
+  }
 }
 
 // ---- Exam results ---------------------------------------------------------
