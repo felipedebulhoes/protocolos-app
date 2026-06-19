@@ -23,5 +23,5 @@
 - [x] Adicionar tabela `team_members` no schema do Drizzle (nome, email, role, status, criado_em)
 - [x] Criar tRPC procedures: listTeamMembers, inviteTeamMember, removeTeamMember, updateTeamMemberRole
 - [x] Implementar UI em Configurações com tabela de membros + botão "Convidar Membro"
-- [ ] Adicionar autenticação para usuários convidados (links de convite com token único)
-- [ ] Criar página de login/cadastro para membros convidados
+- [x] Adicionar autenticação para usuários convidados (links de convite com token único)
+- [x] Criar página de login/cadastro para membros convidados (TeamJoin.tsx)

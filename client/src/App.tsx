@@ -19,6 +19,7 @@ import PacienteLanding from "./pages/PacienteLanding";
 import IntakeManager from "./pages/IntakeManager";
 import IntakeDetail from "./pages/IntakeDetail";
 import Configuracoes from "./pages/Configuracoes";
+import { TeamJoin } from "./pages/TeamJoin";
 import { DoctorGuard } from "./components/DoctorGuard";
 import { SessionProvider } from "./components/SessionProvider";
 
@@ -97,9 +98,8 @@ function Router() {
       <Route path="/fichas/:id">
         <DoctorGuard><IntakeDetail /></DoctorGuard>
       </Route>
-      <Route path="/configuracoes">
-        <DoctorGuard><Configuracoes /></DoctorGuard>
-      </Route>
+      <Route path="/configuracoes" component={Configuracoes} />
+      <Route path="/team/join" component={TeamJoin} />
 
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}

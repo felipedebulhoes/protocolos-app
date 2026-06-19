@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 import { TRPCError } from "@trpc/server";
-import { router, ownerProcedure } from "../_core/trpc";
+import { router, ownerProcedure, publicProcedure } from "../_core/trpc";
 import * as db from "../db";
 import { teamMembers } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
@@ -93,6 +93,57 @@ export const teamRouter = router({
         .where(eq(teamMembers.id, input.memberId));
 
       return { ok: true };
+    }),
+
+  // Accept team invite (public - no auth required)
+  acceptInvite: publicProcedure
+    .input((val: unknown) => {
+      if (typeof val !== "object" || val === null) throw new Error("Invalid input");
+      const obj = val as Record<string, unknown>;
+      return {
+        token: String(obj.token || ""),
+      };
+    })
+    .mutation(async ({ input }: { input: { token: string } }) => {
+      if (!input.token) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Token is required",
+        });
+      }
+
+      const member = await db.db
+        .select()
+        .from(teamMembers)
+        .where(eq(teamMembers.invitationToken, input.token))
+        .limit(1);
+
+      if (!member || member.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Convite inválido ou expirado",
+        });
+      }
+
+      const memberRecord = member[0];
+      if (memberRecord.status === "active") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Este convite já foi aceito",
+        });
+      }
+
+      await db.db
+        .update(teamMembers)
+        .set({ status: "active", invitationToken: "" })
+        .where(eq(teamMembers.id, memberRecord.id));
+
+      return {
+        id: memberRecord.id,
+        fullName: memberRecord.fullName,
+        email: memberRecord.email,
+        role: memberRecord.role,
+      };
     }),
 
   // Update team member role
