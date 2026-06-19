@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, ChevronLeft, ChevronRight, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, CheckCircle2, ShieldCheck, Calendar, ExternalLink } from "lucide-react";
 import { PatientBrandHeader } from "@/components/intake/PatientBrandHeader";
 import { IntakeFieldInput } from "@/components/intake/IntakeFieldInput";
 import { ExamUploader, type UploadedExam } from "@/components/intake/ExamUploader";
+
+const DOCTORALIA_URL = "https://www.doctoralia.com.br/felipe-de-bulhoes-ojeda-2/urologista/campinas";
 
 type Answers = Record<string, string | string[] | number | undefined>;
 
@@ -124,20 +126,53 @@ export default function FichaPublica() {
 
   // ---- Success screen ------------------------------------------------------
   if (done) {
+    const patientFirstName = String(answers.fullName || "").split(" ")[0] || "";
     return (
       <div className="min-h-screen bg-slate-50 pb-16">
         <PatientBrandHeader badge="Ficha enviada" />
-        <div className="max-w-2xl mx-auto px-4 mt-8 space-y-6">
+        <div className="max-w-2xl mx-auto px-4 mt-8 space-y-5">
+
+          {/* Hero de confirmação com logo da marca */}
+          <div className="brand-gradient rounded-2xl p-8 text-center space-y-4 relative overflow-hidden">
+            {/* Linha cobre decorativa */}
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#B87333]/60 to-transparent" />
+            <img
+              src="/images/logo_landscape.svg"
+              alt="Dr. Felipe de Bulhões"
+              className="h-12 w-auto mx-auto opacity-90"
+            />
+            <div className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+              <h2 className="text-xl font-bold text-white">
+                {patientFirstName ? `Obrigado, ${patientFirstName}!` : "Ficha recebida!"}
+              </h2>
+            </div>
+            <p className="text-sm text-white/80 max-w-sm mx-auto">
+              O Dr. Felipe já recebeu suas informações e seus exames. Você está pronto para a consulta!
+            </p>
+          </div>
+
+          {/* CTA Doctoralia */}
           <Card className="border-0 shadow-lg rounded-2xl bg-white">
-            <CardContent className="p-8 text-center space-y-3">
-              <CheckCircle2 className="w-14 h-14 text-emerald-600 mx-auto" />
-              <h2 className="text-xl font-bold text-[#1C3D5A]">Recebemos sua ficha!</h2>
+            <CardContent className="p-6 space-y-3">
+              <div className="flex items-center gap-2 text-[#1C3D5A]">
+                <Calendar className="w-5 h-5 text-[#B87333]" />
+                <h3 className="font-bold">Ainda não tem consulta agendada?</h3>
+              </div>
               <p className="text-sm text-slate-600">
-                Obrigado. O Dr. Felipe já vai receber suas informações e seus exames antes da consulta.
+                Agende agora pelo Doctoralia — atendimento presencial em Campinas (convênios e particular) e teleconsulta.
               </p>
+              <a href={DOCTORALIA_URL} target="_blank" rel="noopener noreferrer">
+                <Button className="w-full cobre-gradient text-white font-semibold">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Agendar consulta no Doctoralia
+                  <ExternalLink className="w-3.5 h-3.5 ml-2 opacity-70" />
+                </Button>
+              </a>
             </CardContent>
           </Card>
 
+          {/* Criar conta no portal */}
           {!accountCreated ? (
             <Card className="border-0 shadow-lg rounded-2xl bg-white">
               <CardContent className="p-6 space-y-4">
@@ -165,7 +200,7 @@ export default function FichaPublica() {
                 <Button
                   onClick={handleCreateAccount}
                   disabled={registerMutation.isPending}
-                  className="w-full copper-gradient text-white font-semibold"
+                  className="w-full cobre-gradient text-white font-semibold"
                 >
                   {registerMutation.isPending ? "Criando..." : "Criar acesso ao portal"}
                 </Button>
@@ -174,9 +209,10 @@ export default function FichaPublica() {
           ) : (
             <Card className="border-0 shadow-lg rounded-2xl bg-white">
               <CardContent className="p-6 text-center space-y-3">
-                <p className="text-sm text-slate-600">Sua conta está pronta.</p>
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+                <p className="text-sm font-semibold text-[#1C3D5A]">Sua conta está pronta!</p>
                 <a href="/portal">
-                  <Button className="copper-gradient text-white font-semibold">Acessar o Portal do Paciente</Button>
+                  <Button className="cobre-gradient text-white font-semibold">Acessar o Portal do Paciente</Button>
                 </a>
               </CardContent>
             </Card>
