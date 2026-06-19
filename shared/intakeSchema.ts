@@ -212,6 +212,7 @@ export const INTAKE_SECTIONS: IntakeSection[] = [
         options: [
           { value: "instagram", label: "Instagram" },
           { value: "google", label: "Google" },
+          { value: "doctoralia", label: "Doctoralia" },
           { value: "indicacao", label: "Indicação de amigo/familiar" },
           { value: "outro_medico", label: "Indicação de outro médico" },
           { value: "outro", label: "Outro" },
