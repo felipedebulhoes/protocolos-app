@@ -43,3 +43,8 @@
 - [x] Filtro de agendados/não-agendados na lista de fichas (/fichas)
 - [x] Seção de exames PDF com download/visualização no IntakeDetail
 - [x] Evento Meta Pixel 'Lead' ao finalizar e enviar a ficha
+
+## Analytics de Exames (Jun 2026)
+- [ ] Endpoints tRPC de analytics (distribuição, taxa de alterações, alertas críticos)
+- [ ] Página ExamAnalytics.tsx com gráficos Chart.js
+- [ ] Rota /exames-analytics no App.tsx e link no sidebar

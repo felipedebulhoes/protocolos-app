@@ -24,7 +24,8 @@ import {
   Settings,
   Copy,
   Check,
-  Globe
+  Globe,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -64,6 +65,7 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/orçamentos", label: "Orçamentos", icon: FileText },
     { href: "/treinamento", label: "Treinar Equipe", icon: GraduationCap },
     { href: "/fichas", label: "Fichas Pré-Consulta", icon: ClipboardList },
+    { href: "/exames-analytics", label: "Analytics de Exames", icon: TrendingUp },
     { href: "/icp", label: "Paciente Ideal (ICP)", icon: Target },
     { href: "/configuracoes", label: "Configurações", icon: Settings },
   ];

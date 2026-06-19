@@ -327,3 +327,126 @@ export async function getRecentFichas(limit = 5): Promise<IntakeForm[]> {
     .orderBy(desc(intakeForms.createdAt))
     .limit(limit);
 }
+
+// ---- Exam analytics -------------------------------------------------------
+
+/** Aggregate counts per analyteKey for the analytics dashboard. */
+export async function getAnalyteDistribution(): Promise<
+  { analyteKey: string; total: number; normalCount: number; lowCount: number; highCount: number; unknownCount: number }[]
+> {
+  const rows = await db
+    .select({
+      analyteKey: examResults.analyteKey,
+      abnormalFlag: examResults.abnormalFlag,
+    })
+    .from(examResults);
+
+  const map = new Map<
+    string,
+    { total: number; normalCount: number; lowCount: number; highCount: number; unknownCount: number }
+  >();
+  for (const r of rows) {
+    const key = r.analyteKey;
+    if (!map.has(key)) map.set(key, { total: 0, normalCount: 0, lowCount: 0, highCount: 0, unknownCount: 0 });
+    const entry = map.get(key)!;
+    entry.total++;
+    const flag = (r.abnormalFlag ?? "unknown").toLowerCase();
+    if (flag === "normal") entry.normalCount++;
+    else if (flag === "low") entry.lowCount++;
+    else if (flag === "high") entry.highCount++;
+    else entry.unknownCount++;
+  }
+
+  return Array.from(map.entries())
+    .map(([analyteKey, counts]) => ({ analyteKey, ...counts }))
+    .sort((a, b) => b.total - a.total);
+}
+
+/** Returns exam results flagged as high or low (critical alerts). */
+export async function getCriticalAlerts(limit = 50): Promise<
+  {
+    id: number;
+    patientId: number | null;
+    examFileId: number;
+    analyteKey: string;
+    analyteName: string;
+    valueNum: number | null;
+    unit: string | null;
+    refRange: string | null;
+    abnormalFlag: string | null;
+    measuredAt: string | null;
+    createdAt: Date;
+  }[]
+> {
+  const rows = await db
+    .select()
+    .from(examResults)
+    .where(sql`LOWER(${examResults.abnormalFlag}) IN ('high', 'low')`)
+    .orderBy(desc(examResults.createdAt))
+    .limit(limit);
+  return rows.map((r) => ({
+    id: r.id,
+    patientId: r.patientId ?? null,
+    examFileId: r.examFileId,
+    analyteKey: r.analyteKey,
+    analyteName: r.analyteName,
+    valueNum: r.valueNum ?? null,
+    unit: r.unit ?? null,
+    refRange: r.refRange ?? null,
+    abnormalFlag: r.abnormalFlag ?? null,
+    measuredAt: r.measuredAt ?? null,
+    createdAt: r.createdAt,
+  }));
+}
+
+/** Monthly volume of exam files processed (last 12 months). */
+export async function getExamVolumeByMonth(): Promise<{ month: string; count: number }[]> {
+  const rows = await db
+    .select({
+      month: sql<string>`DATE_FORMAT(${examFiles.createdAt}, '%Y-%m')`,
+      count: sql<number>`COUNT(*)`,
+    })
+    .from(examFiles)
+    .where(
+      and(
+        eq(examFiles.processStatus, "done"),
+        sql`${examFiles.createdAt} >= DATE_SUB(NOW(), INTERVAL 12 MONTH)`,
+      ),
+    )
+    .groupBy(sql`DATE_FORMAT(${examFiles.createdAt}, '%Y-%m')`)
+    .orderBy(sql`DATE_FORMAT(${examFiles.createdAt}, '%Y-%m')`);
+  return rows.map((r) => ({ month: r.month, count: Number(r.count) }));
+}
+
+/** Summary totals for the analytics header cards. */
+export async function getExamAnalyticsSummary(): Promise<{
+  totalFiles: number;
+  totalResults: number;
+  criticalCount: number;
+  labsDistribution: { labName: string; count: number }[];
+}> {
+  const [filesRows, resultsRows, criticalRows, labRows] = await Promise.all([
+    db.select({ id: examFiles.id }).from(examFiles).where(eq(examFiles.processStatus, "done")),
+    db.select({ id: examResults.id }).from(examResults),
+    db
+      .select({ id: examResults.id })
+      .from(examResults)
+      .where(sql`LOWER(${examResults.abnormalFlag}) IN ('high', 'low')`),
+    db
+      .select({
+        labName: examFiles.labName,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(examFiles)
+      .where(sql`${examFiles.labName} IS NOT NULL AND ${examFiles.labName} != ''`)
+      .groupBy(examFiles.labName)
+      .orderBy(sql`COUNT(*) DESC`)
+      .limit(10),
+  ]);
+  return {
+    totalFiles: filesRows.length,
+    totalResults: resultsRows.length,
+    criticalCount: criticalRows.length,
+    labsDistribution: labRows.map((r) => ({ labName: r.labName ?? "", count: Number(r.count) })),
+  };
+}

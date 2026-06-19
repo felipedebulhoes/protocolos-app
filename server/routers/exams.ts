@@ -211,4 +211,32 @@ export const examsRouter = router({
       const files = await db.listExamFilesByIntake(input.intakeFormId);
       return files;
     }),
+
+  // ----- Doctor: analytics endpoints ----------------------------------------
+  analyticsSummary: ownerProcedure.query(async () => {
+    return db.getExamAnalyticsSummary();
+  }),
+
+  analyticsDistribution: ownerProcedure.query(async () => {
+    const rows = await db.getAnalyteDistribution();
+    return rows.map((r) => ({
+      ...r,
+      label: analyteLabel(r.analyteKey),
+      category: categoryForAnalyte(r.analyteKey) as string,
+      categoryLabel: CATEGORY_LABELS[categoryForAnalyte(r.analyteKey) as AnalyteCategory] ?? "Outros",
+    }));
+  }),
+
+  analyticsCriticalAlerts: ownerProcedure.query(async () => {
+    const alerts = await db.getCriticalAlerts(50);
+    return alerts.map((a) => ({
+      ...a,
+      label: analyteLabel(a.analyteKey),
+      category: categoryForAnalyte(a.analyteKey) as string,
+    }));
+  }),
+
+  analyticsVolumeByMonth: ownerProcedure.query(async () => {
+    return db.getExamVolumeByMonth();
+  }),
 });
