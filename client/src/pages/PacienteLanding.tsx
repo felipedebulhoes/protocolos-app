@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc";
 import {
   ClipboardList,
   Upload,
@@ -12,9 +13,57 @@ import {
   Heart,
   Video,
   MapPin,
+  ClipboardCheck,
+  X,
 } from "lucide-react";
 
+function PersonalizedBanner({ token }: { token: string }) {
+  const [dismissed, setDismissed] = useState(false);
+  const formQuery = trpc.intake.getByToken.useQuery(
+    { token },
+    { enabled: !!token && !dismissed, retry: false }
+  );
+
+  if (dismissed || !formQuery.data) return null;
+
+  const name = formQuery.data.invitedName || "";
+  const firstName = name.split(" ")[0] || "";
+  const greeting = firstName ? `Olá, ${firstName}` : "Olá";
+
+  return (
+    <div className="relative z-40 cobre-gradient text-white px-4 py-3">
+      <div className="container flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <ClipboardCheck className="w-5 h-5 shrink-0 text-white/80" />
+          <p className="text-sm font-medium">
+            <span className="font-bold">{greeting} —</span>{" "}
+            preencha sua ficha de pré-consulta antes da consulta com o Dr. Felipe.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link href={`/ficha/${token}`}>
+            <Button size="sm" variant="outline" className="text-white border-white/40 bg-white/10 hover:bg-white/20 text-xs font-semibold">
+              Preencher agora
+            </Button>
+          </Link>
+          <button
+            onClick={() => setDismissed(true)}
+            className="p-1 rounded-full hover:bg-white/20 transition-colors text-white/70 hover:text-white"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PacienteLanding() {
+  const token = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("token") || "";
+  }, []);
+
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">
 
@@ -60,6 +109,9 @@ export default function PacienteLanding() {
           </nav>
         </div>
       </header>
+
+      {/* Banner personalizado via token */}
+      {token && <PersonalizedBanner token={token} />}
 
       {/* ── HERO ───────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">

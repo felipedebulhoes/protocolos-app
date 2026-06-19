@@ -86,33 +86,58 @@ function AuthScreen({
   const busy = login.isPending || register.isPending;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <PatientBrandHeader badge="Portal do Paciente" />
-      <div className="max-w-md mx-auto px-4 mt-12">
-        <a href="/" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-[#1C3D5A] mb-4">
-          <ArrowLeft className="w-4 h-4" /> Voltar ao início
-        </a>
-        <Card className="border-0 shadow-lg rounded-2xl bg-white">
-          <CardContent className="p-6 space-y-5">
-            <div className="text-center">
-              <h2 className="text-xl font-bold text-[#1C3D5A]">
-                {mode === "login" ? "Acessar meu portal" : "Criar minha conta"}
-              </h2>
-              <p className="text-sm text-slate-600 mt-1">
-                {mode === "login"
-                  ? "Entre para acompanhar e enviar seus exames."
-                  : "Crie um acesso para guardar seu histórico de exames."}
-              </p>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* ── HEADER ── */}
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-white/90 backdrop-blur-md">
+        <div className="container flex items-center justify-between h-16 py-3">
+          <div className="flex items-center gap-3">
+            <img src="/images/isotipo.svg" alt="Isotipo" className="h-9 w-auto invert opacity-85" />
+            <div>
+              <h1 className="font-serif text-lg text-primary tracking-wide leading-none">Dr. Felipe de Bulhões</h1>
+              <p className="text-[10px] text-muted-foreground tracking-[0.2em] uppercase font-light">Urologia &amp; Cirurgia Geral</p>
             </div>
+          </div>
+          <a href="/paciente" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Voltar
+          </a>
+        </div>
+      </header>
 
+      {/* ── HERO MINI ── */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 brand-gradient" />
+        <div className="absolute inset-0 brand-pattern opacity-[0.04]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#B87333]/60 to-transparent" />
+        <div className="relative py-10 px-4 text-center">
+          <img
+            src="/images/logo_landscape.svg"
+            alt="Dr. Felipe de Bulhões"
+            className="h-12 w-auto mx-auto mb-4 opacity-95"
+          />
+          <h2 className="font-serif text-2xl text-white/95 tracking-wide">
+            {mode === "login" ? "Acessar meu portal" : "Criar minha conta"}
+          </h2>
+          <p className="text-sm text-white/60 mt-1 font-light">
+            {mode === "login"
+              ? "Entre para acompanhar e enviar seus exames."
+              : "Crie um acesso para guardar seu histórico de exames."}
+          </p>
+        </div>
+      </div>
+
+      {/* ── FORM ── */}
+      <div className="flex-1 flex items-start justify-center px-4 py-10">
+        <div className="w-full max-w-md">
+        <Card className="border border-border/60 shadow-xl rounded-2xl bg-white">
+          <CardContent className="p-7 space-y-5">
             {mode === "register" && (
               <div>
-                <label className="block text-sm font-semibold text-[#1C3D5A] mb-1.5">Nome completo</label>
-                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="bg-white" />
+                <label className="block text-sm font-semibold text-primary mb-1.5">Nome completo</label>
+                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="bg-white" placeholder="Seu nome completo" />
               </div>
             )}
             <div>
-              <label className="block text-sm font-semibold text-[#1C3D5A] mb-1.5">E-mail</label>
+              <label className="block text-sm font-semibold text-primary mb-1.5">E-mail</label>
               <Input
                 type="email"
                 value={email}
@@ -132,15 +157,15 @@ function AuthScreen({
               />
             </div>
 
-            <Button onClick={submit} disabled={busy} className="w-full copper-gradient text-white font-semibold">
-              {busy ? "Aguarde..." : mode === "login" ? "Entrar" : "Criar conta"}
+            <Button onClick={submit} disabled={busy} className="w-full btn-press cobre-gradient text-white font-semibold shadow-md">
+              {busy ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : mode === "login" ? "Entrar" : "Criar conta"}
             </Button>
 
-            <p className="text-center text-sm text-slate-500">
+            <p className="text-center text-sm text-muted-foreground">
               {mode === "login" ? "Ainda não tem acesso? " : "Já tem conta? "}
               <button
                 type="button"
-                className="text-amber-700 font-semibold underline"
+                className="text-[#B87333] font-semibold hover:underline"
                 onClick={() => setMode(mode === "login" ? "register" : "login")}
               >
                 {mode === "login" ? "Criar conta" : "Fazer login"}
@@ -148,7 +173,24 @@ function AuthScreen({
             </p>
           </CardContent>
         </Card>
+
+        {/* Footer mini */}
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          Seus dados são protegidos com criptografia e acessíveis apenas por você e seu médico.
+        </p>
+        </div>
       </div>
+
+      {/* ── FOOTER ── */}
+      <footer className="brand-gradient py-6 px-4 mt-auto">
+        <div className="container flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src="/images/isotipo.svg" alt="Isotipo" className="h-7 w-auto invert opacity-70" />
+            <p className="text-xs text-white/50 font-serif">Dr. Felipe de Bulhões</p>
+          </div>
+          <p className="text-[11px] text-white/30">Portal de Pré-Consulta &amp; Exames</p>
+        </div>
+      </footer>
     </div>
   );
 }

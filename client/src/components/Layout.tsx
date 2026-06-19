@@ -21,7 +21,10 @@ import {
   Target,
   ClipboardList,
   LogOut,
-  Settings
+  Settings,
+  Copy,
+  Check,
+  Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -42,6 +45,16 @@ export default function Layout({ children }: LayoutProps) {
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location]);
+
+  const [copied, setCopied] = useState(false);
+
+  function copyPortalLink() {
+    const link = "https://paciente.felipebulhoes.com";
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   const menuItems = [
     { href: "/", label: "Protocolos", icon: BookOpen },
@@ -158,6 +171,26 @@ export default function Layout({ children }: LayoutProps) {
               <MessageCircle className="w-4 h-4" />
               WhatsApp Comercial
             </a>
+
+            {/* Portal do Paciente - link copiável */}
+            <div className="flex items-center gap-1.5">
+              <a
+                href="https://paciente.felipebulhoes.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-[#1C3D5A] border border-white/20 hover:bg-white/10 transition-colors shadow-sm"
+              >
+                <Globe className="w-4 h-4 text-white/70" />
+                Portal do Paciente
+              </a>
+              <button
+                onClick={copyPortalLink}
+                title="Copiar link do portal"
+                className="flex items-center justify-center w-8 h-8 rounded-xl border border-white/20 bg-white/5 hover:bg-white/15 transition-colors text-white/70 hover:text-white"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+            </div>
 
           </div>
 
