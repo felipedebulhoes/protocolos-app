@@ -42,7 +42,8 @@ import { ArrowLeft,
   Printer,
   Trash2,
   MapPin,
-  GitBranch
+  GitBranch,
+  Download
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1020,6 +1021,46 @@ export default function ProtocolDetail() {
                 </Button>
               </Link>
             )}
+            <Button
+              variant="outline"
+              className="gap-2 rounded-xl border-border text-foreground hover:bg-secondary"
+              onClick={() => {
+                const printWin = window.open('', '_blank');
+                if (!printWin) return;
+                const sections = protocol.sections || [];
+                const sectionsHtml = sections.map((s: any) => `
+                  <div class="section">
+                    <h2>${s.title || ''}</h2>
+                    <div class="content">${(s.content || '').replace(/\n/g, '<br/>')}</div>
+                  </div>
+                `).join('');
+                printWin.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
+                  <meta charset="UTF-8"/>
+                  <title>${protocol.title}</title>
+                  <style>
+                    @page { margin: 20mm 15mm; }
+                    body { font-family: Georgia, serif; color: #1a1a2e; font-size: 11pt; line-height: 1.6; }
+                    h1 { font-size: 18pt; color: #1a1a2e; border-bottom: 2px solid #c8a96e; padding-bottom: 8px; margin-bottom: 4px; }
+                    .meta { font-size: 9pt; color: #666; margin-bottom: 20px; }
+                    .section { margin-bottom: 20px; page-break-inside: avoid; }
+                    h2 { font-size: 12pt; color: #c8a96e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; border-left: 3px solid #c8a96e; padding-left: 8px; }
+                    .content { font-size: 10pt; white-space: pre-wrap; }
+                    .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 8pt; color: #999; text-align: center; }
+                  </style>
+                </head><body>
+                  <h1>${protocol.title}</h1>
+                  <p class="meta">Categoria: ${protocol.category} &nbsp;|&nbsp; ProtoUro — Dr. Felipe de Bulhões &nbsp;|&nbsp; ${new Date().toLocaleDateString('pt-BR')}</p>
+                  ${sectionsHtml}
+                  <div class="footer">ProtoUro — Handbook Digital de Protocolos Urológicos | Dr. Felipe de Bulhões | protocolos.felipebulhoes.com</div>
+                </body></html>`);
+                printWin.document.close();
+                printWin.focus();
+                setTimeout(() => { printWin.print(); }, 400);
+              }}
+            >
+              <Download className="w-4 h-4" />
+              Exportar PDF
+            </Button>
             <Button
               variant="outline"
               size="icon"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronRight, ChevronDown, CheckCircle2, AlertCircle, XCircle, Info, RotateCcw, ExternalLink } from "lucide-react";
+import { ArrowLeft, ChevronRight, ChevronDown, CheckCircle2, AlertCircle, XCircle, Info, RotateCcw, ExternalLink, Download } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -600,15 +600,103 @@ export default function SpermogramFlowchart() {
             <h1 className="text-xl font-bold text-foreground">Fluxograma de Conduta</h1>
             <p className="text-sm text-muted-foreground">Espermograma — Interpretação Passo a Passo</p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => setKey(k => k + 1)}
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reiniciar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => {
+                const printWin = window.open('', '_blank');
+                if (!printWin) return;
+                printWin.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
+                  <meta charset="UTF-8"/>
+                  <title>Fluxograma de Conduta — Espermograma</title>
+                  <style>
+                    @page { margin: 15mm 12mm; size: A4; }
+                    body { font-family: Georgia, serif; color: #1a1a2e; font-size: 10pt; line-height: 1.5; }
+                    h1 { font-size: 16pt; color: #1a1a2e; border-bottom: 2px solid #c8a96e; padding-bottom: 6px; margin-bottom: 4px; }
+                    .meta { font-size: 8pt; color: #666; margin-bottom: 16px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 9pt; }
+                    th { background: #1a1a2e; color: #fff; padding: 6px 8px; text-align: left; }
+                    td { padding: 5px 8px; border-bottom: 1px solid #eee; }
+                    tr:nth-child(even) td { background: #f9f7f2; }
+                    .section-title { font-size: 11pt; color: #c8a96e; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 6px; border-left: 3px solid #c8a96e; padding-left: 8px; }
+                    .flow-box { border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px; margin: 6px 0; page-break-inside: avoid; }
+                    .flow-box.normal { border-left: 4px solid #22c55e; }
+                    .flow-box.warning { border-left: 4px solid #f59e0b; }
+                    .flow-box.critical { border-left: 4px solid #ef4444; }
+                    .flow-box.info { border-left: 4px solid #3b82f6; }
+                    .flow-label { font-weight: bold; font-size: 10pt; }
+                    .flow-sub { font-size: 9pt; color: #555; }
+                    .flow-detail { font-size: 8.5pt; color: #333; margin-top: 4px; }
+                    .arrow { text-align: center; color: #c8a96e; font-size: 14pt; margin: 2px 0; }
+                    .refs { margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 8pt; color: #666; }
+                    .footer { margin-top: 20px; border-top: 1px solid #ddd; padding-top: 8px; font-size: 7.5pt; color: #999; text-align: center; }
+                  </style>
+                </head><body>
+                  <h1>Fluxograma de Conduta — Espermograma</h1>
+                  <p class="meta">Protocolo de Fertilidade Masculina &nbsp;|&nbsp; ProtoUro — Dr. Felipe de Bulhões &nbsp;|&nbsp; ${new Date().toLocaleDateString('pt-BR')}</p>
+
+                  <p class="section-title">Valores de Referência OMS 2021 (5º Percentil)</p>
+                  <table>
+                    <tr><th>Parâmetro</th><th>Limite Inferior (P5)</th><th>Unidade</th></tr>
+                    <tr><td>Volume</td><td>≥ 1,4</td><td>mL</td></tr>
+                    <tr><td>Concentração</td><td>≥ 16</td><td>× 10⁶/mL</td></tr>
+                    <tr><td>Número total de espermatozoides</td><td>≥ 39</td><td>× 10⁶/ejaculado</td></tr>
+                    <tr><td>Motilidade progressiva (PR)</td><td>≥ 30</td><td>%</td></tr>
+                    <tr><td>Motilidade total (PR + NP)</td><td>≥ 42</td><td>%</td></tr>
+                    <tr><td>Morfologia normal (Kruger)</td><td>≥ 4</td><td>%</td></tr>
+                    <tr><td>Vitalidade</td><td>≥ 54</td><td>%</td></tr>
+                    <tr><td>pH</td><td>≥ 7,2</td><td>—</td></tr>
+                    <tr><td>Leucócitos</td><td>< 1,0</td><td>× 10⁶/mL</td></tr>
+                  </table>
+
+                  <p class="section-title">Fluxograma de Conduta</p>
+
+                  <div class="flow-box normal"><div class="flow-label">Espermograma Normal</div><div class="flow-sub">Todos os parâmetros dentro dos limites OMS 2021</div><div class="flow-detail">→ Investigar fator feminino. Encaminhar casal para ginecologista/reprodutor. Se infertilidade ≥ 12 meses sem causa feminina identificada, repetir espermograma.</div></div>
+
+                  <div class="arrow">↓ Alterado?</div>
+
+                  <div class="flow-box warning"><div class="flow-label">Oligozoospermia Leve (5–16 × 10⁶/mL)</div><div class="flow-detail">→ MEV + antioxidantes (CoQ10 200mg, vitamina C 1g, zinco 30mg/dia) por 3 meses → repetir espermograma. Se persistir: FSH/LH/testosterona total. Varicocele: avaliar cirurgia se grau II–III.</div></div>
+
+                  <div class="flow-box critical"><div class="flow-label">Oligozoospermia Grave (&lt; 5 × 10⁶/mL)</div><div class="flow-detail">→ FSH + LH + testosterona total. Se FSH elevado: NOA (microdeleção Yq, cariótipo, biópsia testicular). Se FSH normal: OA (PESA/TESA). Encaminhar para reprodução assistida (FIV/ICSI).</div></div>
+
+                  <div class="flow-box critical"><div class="flow-label">OAT (Oligo-Asteno-Teratozoospermia)</div><div class="flow-detail">→ Investigação completa: FSH/LH/T, varicocele, fragmentação DNA espermático. Encaminhar para reprodução assistida. Considerar biópsia testicular se azoospermia associada.</div></div>
+
+                  <div class="flow-box warning"><div class="flow-label">Asthenozoospermia Isolada (PR &lt; 30%)</div><div class="flow-detail">→ Leucocitospermia? → cultura seminal + antibioticoterapia. Fragmentação DNA? → teste TUNEL/SCD. Varicocele? → avaliação cirúrgica. MEV + antioxidantes 3 meses.</div></div>
+
+                  <div class="flow-box warning"><div class="flow-label">Teratozoospermia Isolada (morfologia &lt; 4%)</div><div class="flow-detail">→ Morfologia estrita Kruger. Se &lt; 1%: globozoospermia (considerar ICSI + ativação artificial do oócito). MEV + antioxidantes. Encaminhar para ICSI se persistir.</div></div>
+
+                  <div class="flow-box critical"><div class="flow-label">Azoospermia</div><div class="flow-detail">→ FSH + testosterona. FSH elevado (>7,6 UI/L) + testículo pequeno: NOA → microdeleção Yq + cariótipo + microdissecção TESE. FSH normal + testículo normal: OA → PESA/TESA + FIV/ICSI. Sempre repetir 2× antes de confirmar.</div></div>
+
+                  <div class="flow-box info"><div class="flow-label">Hipospermia (volume &lt; 1,4 mL)</div><div class="flow-detail">→ Ejaculação retrógrada (urina pós-ejaculação). Obstrução ductal (TRUS). Hipogonadismo (FSH/LH/T). Abstinência curta (&lt; 2 dias): repetir com 3–5 dias de abstinência.</div></div>
+
+                  <div class="refs">
+                    <strong>Referências:</strong><br/>
+                    1. WHO Laboratory Manual for the Examination and Processing of Human Semen, 6th ed. Geneva: WHO, 2021.<br/>
+                    2. EAU Guidelines on Sexual and Reproductive Health — Male Infertility, 2025. uroweb.org<br/>
+                    3. Brannigan RE, et al. AUA/ASRM Guideline (2024). J Urol. DOI: 10.1097/JU.0000000000004180
+                  </div>
+                  <div class="footer">ProtoUro — Handbook Digital de Protocolos Urológicos | Dr. Felipe de Bulhões | protocolos.felipebulhoes.com</div>
+                </body></html>`);
+                printWin.document.close();
+                printWin.focus();
+                setTimeout(() => { printWin.print(); }, 400);
+              }}
+            >
+              <Download className="w-3.5 h-3.5" />
+              Exportar PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setKey(k => k + 1)}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reiniciar
+            </Button>
+          </div>
         </div>
 
         {/* Legenda */}
