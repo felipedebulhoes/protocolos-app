@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
@@ -62,6 +62,39 @@ export default function PacienteLanding() {
   const token = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("token") || "";
+  }, []);
+
+  // Meta Pixel — rastrear visualizações e conversões de pacientes
+  useEffect(() => {
+    (function(f: Window & typeof globalThis, b: Document, e: string, v: string) {
+      if ((f as unknown as Record<string, unknown>).fbq) return;
+      const n: ((...args: unknown[]) => void) & {
+        callMethod?: (...args: unknown[]) => void;
+        queue: unknown[];
+        push: (...args: unknown[]) => void;
+        loaded: boolean;
+        version: string;
+      } = function(...args: unknown[]) {
+        if (n.callMethod) n.callMethod(...args);
+        else n.queue.push(args);
+      } as typeof n;
+      (f as unknown as Record<string, unknown>).fbq = n;
+      if (!(f as unknown as Record<string, unknown>)._fbq) (f as unknown as Record<string, unknown>)._fbq = n;
+      n.push = n;
+      n.loaded = true;
+      n.version = "2.0";
+      n.queue = [];
+      const t = b.createElement(e) as HTMLScriptElement;
+      t.async = true;
+      t.src = v;
+      const s = b.getElementsByTagName(e)[0];
+      s.parentNode?.insertBefore(t, s);
+    })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+    const fbq = (window as unknown as Record<string, unknown>).fbq as (...args: unknown[]) => void;
+    if (fbq) {
+      fbq("init", "1730608694762791");
+      fbq("track", "PageView");
+    }
   }, []);
 
   return (

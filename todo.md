@@ -33,3 +33,8 @@
 - [x] Adicionar validação de tamanho de arquivo no ExamUploader (máx 12MB, erro amigável)
 - [x] Adicionar link de download dos exames na notificação ao médico
 - [x] Testar fluxo completo de upload de PDF/imagem na ficha de pré-consulta (confirmado via API)
+
+## Novas Tarefas (Jun 2026)
+- [ ] Testar upload real de PDF via API com token válido da ficha de teste
+- [ ] Adicionar campo "agendado" no banco (intakeForms) e card de Taxa de Conversão no dashboard
+- [ ] Integrar Meta Pixel 1730608694762791 no portal do paciente (/paciente)

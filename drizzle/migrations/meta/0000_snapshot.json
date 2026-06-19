@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "b8fafad1-3816-463c-b432-8ce328093662",
+  "id": "0b623c46-87cb-41e5-95f1-7d355d8a0157",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "exam_files": {
@@ -14,45 +14,116 @@
           "notNull": true,
           "autoincrement": true
         },
-        "patient_id": {
-          "name": "patient_id",
+        "patientId": {
+          "name": "patientId",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "intake_form_id": {
-          "name": "intake_form_id",
+        "intakeFormId": {
+          "name": "intakeFormId",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "fileName": {
+          "name": "fileName",
+          "type": "varchar(300)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "mimeType": {
+          "name": "mimeType",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "storageKey": {
+          "name": "storageKey",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "storageUrl": {
+          "name": "storageUrl",
+          "type": "varchar(600)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "processStatus": {
+          "name": "processStatus",
+          "type": "enum('pending','processing','done','failed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "processError": {
+          "name": "processError",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "examDate": {
+          "name": "examDate",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "labName": {
+          "name": "labName",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
         },
         "file_key": {
           "name": "file_key",
           "type": "varchar(512)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "''"
         },
         "file_url": {
           "name": "file_url",
           "type": "varchar(1024)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "file_name": {
-          "name": "file_name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "''"
-        },
-        "mime_type": {
-          "name": "mime_type",
-          "type": "varchar(120)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -66,38 +137,9 @@
           "autoincrement": false,
           "default": 0
         },
-        "process_status": {
-          "name": "process_status",
-          "type": "enum('pending','processing','done','failed')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'pending'"
-        },
-        "process_error": {
-          "name": "process_error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "raw_extraction": {
           "name": "raw_extraction",
           "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "exam_date": {
-          "name": "exam_date",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "lab_name": {
-          "name": "lab_name",
-          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -109,37 +151,20 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'patient'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "onUpdate": true,
-          "default": "(now())"
         }
       },
       "indexes": {
         "examfiles_patient_idx": {
           "name": "examfiles_patient_idx",
           "columns": [
-            "patient_id"
+            "patientId"
           ],
           "isUnique": false
         },
         "examfiles_intake_idx": {
           "name": "examfiles_intake_idx",
           "columns": [
-            "intake_form_id"
+            "intakeFormId"
           ],
           "isUnique": false
         }
@@ -166,44 +191,44 @@
           "notNull": true,
           "autoincrement": true
         },
-        "patient_id": {
-          "name": "patient_id",
+        "examFileId": {
+          "name": "examFileId",
           "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "exam_file_id": {
-          "name": "exam_file_id",
+        "patientId": {
+          "name": "patientId",
           "type": "int",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "analyte_key": {
-          "name": "analyte_key",
+        "analyteKey": {
+          "name": "analyteKey",
           "type": "varchar(80)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "raw_label": {
-          "name": "raw_label",
+        "analyteName": {
+          "name": "analyteName",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "''"
         },
-        "value_num": {
-          "name": "value_num",
+        "valueNum": {
+          "name": "valueNum",
           "type": "double",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "value_text": {
-          "name": "value_text",
+        "valueText": {
+          "name": "valueText",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
@@ -216,37 +241,29 @@
           "notNull": false,
           "autoincrement": false
         },
-        "ref_range": {
-          "name": "ref_range",
+        "refRange": {
+          "name": "refRange",
           "type": "varchar(120)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "abnormal_flag": {
-          "name": "abnormal_flag",
-          "type": "enum('low','normal','high','unknown')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'unknown'"
-        },
-        "measured_at": {
-          "name": "measured_at",
+        "flag": {
+          "name": "flag",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "confidence": {
-          "name": "confidence",
-          "type": "double",
+        "measuredAt": {
+          "name": "measuredAt",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -258,14 +275,14 @@
         "examresults_patient_idx": {
           "name": "examresults_patient_idx",
           "columns": [
-            "patient_id"
+            "patientId"
           ],
           "isUnique": false
         },
         "examresults_analyte_idx": {
           "name": "examresults_analyte_idx",
           "columns": [
-            "analyte_key"
+            "analyteKey"
           ],
           "isUnique": false
         }
@@ -294,18 +311,10 @@
         },
         "token": {
           "name": "token",
-          "type": "varchar(64)",
+          "type": "varchar(48)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "enum('pending','submitted','reviewed')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'pending'"
         },
         "patient_id": {
           "name": "patient_id",
@@ -313,6 +322,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('pending','in_progress','submitted','reviewed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
         },
         "invited_name": {
           "name": "invited_name",
@@ -335,6 +352,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "appointmentContext": {
+          "name": "appointmentContext",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "answers": {
           "name": "answers",
           "type": "json",
@@ -351,6 +375,13 @@
         },
         "rapport_summary": {
           "name": "rapport_summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "doctorNotes": {
+          "name": "doctorNotes",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -442,7 +473,7 @@
         },
         "email": {
           "name": "email",
-          "type": "varchar(255)",
+          "type": "varchar(320)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -478,11 +509,10 @@
         },
         "sex": {
           "name": "sex",
-          "type": "enum('masculino','feminino','outro','nao_informado')",
+          "type": "varchar(16)",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'nao_informado'"
+          "notNull": false,
+          "autoincrement": false
         },
         "cpf": {
           "name": "cpf",
@@ -508,6 +538,13 @@
         "notes": {
           "name": "notes",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lastSignedIn": {
+          "name": "lastSignedIn",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -558,8 +595,8 @@
       },
       "checkConstraint": {}
     },
-    "users": {
-      "name": "users",
+    "team_members": {
+      "name": "team_members",
       "columns": {
         "id": {
           "name": "id",
@@ -568,42 +605,64 @@
           "notNull": true,
           "autoincrement": true
         },
-        "open_id": {
-          "name": "open_id",
-          "type": "varchar(128)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
+        "invitation_token": {
+          "name": "invitation_token",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "''"
+          "autoincrement": false
         },
         "email": {
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
-        "avatar": {
-          "name": "avatar",
-          "type": "varchar(1024)",
+        "full_name": {
+          "name": "full_name",
+          "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "role": {
           "name": "role",
-          "type": "enum('admin','user')",
+          "type": "enum('viewer','editor','admin')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'user'"
+          "default": "'viewer'"
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('pending','active','inactive')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "invited_at": {
+          "name": "invited_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "signed_up_at": {
+          "name": "signed_up_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
@@ -623,6 +682,170 @@
           "default": "(now())"
         }
       },
+      "indexes": {
+        "team_members_email_idx": {
+          "name": "team_members_email_idx",
+          "columns": [
+            "email"
+          ],
+          "isUnique": false
+        },
+        "team_members_token_idx": {
+          "name": "team_members_token_idx",
+          "columns": [
+            "invitation_token"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "team_members_id": {
+          "name": "team_members_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "team_members_invitation_token_unique": {
+          "name": "team_members_invitation_token_unique",
+          "columns": [
+            "invitation_token"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "openId": {
+          "name": "openId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "loginMethod": {
+          "name": "loginMethod",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "enum('user','admin')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        },
+        "lastSignedIn": {
+          "name": "lastSignedIn",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "crm": {
+          "name": "crm",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "specialization": {
+          "name": "specialization",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "totpSecret": {
+          "name": "totpSecret",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "totpEnabled": {
+          "name": "totpEnabled",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
@@ -634,10 +857,10 @@
         }
       },
       "uniqueConstraints": {
-        "users_open_id_unique": {
-          "name": "users_open_id_unique",
+        "users_openId_unique": {
+          "name": "users_openId_unique",
           "columns": [
-            "open_id"
+            "openId"
           ]
         }
       },

@@ -39,7 +39,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions): 
         user = {
           id: rows[0].id,
           openId: rows[0].openId,
-          name: rows[0].name,
+          name: rows[0].name ?? "",
           email: rows[0].email,
           avatar: rows[0].avatar,
           role: rows[0].role,

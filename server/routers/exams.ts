@@ -74,7 +74,7 @@ async function processUpload(args: {
           patientId: args.patientId!,
           examFileId: file.id,
           analyteKey: r.analyteKey,
-          rawLabel: r.rawLabel ?? "",
+          analyteName: r.rawLabel ?? "",
           valueNum: r.valueNum ?? null,
           valueText: r.valueText ?? null,
           unit: r.unit ?? null,
@@ -192,12 +192,12 @@ export const examsRouter = router({
     return groupResultsByCategory(
       results.map((r) => ({
         analyteKey: r.analyteKey,
-        rawLabel: r.rawLabel,
+        rawLabel: r.analyteName,
         valueNum: r.valueNum,
         valueText: r.valueText,
         unit: r.unit,
         refRange: r.refRange,
-        abnormalFlag: r.abnormalFlag,
+        abnormalFlag: r.abnormalFlag ?? "unknown",
         measuredAt: r.measuredAt,
         examFileId: r.examFileId,
       })),

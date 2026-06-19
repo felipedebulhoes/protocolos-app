@@ -58,7 +58,7 @@ async function startServer() {
       });
       const token = await signSession({
         openId: dbUser.openId,
-        name: dbUser.name,
+        name: dbUser.name ?? "",
         email: dbUser.email ?? undefined,
         avatar: dbUser.avatar ?? undefined,
       });

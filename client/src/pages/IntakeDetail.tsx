@@ -16,6 +16,7 @@ import {
   FileText,
   User,
   CheckCircle2,
+  CalendarCheck,
 } from "lucide-react";
 import { INTAKE_SECTIONS } from "@shared/intakeSchema";
 import { analyteLabel, CATEGORY_LABELS, categoryForAnalyte, type AnalyteCategory } from "@shared/analyteCategories";
@@ -65,14 +66,23 @@ export default function IntakeDetail() {
 
   const detailQuery = trpc.intake.detail.useQuery({ id }, { enabled: Number.isFinite(id) && id > 0 });
   const review = trpc.intake.review.useMutation();
+  const toggleScheduled = trpc.intake.toggleScheduled.useMutation();
   const utils = trpc.useUtils();
 
   const [notes, setNotes] = useState("");
+  const [isScheduled, setIsScheduled] = useState(false);
 
   const form = detailQuery.data?.form;
   const patient = detailQuery.data?.patient;
   const examFiles = detailQuery.data?.examFiles ?? [];
   const examResults = detailQuery.data?.examResults ?? [];
+
+  // Sync isScheduled from form data
+  useEffect(() => {
+    if (form?.scheduled != null) {
+      setIsScheduled(Boolean(form.scheduled));
+    }
+  }, [form?.scheduled]);
 
   useEffect(() => {
     if (patient?.notes) setNotes(patient.notes);
@@ -233,7 +243,7 @@ export default function IntakeDetail() {
                             {r.valueNum != null ? r.valueNum : r.valueText ?? "—"}
                             {r.unit ? ` ${r.unit}` : ""}
                           </span>
-                          {flagBadge(r.abnormalFlag)}
+                          {flagBadge(r.abnormalFlag ?? "unknown")}
                         </div>
                       </div>
                     ))}
@@ -315,6 +325,54 @@ export default function IntakeDetail() {
                 </div>
               );
             })}
+          </CardContent>
+        </Card>
+
+        {/* Funil de conversão */}
+        <Card className="border border-slate-100">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[#1C3D5A] font-bold flex items-center gap-2">
+                  <CalendarCheck className="w-4 h-4 text-indigo-600" />
+                  Agendado no Doctoralia?
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Marque quando o paciente agendar a consulta após preencher a ficha.
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  const next = !isScheduled;
+                  setIsScheduled(next);
+                  try {
+                    await toggleScheduled.mutateAsync({ id, scheduled: next });
+                    utils.intake.detail.invalidate({ id });
+                    utils.user.dashboardStats.invalidate();
+                    toast.success(next ? "Marcado como agendado!" : "Desmarcado.");
+                  } catch {
+                    setIsScheduled(!next);
+                    toast.error("Não foi possível salvar.");
+                  }
+                }}
+                disabled={toggleScheduled.isPending}
+                className={`w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
+                  isScheduled ? "bg-indigo-500" : "bg-slate-200"
+                }`}
+              >
+                <span
+                  className={`block w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                    isScheduled ? "translate-x-6" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+            {isScheduled && (
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-indigo-600 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Paciente agendado — contabilizado na taxa de conversão do dashboard.
+              </div>
+            )}
           </CardContent>
         </Card>
 

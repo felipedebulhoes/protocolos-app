@@ -13,18 +13,19 @@ import {
 
 // ---------------------------------------------------------------------------
 // Doctor / staff users (Manus OAuth)
+// NOTE: DB uses camelCase column names
 // ---------------------------------------------------------------------------
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 128 }).notNull().unique(),
-  name: varchar("name", { length: 255 }).notNull().default(""),
-  email: varchar("email", { length: 255 }),
+  openId: varchar("openId", { length: 64 }).notNull().unique(),
+  name: text("name"),
+  email: varchar("email", { length: 320 }),
   avatar: varchar("avatar", { length: 1024 }),
-  loginMethod: varchar("loginMethod", { length: 50 }),
-  role: mysqlEnum("role", ["admin", "user"]).notNull().default("user"),
+  loginMethod: varchar("loginMethod", { length: 64 }),
+  role: mysqlEnum("role", ["user", "admin"]).notNull().default("user"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow().onUpdateNow(),
-  lastSignedIn: timestamp("lastSignedIn"),
+  lastSignedIn: timestamp("lastSignedIn").notNull().defaultNow(),
   // Doctor profile fields
   phone: varchar("phone", { length: 40 }),
   crm: varchar("crm", { length: 50 }),
@@ -40,25 +41,24 @@ export type NewUser = typeof users.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Patients (own e-mail/password login for the patient portal)
+// NOTE: DB uses snake_case column names for patients table
 // ---------------------------------------------------------------------------
 export const patients = mysqlTable(
   "patients",
   {
     id: int("id").autoincrement().primaryKey(),
     // Identity / login
-    email: varchar("email", { length: 255 }).notNull().unique(),
-    passwordHash: varchar("password_hash", { length: 255 }), // null until patient sets a password
+    email: varchar("email", { length: 320 }).notNull().unique(),
+    passwordHash: varchar("password_hash", { length: 255 }),
     fullName: varchar("full_name", { length: 255 }).notNull().default(""),
     phone: varchar("phone", { length: 40 }),
-    birthDate: varchar("birth_date", { length: 20 }), // ISO yyyy-mm-dd
-    sex: mysqlEnum("sex", ["masculino", "feminino", "outro", "nao_informado"])
-      .notNull()
-      .default("nao_informado"),
+    birthDate: varchar("birth_date", { length: 20 }),
+    sex: varchar("sex", { length: 16 }),
     cpf: varchar("cpf", { length: 20 }),
     city: varchar("city", { length: 120 }),
     state: varchar("state", { length: 40 }),
-    // Funnel / CRM linkage
     notes: text("notes"),
+    lastSignedIn: timestamp("lastSignedIn"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
@@ -72,31 +72,30 @@ export type NewPatient = typeof patients.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Intake forms (pre-consultation forms — created by doctor, filled by patient)
+// NOTE: DB uses snake_case for most columns, but some are camelCase
 // ---------------------------------------------------------------------------
 export const intakeForms = mysqlTable(
   "intake_forms",
   {
     id: int("id").autoincrement().primaryKey(),
-    // Public access token (shared with the patient after appointment confirmation)
-    token: varchar("token", { length: 64 }).notNull().unique(),
-    status: mysqlEnum("status", ["pending", "submitted", "reviewed"])
+    token: varchar("token", { length: 48 }).notNull().unique(),
+    patientId: int("patient_id"),
+    status: mysqlEnum("status", ["pending", "in_progress", "submitted", "reviewed"])
       .notNull()
       .default("pending"),
-    // Linked patient (set once submitted / account created)
-    patientId: int("patient_id"),
-    // Optional pre-fill data set by the doctor when generating the link
     invitedName: varchar("invited_name", { length: 255 }),
     invitedEmail: varchar("invited_email", { length: 255 }),
     invitedPhone: varchar("invited_phone", { length: 40 }),
-    // The full set of answers (keyed by question id from shared/intakeSchema)
+    appointmentContext: text("appointmentContext"),
     answers: json("answers"),
-    // AI-generated outputs
-    suggestedProtocols: json("suggested_protocols"), // [{id,title,score,reasons}]
+    suggestedProtocols: json("suggested_protocols"),
     rapportSummary: text("rapport_summary"),
-    // Audit
+    doctorNotes: text("doctorNotes"),
     submittedAt: timestamp("submitted_at"),
     reviewedAt: timestamp("reviewed_at"),
     createdByOpenId: varchar("created_by_open_id", { length: 128 }),
+    // Funil de conversão: indica se o paciente agendou no Doctoralia após a ficha
+    scheduled: tinyint("scheduled").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
@@ -111,20 +110,20 @@ export type NewIntakeForm = typeof intakeForms.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Exam files (uploaded PDFs/images, stored in S3)
+// NOTE: The actual DB has camelCase columns (original) + snake_case (added via ALTER TABLE)
 // ---------------------------------------------------------------------------
 export const examFiles = mysqlTable(
   "exam_files",
   {
     id: int("id").autoincrement().primaryKey(),
-    patientId: int("patient_id"),
-    intakeFormId: int("intake_form_id"),
-    fileKey: varchar("file_key", { length: 512 }).notNull(),
-    fileUrl: varchar("file_url", { length: 1024 }).notNull(),
-    fileName: varchar("file_name", { length: 255 }).notNull().default(""),
-    mimeType: varchar("mime_type", { length: 120 }).notNull().default(""),
-    fileSize: int("file_size").notNull().default(0),
-    // Processing status of the AI reader
-    processStatus: mysqlEnum("process_status", [
+    // Original camelCase columns
+    patientId: int("patientId"),
+    intakeFormId: int("intakeFormId"),
+    fileName: varchar("fileName", { length: 300 }).notNull().default(""),
+    mimeType: varchar("mimeType", { length: 120 }).notNull().default(""),
+    storageKey: varchar("storageKey", { length: 500 }).notNull().default(""),
+    storageUrl: varchar("storageUrl", { length: 600 }).notNull().default(""),
+    processStatus: mysqlEnum("processStatus", [
       "pending",
       "processing",
       "done",
@@ -132,16 +131,20 @@ export const examFiles = mysqlTable(
     ])
       .notNull()
       .default("pending"),
-    processError: text("process_error"),
-    // Raw structured extraction (full JSON returned by the AI)
+    processError: text("processError"),
+    examDate: varchar("examDate", { length: 20 }),
+    labName: varchar("labName", { length: 255 }),
+    summary: text("summary"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow().onUpdateNow(),
+    // snake_case columns added via ALTER TABLE
+    fileKey: varchar("file_key", { length: 512 }).notNull().default(""),
+    fileUrl: varchar("file_url", { length: 1024 }).notNull().default(""),
+    fileSize: int("file_size").notNull().default(0),
     rawExtraction: json("raw_extraction"),
-    examDate: varchar("exam_date", { length: 20 }), // ISO yyyy-mm-dd if found
-    labName: varchar("lab_name", { length: 255 }),
     uploadedBy: mysqlEnum("uploaded_by", ["patient", "doctor"])
       .notNull()
       .default("patient"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
   (t) => ({
     patientIdx: index("examfiles_patient_idx").on(t.patientId),
@@ -154,27 +157,27 @@ export type NewExamFile = typeof examFiles.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Exam results (standardized analyte values extracted from exam files)
+// NOTE: DB uses camelCase column names for exam_results
+// DB has: examFileId, patientId, analyteKey, analyteName, valueNum(varchar), valueText, unit, refRange, flag, measuredAt, createdAt
 // ---------------------------------------------------------------------------
 export const examResults = mysqlTable(
   "exam_results",
   {
     id: int("id").autoincrement().primaryKey(),
-    patientId: int("patient_id").notNull(),
-    examFileId: int("exam_file_id").notNull(),
-    // Standardized analyte key (e.g. "psa_total", "testosterona_total")
-    analyteKey: varchar("analyte_key", { length: 80 }).notNull(),
-    // Original label as printed on the report
-    rawLabel: varchar("raw_label", { length: 255 }).notNull().default(""),
-    valueNum: double("value_num"),
-    valueText: varchar("value_text", { length: 255 }),
+    examFileId: int("examFileId").notNull(),
+    patientId: int("patientId"),
+    analyteKey: varchar("analyteKey", { length: 80 }).notNull(),
+    // analyteName is the display label (maps to rawLabel in code)
+    analyteName: varchar("analyteName", { length: 255 }).notNull().default(""),
+    // valueNum stored as varchar in DB but treated as number in code
+    valueNum: double("valueNum"),
+    valueText: varchar("valueText", { length: 255 }),
     unit: varchar("unit", { length: 60 }),
-    refRange: varchar("ref_range", { length: 120 }),
-    abnormalFlag: mysqlEnum("abnormal_flag", ["low", "normal", "high", "unknown"])
-      .notNull()
-      .default("unknown"),
-    measuredAt: varchar("measured_at", { length: 20 }), // ISO date of the exam
-    confidence: double("confidence"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    refRange: varchar("refRange", { length: 120 }),
+    // flag column maps to abnormalFlag in code
+    abnormalFlag: varchar("flag", { length: 20 }),
+    measuredAt: varchar("measuredAt", { length: 20 }),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
   },
   (t) => ({
     patientIdx: index("examresults_patient_idx").on(t.patientId),
@@ -187,22 +190,18 @@ export type NewExamResult = typeof examResults.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // Team members (invited users who can access protocols)
+// NOTE: DB uses snake_case column names for team_members
 // ---------------------------------------------------------------------------
 export const teamMembers = mysqlTable(
   "team_members",
   {
     id: int("id").autoincrement().primaryKey(),
-    // Invitation token (unique, used for signup link)
     invitationToken: varchar("invitation_token", { length: 255 }).notNull().unique(),
-    // Member info
     email: varchar("email", { length: 255 }).notNull(),
     fullName: varchar("full_name", { length: 255 }).notNull(),
     role: mysqlEnum("role", ["viewer", "editor", "admin"]).notNull().default("viewer"),
-    // Status: pending (not yet signed up), active (signed up), inactive (removed)
     status: mysqlEnum("status", ["pending", "active", "inactive"]).notNull().default("pending"),
-    // Link to user account after signup
     userId: int("user_id"),
-    // Timestamps
     invitedAt: timestamp("invited_at").notNull().defaultNow(),
     signedUpAt: timestamp("signed_up_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),

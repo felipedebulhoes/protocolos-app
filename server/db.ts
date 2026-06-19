@@ -156,7 +156,9 @@ export async function listIntakeFormsByPatient(patientId: number): Promise<Intak
 
 export async function createExamFile(data: NewExamFile): Promise<ExamFile> {
   const result = await db.insert(examFiles).values(data);
-  const insertId = (result as unknown as { insertId: number }).insertId;
+  // Drizzle mysql2 returns [ResultSetHeader, FieldPacket[]] — insertId is in result[0]
+  const header = (result as unknown as [{ insertId: number }, unknown])[0];
+  const insertId = header?.insertId;
   const rows = await db.select().from(examFiles).where(eq(examFiles.id, insertId)).limit(1);
   return rows[0];
 }
@@ -252,8 +254,10 @@ export async function getDashboardStats(): Promise<{
   fichasRevisadas: number;
   fichasEnviadas: number;
   taxaPreenchimento: number;
+  fichasAgendadas: number;
+  taxaConversao: number;
 }> {
-  const [totalPatientsRows, totalFichasRows, fichasPendentesRows, fichasRevisadasRows, fichasEnviadasRows] =
+  const [totalPatientsRows, totalFichasRows, fichasPendentesRows, fichasRevisadasRows, fichasEnviadasRows, fichasAgendadasRows] =
     await Promise.all([
       db.select({ id: patients.id }).from(patients),
       db.select({ id: intakeForms.id }).from(intakeForms),
@@ -269,10 +273,16 @@ export async function getDashboardStats(): Promise<{
         .select({ id: intakeForms.id })
         .from(intakeForms)
         .where(sql`${intakeForms.status} != 'pending'`),
+      db
+        .select({ id: intakeForms.id })
+        .from(intakeForms)
+        .where(eq(intakeForms.scheduled, 1)),
     ]);
   const totalFichas = totalFichasRows.length;
   const fichasEnviadas = fichasEnviadasRows.length;
+  const fichasAgendadas = fichasAgendadasRows.length;
   const taxaPreenchimento = totalFichas > 0 ? Math.round((fichasEnviadas / totalFichas) * 100) : 0;
+  const taxaConversao = fichasEnviadas > 0 ? Math.round((fichasAgendadas / fichasEnviadas) * 100) : 0;
   return {
     totalPatients: totalPatientsRows.length,
     totalFichas,
@@ -280,6 +290,8 @@ export async function getDashboardStats(): Promise<{
     fichasRevisadas: fichasRevisadasRows.length,
     fichasEnviadas,
     taxaPreenchimento,
+    fichasAgendadas,
+    taxaConversao,
   };
 }
 

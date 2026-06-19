@@ -49,6 +49,7 @@ export const intakeRouter = router({
       invitedPhone: f.invitedPhone,
       submittedAt: f.submittedAt,
       createdAt: f.createdAt,
+      scheduled: f.scheduled === 1,
     }));
   }),
 
@@ -77,6 +78,16 @@ export const intakeRouter = router({
         await db.updatePatientProfile(form.patientId, { notes: input.notes });
       }
       return { ok: true };
+    }),
+
+  // ----- Doctor: toggle agendado (funil de conversão) -----------------------
+  toggleScheduled: ownerProcedure
+    .input(z.object({ id: z.number().int().positive(), scheduled: z.boolean() }))
+    .mutation(async ({ input }) => {
+      const form = await db.getIntakeById(input.id);
+      if (!form) throw new TRPCError({ code: "NOT_FOUND", message: "Ficha não encontrada." });
+      await db.updateIntakeForm(input.id, { scheduled: input.scheduled ? 1 : 0 });
+      return { ok: true, scheduled: input.scheduled };
     }),
 
   // ----- Public: load a form by token (for the patient to fill) -------------
@@ -153,7 +164,7 @@ export const intakeRouter = router({
           valueNum: r.valueNum,
           valueText: r.valueText,
           unit: r.unit,
-          abnormalFlag: r.abnormalFlag,
+          abnormalFlag: r.abnormalFlag ?? "unknown",
         })),
       });
 
