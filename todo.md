@@ -18,3 +18,10 @@
 - [x] Testar fluxo completo: gerar link, preencher ficha, confirmar notificação ao médico (manual após deploy)
 - [x] Adicionar upload de exames (PDF/foto) na ficha antes de submeter (já implementado)
 - [x] Notificação por e-mail ao paciente após submeter ficha (implementado)
+
+## Gerenciamento de Usuários (Jun 2026)
+- [ ] Adicionar tabela `team_members` no schema do Drizzle (nome, email, role, status, criado_em)
+- [ ] Criar tRPC procedures: listTeamMembers, inviteTeamMember, removeTeamMember, updateTeamMemberRole
+- [ ] Implementar UI em Configurações com tabela de membros + botão "Convidar Membro"
+- [ ] Adicionar autenticação para usuários convidados (links de convite com token único)
+- [ ] Criar página de login/cadastro para membros convidados

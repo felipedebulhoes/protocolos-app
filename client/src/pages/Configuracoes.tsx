@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   User, Mail, Phone, MapPin, Building2, Briefcase, Save,
   Shield, ShieldCheck, ShieldOff, QrCode, KeyRound, CheckCircle2,
-  AlertCircle, Loader2, Copy, Check
+  AlertCircle, Loader2, Copy, Check, Users, Trash2, Plus
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { DoctorGuard } from "@/components/DoctorGuard";
@@ -16,6 +16,30 @@ import { DoctorGuard } from "@/components/DoctorGuard";
 function ConfiguracoesContent() {
   const { user } = useAuth();
   const utils = trpc.useUtils();
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteRole, setInviteRole] = useState<"viewer" | "editor" | "admin">("viewer");
+  const inviteMember = trpc.team.invite.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Convite enviado para ${data.email}!`);
+      setInviteEmail("");
+      setInviteName("");
+      setInviteRole("viewer");
+    },
+    onError: (err) => toast.error(`Erro: ${err.message}`),
+  });
+
+  const handleInvite = () => {
+    if (!inviteEmail || !inviteName) {
+      toast.error("Preencha e-mail e nome completo");
+      return;
+    }
+    inviteMember.mutate({
+      email: inviteEmail,
+      fullName: inviteName,
+      role: inviteRole,
+    });
+  };
 
   // ── Perfil ──────────────────────────────────────────────────────────────
   const { data: profile, isLoading: profileLoading } = trpc.user.getProfile.useQuery();
@@ -420,6 +444,69 @@ function ConfiguracoesContent() {
             <span className={totpStatus?.enabled ? "text-green-600 font-medium" : "text-muted-foreground"}>
               {totpStatus?.enabled ? "Ativado" : "Desativado"}
             </span>
+          </div>
+        </div>
+      </Card>
+
+      {/* ── Gerenciamento de Membros da Equipe ── */}
+      <Card className="p-6 border border-border">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Users className="w-5 h-5 text-[#B87333]" />
+            Membros da Equipe
+          </h3>
+        </div>
+
+        <p className="text-sm text-muted-foreground mb-4">
+          Convide médicos, residentes ou estagiários para acessar os protocolos. Cada membro receberá um link de convite por e-mail.
+        </p>
+
+        {/* Formulário de convite */}
+        <div className="space-y-3 mb-6 p-4 bg-muted/30 rounded-lg border border-border">
+          <h4 className="font-semibold text-sm">Convidar Novo Membro</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Input
+              placeholder="Nome completo"
+              value={inviteName}
+              onChange={(e) => setInviteName(e.target.value)}
+              className="bg-background border-border"
+            />
+            <Input
+              type="email"
+              placeholder="E-mail"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              className="bg-background border-border"
+            />
+            <select
+              value={inviteRole}
+              onChange={(e) => setInviteRole(e.target.value as "viewer" | "editor" | "admin")}
+              className="px-3 py-2 rounded-md border border-border bg-background text-foreground"
+            >
+              <option value="viewer">Visualizador</option>
+              <option value="editor">Editor</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <Button
+            className="w-full bg-[#B87333] hover:bg-[#B87333]/90"
+            onClick={handleInvite}
+            disabled={inviteMember.isPending}
+          >
+            {inviteMember.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4 mr-2" />
+            )}
+            Enviar Convite
+          </Button>
+        </div>
+
+        {/* Lista de membros */}
+        <div className="space-y-2">
+          <h4 className="font-semibold text-sm mb-3">Membros Ativos</h4>
+          <div className="text-sm text-muted-foreground text-center py-8">
+            Nenhum membro adicionado ainda. Convide alguém para começar!
           </div>
         </div>
       </Card>

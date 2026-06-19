@@ -184,3 +184,35 @@ export const examResults = mysqlTable(
 
 export type ExamResult = typeof examResults.$inferSelect;
 export type NewExamResult = typeof examResults.$inferInsert;
+
+// ---------------------------------------------------------------------------
+// Team members (invited users who can access protocols)
+// ---------------------------------------------------------------------------
+export const teamMembers = mysqlTable(
+  "team_members",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    // Invitation token (unique, used for signup link)
+    invitationToken: varchar("invitation_token", { length: 255 }).notNull().unique(),
+    // Member info
+    email: varchar("email", { length: 255 }).notNull(),
+    fullName: varchar("full_name", { length: 255 }).notNull(),
+    role: mysqlEnum("role", ["viewer", "editor", "admin"]).notNull().default("viewer"),
+    // Status: pending (not yet signed up), active (signed up), inactive (removed)
+    status: mysqlEnum("status", ["pending", "active", "inactive"]).notNull().default("pending"),
+    // Link to user account after signup
+    userId: int("user_id"),
+    // Timestamps
+    invitedAt: timestamp("invited_at").notNull().defaultNow(),
+    signedUpAt: timestamp("signed_up_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  },
+  (t) => ({
+    emailIdx: index("team_members_email_idx").on(t.email),
+    tokenIdx: index("team_members_token_idx").on(t.invitationToken),
+  }),
+);
+
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type NewTeamMember = typeof teamMembers.$inferInsert;
