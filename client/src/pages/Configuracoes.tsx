@@ -25,6 +25,7 @@ function ConfiguracoesContent() {
       setInviteEmail("");
       setInviteName("");
       setInviteRole("viewer");
+      utils.team.list.invalidate();
     },
     onError: (err) => toast.error(`Erro: ${err.message}`),
   });
@@ -40,6 +41,22 @@ function ConfiguracoesContent() {
       role: inviteRole,
     });
   };
+
+  const { data: teamMembers, isLoading: membersLoading } = trpc.team.list.useQuery();
+  const removeMember = trpc.team.remove.useMutation({
+    onSuccess: () => {
+      toast.success("Membro removido com sucesso!");
+      utils.team.list.invalidate();
+    },
+    onError: (err) => toast.error(`Erro: ${err.message}`),
+  });
+  const updateMemberRole = trpc.team.updateRole.useMutation({
+    onSuccess: () => {
+      toast.success("Permissão atualizada!");
+      utils.team.list.invalidate();
+    },
+    onError: (err) => toast.error(`Erro: ${err.message}`),
+  });
 
   // ── Perfil ──────────────────────────────────────────────────────────────
   const { data: profile, isLoading: profileLoading } = trpc.user.getProfile.useQuery();
@@ -505,9 +522,34 @@ function ConfiguracoesContent() {
         {/* Lista de membros */}
         <div className="space-y-2">
           <h4 className="font-semibold text-sm mb-3">Membros Ativos</h4>
-          <div className="text-sm text-muted-foreground text-center py-8">
-            Nenhum membro adicionado ainda. Convide alguém para começar!
-          </div>
+          {membersLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-4 h-4 animate-spin" />
+            </div>
+          ) : teamMembers && teamMembers.length > 0 ? (
+            <div className="space-y-2">
+              {teamMembers.map((member) => (
+                <div key={member.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{member.fullName}</p>
+                    <p className="text-xs text-muted-foreground">{member.email}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-[#B87333]/10 text-[#B87333] border-[#B87333]/20 text-xs">
+                      {member.role === "viewer" ? "Visualizador" : member.role === "editor" ? "Editor" : "Admin"}
+                    </Badge>
+                    <Badge className={member.status === "active" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}>
+                      {member.status === "active" ? "Ativo" : "Pendente"}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground text-center py-8">
+              Nenhum membro adicionado ainda. Convide alguém para começar!
+            </div>
+          )}
         </div>
       </Card>
     </div>

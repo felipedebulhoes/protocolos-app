@@ -10,14 +10,13 @@ function genInvitationToken(): string {
 }
 
 export const teamRouter = router({
-  // List all team members
+  // List all team members (active and pending)
   list: ownerProcedure.query(async ({ ctx }) => {
     const members = await db.db
       .select()
       .from(teamMembers)
-      .where(eq(teamMembers.status, "active"))
       .orderBy(teamMembers.createdAt);
-    return members;
+    return members.filter(m => m.status !== "inactive");
   }),
 
   // Invite a new team member

@@ -20,8 +20,8 @@
 - [x] Notificação por e-mail ao paciente após submeter ficha (implementado)
 
 ## Gerenciamento de Usuários (Jun 2026)
-- [ ] Adicionar tabela `team_members` no schema do Drizzle (nome, email, role, status, criado_em)
-- [ ] Criar tRPC procedures: listTeamMembers, inviteTeamMember, removeTeamMember, updateTeamMemberRole
-- [ ] Implementar UI em Configurações com tabela de membros + botão "Convidar Membro"
+- [x] Adicionar tabela `team_members` no schema do Drizzle (nome, email, role, status, criado_em)
+- [x] Criar tRPC procedures: listTeamMembers, inviteTeamMember, removeTeamMember, updateTeamMemberRole
+- [x] Implementar UI em Configurações com tabela de membros + botão "Convidar Membro"
 - [ ] Adicionar autenticação para usuários convidados (links de convite com token único)
 - [ ] Criar página de login/cadastro para membros convidados
