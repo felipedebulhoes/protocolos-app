@@ -179,6 +179,25 @@
   background: linear-gradient(135deg, #1C3D5A 0%, #0F2A3F 100%);
 }
 
+/* Gradiente principal da marca (hero sections) */
+.brand-gradient {
+  background: linear-gradient(160deg, #0F2A3F 0%, #1C3D5A 50%, #1a3a56 100%);
+}
+
+/* Botão cobre premium */
+.cobre-gradient {
+  background: linear-gradient(135deg, #C8843A 0%, #B87333 50%, #9A6128 100%);
+}
+.cobre-gradient:hover {
+  background: linear-gradient(135deg, #D4904A 0%, #C8843A 50%, #A86D30 100%);
+}
+
+/* Micro-interação de press em botões */
+.btn-press:active {
+  transform: scale(0.97);
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
 /* Background Pattern do Dr. Felipe Bulhões */
 .brand-pattern {
   background-image: url('/images/pattern.svg');

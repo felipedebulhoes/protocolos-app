@@ -10,43 +10,41 @@ import {
   Calendar,
   Award,
   Heart,
-  Phone,
-  CheckCircle2,
-  Star,
-  MapPin,
   Video,
+  MapPin,
 } from "lucide-react";
 
 export default function PacienteLanding() {
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans">
-      {/* ── Top bar ─────────────────────────────────────────────────────── */}
-      <header className="bg-[#1C3D5A] text-white px-4 py-3 shadow-lg">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          {/* Logo */}
+    <div className="min-h-screen bg-background flex flex-col font-sans">
+
+      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-white/90 backdrop-blur-md">
+        <div className="container flex items-center justify-between h-18 py-3">
+          {/* Logo landscape */}
           <div className="flex items-center gap-3">
             <img
               src="/images/isotipo.svg"
               alt="Isotipo Dr. Felipe de Bulhões"
-              className="h-10 w-auto brightness-0 invert"
+              className="h-10 w-auto invert opacity-85"
             />
-            <div className="hidden sm:block">
-              <p className="text-sm font-bold tracking-wide text-amber-400 leading-tight">
+            <div>
+              <h1 className="font-serif text-xl text-primary tracking-wide">
                 Dr. Felipe de Bulhões
-              </p>
-              <p className="text-[11px] text-slate-300 leading-tight">
+              </h1>
+              <p className="text-[11px] text-muted-foreground tracking-[0.2em] uppercase font-light">
                 Urologia &amp; Cirurgia Geral
               </p>
             </div>
           </div>
 
-          {/* Nav actions */}
-          <div className="flex items-center gap-2">
+          {/* Nav */}
+          <nav className="flex items-center gap-2">
             <Link href="/login">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="bg-transparent border-white/30 text-white hover:bg-white/10 text-xs"
+                className="btn-press text-primary/70 hover:text-primary"
               >
                 Entrar
               </Button>
@@ -54,255 +52,206 @@ export default function PacienteLanding() {
             <Link href="/cadastro">
               <Button
                 size="sm"
-                className="bg-amber-600 hover:bg-amber-700 text-white font-semibold border-0 text-xs"
+                className="btn-press cobre-gradient text-white shadow-sm hover:shadow-md transition-shadow"
               >
-                Criar conta
+                Cadastrar
               </Button>
             </Link>
-          </div>
+          </nav>
         </div>
       </header>
 
-      {/* ── Hero ────────────────────────────────────────────────────────── */}
-      <section
-        className="relative overflow-hidden text-white"
-        style={{ background: "linear-gradient(135deg, #1C3D5A 0%, #0f2a3f 60%, #0a1e2e 100%)" }}
-      >
-        {/* Pattern de marca com baixa opacidade */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.06]"
-          style={{
-            backgroundImage: "url('/images/pattern.svg')",
-            backgroundSize: "320px",
-            backgroundRepeat: "repeat",
-          }}
-        />
+      {/* ── HERO ───────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden">
+        {/* Fundo brand-gradient com pattern */}
+        <div className="absolute inset-0 brand-gradient" />
+        <div className="absolute inset-0 brand-pattern opacity-[0.04]" />
+        {/* Linha cobre separadora */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#B87333]/60 to-transparent" />
 
-        {/* Glow decorativo */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl -mr-32 -mt-32" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/5 rounded-full blur-2xl -ml-20 -mb-20" />
+        <div className="relative py-24 md:py-36 px-4">
+          <div className="container max-w-3xl text-center">
+            {/* Logo landscape branca */}
+            <img
+              src="/images/logo_landscape.svg"
+              alt="Dr. Felipe de Bulhões"
+              className="h-16 md:h-20 w-auto mx-auto mb-10 opacity-95"
+            />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-4 py-16 md:py-20">
-          <div className="flex flex-col md:flex-row items-center gap-10">
-            {/* Texto */}
-            <div className="flex-1 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 bg-amber-600/20 border border-amber-500/30 rounded-full px-4 py-1.5 mb-5">
-                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                <span className="text-amber-300 text-xs font-bold uppercase tracking-widest">
-                  Portal de Pré-Consulta
-                </span>
-              </div>
+            <h2 className="font-serif text-3xl md:text-5xl text-white/95 mb-6 leading-tight tracking-wide">
+              Portal de Pré-Consulta
+            </h2>
+            <p className="text-base md:text-lg text-white/70 mb-10 max-w-xl mx-auto leading-relaxed font-light">
+              Prepare-se para sua consulta com antecedência. Preencha sua ficha
+              de anamnese e envie seus exames de forma prática e segura.
+            </p>
 
-              <h1 className="text-3xl md:text-5xl font-serif font-bold text-white leading-tight mb-4">
-                Sua consulta começa<br />
-                <span className="text-amber-400">antes de chegar</span>
-              </h1>
-
-              <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-6 max-w-lg">
-                Prepare sua ficha de anamnese e envie seus exames com antecedência.
-                Atendimento humanizado, particular e convênios.
-              </p>
-
-              {/* Badges de credencial */}
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-8">
-                {[
-                  "Formado Instituto D'Or",
-                  "Atendimento Humanizado",
-                  "Particular e Convênios",
-                  "Agendamento Online",
-                  "Cirurgia Minimamente Invasiva",
-                ].map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 bg-white/10 border border-white/20 text-white text-xs font-medium px-3 py-1 rounded-full"
-                  >
-                    <CheckCircle2 className="w-3 h-3 text-amber-400 shrink-0" />
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-                <Link href="/cadastro">
-                  <Button
-                    size="lg"
-                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold border-0 px-8 shadow-lg shadow-amber-900/30"
-                  >
-                    Criar conta gratuita <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="bg-transparent border-white/40 text-white hover:bg-white/10 px-8"
-                  >
-                    Já tenho conta
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Logo portrait */}
-            <div className="hidden md:flex shrink-0 flex-col items-center gap-4">
-              <div className="w-48 h-48 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-6 backdrop-blur-sm">
-                <img
-                  src="/images/logo_portrait.svg"
-                  alt="Logo Dr. Felipe de Bulhões"
-                  className="w-full h-full object-contain brightness-0 invert"
-                />
-              </div>
-              {/* Afiliações */}
-              <div className="flex gap-2 flex-wrap justify-center">
-                {["SBU", "AUA", "EAU"].map((org) => (
-                  <span
-                    key={org}
-                    className="bg-white/10 border border-white/20 text-white text-[11px] font-bold px-3 py-1 rounded-full"
-                  >
-                    {org}
-                  </span>
-                ))}
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/cadastro">
+                <Button
+                  size="lg"
+                  className="btn-press cobre-gradient text-white shadow-lg hover:shadow-xl transition-shadow px-8"
+                >
+                  Criar Conta
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="btn-press border-white/30 text-white bg-white/10 hover:bg-white/20 px-8"
+                >
+                  Já tenho conta
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Diferenciais rápidos ─────────────────────────────────────────── */}
-      <section className="bg-amber-600 text-white py-4">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="flex flex-wrap justify-center md:justify-between gap-4 text-sm font-semibold">
+      {/* ── COMO FUNCIONA ──────────────────────────────────────────────────── */}
+      <section className="py-20 px-4 bg-background">
+        <div className="container max-w-4xl">
+          <div className="text-center mb-14">
+            <p className="text-xs font-bold tracking-[0.25em] uppercase text-[#B87333] mb-3">
+              Como funciona
+            </p>
+            <h3 className="font-serif text-3xl md:text-4xl text-primary">
+              Sua consulta começa aqui
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: <MapPin className="w-4 h-4" />, text: "São Paulo – SP" },
-              { icon: <Video className="w-4 h-4" />, text: "Teleconsulta disponível" },
-              { icon: <Calendar className="w-4 h-4" />, text: "Agendamento Online" },
-              { icon: <Award className="w-4 h-4" />, text: "Formado Instituto D'Or" },
-              { icon: <Heart className="w-4 h-4" />, text: "Atendimento Humanizado" },
-            ].map(({ icon, text }) => (
-              <div key={text} className="flex items-center gap-2">
-                {icon}
-                <span>{text}</span>
+              {
+                icon: ClipboardList,
+                title: "Ficha de Anamnese",
+                desc: "Preencha sua história clínica com calma, no seu tempo, antes da consulta.",
+              },
+              {
+                icon: Upload,
+                title: "Upload de Exames",
+                desc: "Envie seus exames laboratoriais e de imagem de forma segura e organizada.",
+              },
+              {
+                icon: Stethoscope,
+                title: "Consulta Otimizada",
+                desc: "Seu médico já terá acesso a todas as informações, otimizando o tempo da consulta.",
+              },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex flex-col items-center text-center gap-4">
+                <div className="w-14 h-14 rounded-full border border-border flex items-center justify-center text-[#B87333]">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <h4 className="font-semibold text-foreground text-base">{title}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Como funciona ────────────────────────────────────────────────── */}
-      <section className="bg-slate-50 py-16">
-        <div className="max-w-5xl mx-auto px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-[0.2em] text-amber-700 mb-2">
-            Como funciona
-          </p>
-          <h2 className="text-center text-2xl md:text-3xl font-serif text-[#1C3D5A] mb-10">
-            Simples, seguro e no seu tempo
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <FeatureCard
-              icon={<ClipboardList className="w-6 h-6 text-amber-600" />}
-              step="01"
-              title="Ficha de Anamnese"
-              text="Preencha sua história clínica com calma, no seu tempo, antes da consulta."
-            />
-            <FeatureCard
-              icon={<Upload className="w-6 h-6 text-amber-600" />}
-              step="02"
-              title="Upload de Exames"
-              text="Envie seus exames laboratoriais e de imagem de forma segura e organizada."
-            />
-            <FeatureCard
-              icon={<Stethoscope className="w-6 h-6 text-amber-600" />}
-              step="03"
-              title="Consulta Otimizada"
-              text="Seu médico já terá acesso a todas as informações, otimizando o tempo da consulta."
-            />
+      {/* ── DIFERENCIAIS ──────────────────────────────────────────────────── */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="container max-w-5xl">
+          <div className="text-center mb-14">
+            <p className="text-xs font-bold tracking-[0.25em] uppercase text-[#B87333] mb-3">
+              Diferenciais
+            </p>
+            <h3 className="font-serif text-3xl md:text-4xl text-primary">
+              Atendimento Humanizado
+            </h3>
           </div>
 
-          <div className="mt-10 flex items-center justify-center gap-2 text-sm text-slate-500">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>
-              Seus dados são protegidos e acessíveis apenas por você e seu médico.
-            </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: Heart,
+                title: "Particular e Convênios",
+                desc: "Atendemos diversos convênios e particular",
+              },
+              {
+                icon: Calendar,
+                title: "Agendamento Online",
+                desc: "Agende sua consulta ou teleconsulta online",
+              },
+              {
+                icon: Award,
+                title: "Formado Instituto D'Or",
+                desc: "Residência em Urologia pelo IDOR",
+              },
+              {
+                icon: Video,
+                title: "Cirurgia Minimamente Invasiva",
+                desc: "Técnicas modernas com menor tempo de recuperação",
+              },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div
+                key={title}
+                className="flex flex-col items-center text-center gap-3 p-6 rounded-xl border border-border bg-background"
+              >
+                <Icon className="w-6 h-6 text-[#B87333]" />
+                <h5 className="font-semibold text-foreground text-sm">{title}</h5>
+                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA final ────────────────────────────────────────────────────── */}
-      <section
-        className="py-14 text-white text-center"
-        style={{ background: "linear-gradient(135deg, #1C3D5A 0%, #0f2a3f 100%)" }}
-      >
-        <div className="max-w-xl mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-serif font-bold mb-3">
-            Pronto para começar?
-          </h2>
-          <p className="text-slate-300 mb-7 text-sm leading-relaxed">
-            Crie sua conta gratuitamente e prepare-se para uma consulta mais
-            completa e humanizada.
+      {/* ── SEGURANÇA ─────────────────────────────────────────────────────── */}
+      <section className="py-16 px-4 bg-background">
+        <div className="container max-w-2xl text-center">
+          <ShieldCheck className="w-10 h-10 text-[#B87333] mx-auto mb-4 opacity-70" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Seus dados são protegidos com criptografia e acessíveis apenas por
+            você e seu médico. Este portal segue as melhores práticas de
+            segurança e privacidade em saúde.
           </p>
-          <Link href="/cadastro">
-            <Button
-              size="lg"
-              className="bg-amber-600 hover:bg-amber-700 text-white font-bold border-0 px-10 shadow-lg shadow-amber-900/40"
-            >
-              Criar conta gratuita <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="bg-[#0a1e2e] text-white py-8">
-        <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* ── FOOTER ────────────────────────────────────────────────────────── */}
+      <footer className="brand-gradient border-t border-white/10 py-8 px-4 mt-auto">
+        <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Logo + nome */}
           <div className="flex items-center gap-3">
             <img
               src="/images/isotipo.svg"
-              alt="Isotipo"
-              className="h-8 w-auto brightness-0 invert opacity-70"
+              alt="Isotipo Dr. Felipe de Bulhões"
+              className="h-8 w-auto invert opacity-80"
             />
             <div>
-              <p className="font-serif text-sm text-white">Dr. Felipe de Bulhões</p>
-              <p className="text-xs text-slate-400">Urologista &amp; Cirurgião Geral</p>
+              <p className="text-sm font-semibold text-white/90 font-serif">
+                Dr. Felipe de Bulhões
+              </p>
+              <p className="text-[11px] text-white/50">
+                Urologista &amp; Cirurgião Geral
+              </p>
             </div>
           </div>
-          <div className="text-center md:text-right">
-            <p className="text-xs text-slate-400">
-              Membro SBU &bull; Membro AUA (International Resident in Training) &bull; Membro EAU (Junior International Member)
-            </p>
-            <p className="text-xs text-slate-500 mt-1">
-              Formado pelo Instituto D'Or de Ensino e Pesquisa
-            </p>
+
+          {/* Info central */}
+          <div className="flex items-center gap-4 text-xs text-white/50">
+            <span className="flex items-center gap-1">
+              <Video className="w-3 h-3" />
+              Teleconsulta disponível
+            </span>
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              São Paulo, SP
+            </span>
           </div>
+
+          {/* Memberships */}
+          <p className="text-[11px] text-white/40 text-center md:text-right">
+            Membro SBU • Membro AUA • Membro EAU
+            <br />
+            <span className="text-white/30">Portal de Pré-Consulta &amp; Exames</span>
+          </p>
         </div>
       </footer>
-    </div>
-  );
-}
-
-function FeatureCard({
-  icon,
-  step,
-  title,
-  text,
-}: {
-  icon: React.ReactNode;
-  step: string;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-center gap-2 mb-4">
-        <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 rounded-full w-7 h-7 flex items-center justify-center">
-          {step}
-        </span>
-        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-          {icon}
-        </div>
-      </div>
-      <h4 className="font-bold text-[#1C3D5A] mb-2 text-base">{title}</h4>
-      <p className="text-sm text-slate-600 leading-relaxed">{text}</p>
     </div>
   );
 }
