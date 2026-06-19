@@ -76,6 +76,15 @@ export default function FichaPublica() {
       setSubmittedEmail(res.email);
       setDone(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      // Disparar evento Meta Pixel 'Lead' ao concluir o envio da ficha
+      try {
+        if (typeof window !== 'undefined' && (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq) {
+          (window as unknown as { fbq: (...args: unknown[]) => void }).fbq('track', 'Lead', {
+            content_name: 'Ficha Pré-Consulta',
+            content_category: 'Urologia',
+          });
+        }
+      } catch { /* silencioso */ }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não foi possível enviar a ficha.");
     }

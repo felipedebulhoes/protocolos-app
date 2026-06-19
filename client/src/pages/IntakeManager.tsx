@@ -23,6 +23,9 @@ import {
   ChevronRight,
   Link as LinkIcon,
   MessageCircle,
+  CalendarCheck,
+  CalendarX,
+  Filter,
 } from "lucide-react";
 
 function statusBadge(status: string) {
@@ -46,6 +49,8 @@ export default function IntakeManager() {
   const [invitedPhone, setInvitedPhone] = useState("");
   const [createdToken, setCreatedToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  // Filtro: 'all' | 'scheduled' | 'not_scheduled'
+  const [scheduleFilter, setScheduleFilter] = useState<'all' | 'scheduled' | 'not_scheduled'>('all');
 
   function linkFor(token: string) {
     return `${window.location.origin}/ficha/${token}`;
@@ -187,6 +192,46 @@ export default function IntakeManager() {
           </Dialog>
         </div>
 
+        {/* Filtro de agendamento */}
+        {listQuery.data && listQuery.data.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <Filter className="w-4 h-4 text-slate-400" />
+            <span className="text-xs text-muted-foreground font-medium">Filtrar:</span>
+            <button
+              onClick={() => setScheduleFilter('all')}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                scheduleFilter === 'all'
+                  ? 'bg-[#1C3D5A] text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Todos ({listQuery.data.length})
+            </button>
+            <button
+              onClick={() => setScheduleFilter('not_scheduled')}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                scheduleFilter === 'not_scheduled'
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+              }`}
+            >
+              <CalendarX className="w-3.5 h-3.5" />
+              Não agendados ({listQuery.data.filter(f => f.status !== 'pending' && !f.scheduled).length})
+            </button>
+            <button
+              onClick={() => setScheduleFilter('scheduled')}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                scheduleFilter === 'scheduled'
+                  ? 'bg-indigo-500 text-white'
+                  : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+              }`}
+            >
+              <CalendarCheck className="w-3.5 h-3.5" />
+              Agendados ({listQuery.data.filter(f => f.scheduled).length})
+            </button>
+          </div>
+        )}
+
         {/* List */}
         {listQuery.isLoading ? (
           <div className="flex justify-center py-16">
@@ -201,16 +246,27 @@ export default function IntakeManager() {
           </Card>
         ) : (
           <div className="space-y-2">
-            {listQuery.data.map((f) => {
+            {listQuery.data
+              .filter(f => {
+                if (scheduleFilter === 'scheduled') return Boolean(f.scheduled);
+                if (scheduleFilter === 'not_scheduled') return f.status !== 'pending' && !f.scheduled;
+                return true;
+              })
+              .map((f) => {
               const name = f.invitedName || "Paciente sem nome";
               const isSubmitted = f.status !== "pending";
               const row = (
                 <Card className="border border-slate-100 hover:border-[#B87333]/40 transition-colors">
                   <CardContent className="p-4 flex items-center gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-[#1C3D5A] truncate">{name}</span>
                         {statusBadge(f.status)}
+                        {f.scheduled && (
+                          <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-semibold border-0">
+                            <CalendarCheck className="w-3 h-3" /> Agendado
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
                         {f.invitedEmail || f.invitedPhone || "—"}

@@ -17,6 +17,11 @@ import {
   User,
   CheckCircle2,
   CalendarCheck,
+  Download,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  Image as ImageIcon,
 } from "lucide-react";
 import { INTAKE_SECTIONS } from "@shared/intakeSchema";
 import { analyteLabel, CATEGORY_LABELS, categoryForAnalyte, type AnalyteCategory } from "@shared/analyteCategories";
@@ -71,6 +76,8 @@ export default function IntakeDetail() {
 
   const [notes, setNotes] = useState("");
   const [isScheduled, setIsScheduled] = useState(false);
+  // Preview de arquivos: id do arquivo sendo visualizado inline
+  const [previewFileId, setPreviewFileId] = useState<number | null>(null);
 
   const form = detailQuery.data?.form;
   const patient = detailQuery.data?.patient;
@@ -254,44 +261,99 @@ export default function IntakeDetail() {
           </Card>
         )}
 
-        {/* Uploaded files */}
+        {/* Uploaded files — with inline preview and download */}
         {examFiles.length > 0 && (
           <Card className="border border-slate-100">
             <CardContent className="p-5 space-y-3">
               <div className="flex items-center gap-2 text-[#1C3D5A] font-bold">
                 <FileText className="w-5 h-5 text-[#B87333]" />
-                Arquivos enviados
+                Exames enviados ({examFiles.length})
               </div>
-              <div className="space-y-2">
-                {examFiles.map((f) => (
-                  <a
-                    key={f.id}
-                    href={f.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
-                  >
-                    <FileText className="w-4 h-4 text-slate-400 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-[#1C3D5A] truncate">{f.fileName}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {f.labName || "—"}
-                        {f.examDate ? ` • ${f.examDate}` : ""}
+              <div className="space-y-3">
+                {examFiles.map((f) => {
+                  const isPdf = f.mimeType === 'application/pdf' || f.fileName?.toLowerCase().endsWith('.pdf');
+                  const isImage = f.mimeType?.startsWith('image/') || /\.(jpe?g|png|gif|webp)$/i.test(f.fileName ?? '');
+                  const isExpanded = previewFileId === f.id;
+                  return (
+                    <div key={f.id} className="border border-slate-100 rounded-xl overflow-hidden">
+                      {/* File header row */}
+                      <div className="flex items-center gap-3 px-3 py-2.5 bg-slate-50">
+                        {isPdf ? (
+                          <FileText className="w-4 h-4 text-red-400 shrink-0" />
+                        ) : isImage ? (
+                          <ImageIcon className="w-4 h-4 text-blue-400 shrink-0" />
+                        ) : (
+                          <FileText className="w-4 h-4 text-slate-400 shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-[#1C3D5A] truncate">{f.fileName}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {f.labName || ""}
+                            {f.examDate ? ` • ${f.examDate}` : ""}
+                            {f.fileSize ? ` • ${(f.fileSize / 1024).toFixed(0)} KB` : ""}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <Badge
+                            className={`text-[10px] border-0 ${
+                              f.processStatus === 'done'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : f.processStatus === 'failed'
+                                  ? 'bg-amber-100 text-amber-700'
+                                  : 'bg-slate-200 text-slate-600'
+                            }`}
+                          >
+                            {f.processStatus === 'done' ? 'Lido' : f.processStatus === 'failed' ? 'Manual' : 'Processando'}
+                          </Badge>
+                          {/* Visualizar inline (PDF ou imagem) */}
+                          {(isPdf || isImage) && (
+                            <button
+                              onClick={() => setPreviewFileId(isExpanded ? null : f.id)}
+                              className="flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+                              title={isExpanded ? 'Fechar visualização' : 'Visualizar'}
+                            >
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              {isExpanded ? 'Fechar' : 'Ver'}
+                            </button>
+                          )}
+                          {/* Download */}
+                          <a
+                            href={f.fileUrl ?? '#'}
+                            download={f.fileName}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-white border border-slate-200 text-[#1C3D5A] hover:bg-slate-100 transition-colors"
+                            title="Baixar arquivo"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Baixar
+                          </a>
+                        </div>
                       </div>
+                      {/* Inline preview */}
+                      {isExpanded && f.fileUrl && (
+                        <div className="border-t border-slate-100">
+                          {isPdf ? (
+                            <iframe
+                              src={f.fileUrl}
+                              className="w-full"
+                              style={{ height: '600px' }}
+                              title={f.fileName ?? 'PDF'}
+                            />
+                          ) : isImage ? (
+                            <div className="p-3 bg-slate-50 flex justify-center">
+                              <img
+                                src={f.fileUrl}
+                                alt={f.fileName ?? 'Imagem'}
+                                className="max-w-full max-h-[500px] object-contain rounded-lg"
+                              />
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
-                    <Badge
-                      className={`text-[10px] border-0 ${
-                        f.processStatus === "done"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : f.processStatus === "failed"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-slate-200 text-slate-600"
-                      }`}
-                    >
-                      {f.processStatus === "done" ? "Lido" : f.processStatus === "failed" ? "Manual" : "Processando"}
-                    </Badge>
-                  </a>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

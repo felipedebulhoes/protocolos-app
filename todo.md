@@ -35,6 +35,11 @@
 - [x] Testar fluxo completo de upload de PDF/imagem na ficha de pré-consulta (confirmado via API)
 
 ## Novas Tarefas (Jun 2026)
-- [ ] Testar upload real de PDF via API com token válido da ficha de teste
-- [ ] Adicionar campo "agendado" no banco (intakeForms) e card de Taxa de Conversão no dashboard
-- [ ] Integrar Meta Pixel 1730608694762791 no portal do paciente (/paciente)
+- [x] Testar upload real de PDF via API com token válido da ficha de teste — confirmado: status 200, fileId salvo no banco
+- [x] Adicionar campo "agendado" no banco (intakeForms) e card de Taxa de Conversão no dashboard
+- [x] Integrar Meta Pixel 1730608694762791 no portal do paciente (/paciente)
+
+## Melhorias de Fichas e Pixel (Jun 2026)
+- [x] Filtro de agendados/não-agendados na lista de fichas (/fichas)
+- [x] Seção de exames PDF com download/visualização no IntakeDetail
+- [x] Evento Meta Pixel 'Lead' ao finalizar e enviar a ficha
