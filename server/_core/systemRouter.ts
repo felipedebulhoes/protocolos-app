@@ -7,6 +7,7 @@ import { notifyOwner } from "./notification";
 import { env } from "./env";
 
 export const authRouter = router({
+<<<<<<< Updated upstream
     me: publicProcedure.query(({ ctx }) => {
           if (!ctx.user) return null;
           const isOwner = isOwnerOpenId(ctx.user.openId, env.OWNER_OPEN_ID);
@@ -26,6 +27,27 @@ export const authRouter = router({
                   isOwner: isOwnerOpenId(ctx.user.openId, env.OWNER_OPEN_ID),
           };
     }),
+=======
+  me: publicProcedure.query(({ ctx }) => {
+    if (!ctx.user) return null;
+    const isOwner = isOwnerOpenId(ctx.user.openId, env.OWNER_OPEN_ID) || ctx.user.role === 'admin';
+    return { ...ctx.user, isOwner };
+  }),
+  logout: publicProcedure.mutation(({ ctx }) => {
+    ctx.res.setHeader("Set-Cookie", serialize(COOKIE_NAME, "", getClearCookieOptions()));
+    return { success: true };
+  }),
+  debugOpenId: publicProcedure.query(({ ctx }) => {
+    if (!ctx.user) return { openId: null, message: "Not logged in" };
+    return {
+      openId: ctx.user.openId,
+      name: ctx.user.name,
+      email: ctx.user.email,
+      expectedOwnerId: env.OWNER_OPEN_ID,
+      isOwner: isOwnerOpenId(ctx.user.openId, env.OWNER_OPEN_ID),
+    };
+  }),
+>>>>>>> Stashed changes
 });
 
 export const systemRouter = router({
