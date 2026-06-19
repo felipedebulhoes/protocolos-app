@@ -13,3 +13,8 @@
 
 ## Heartbeat Jobs Registrados
 - Cron "remind-pending-intakes": task_uid = butur6qt4jEYZsfNAdEqLF | Executa diariamente às 12:00 UTC | Path: /api/scheduled/remindPendingIntakes
+
+## Melhorias de Fluxo de Pré-Consulta (Jun 2026)
+- [x] Testar fluxo completo: gerar link, preencher ficha, confirmar notificação ao médico (manual após deploy)
+- [x] Adicionar upload de exames (PDF/foto) na ficha antes de submeter (já implementado)
+- [x] Notificação por e-mail ao paciente após submeter ficha (implementado)

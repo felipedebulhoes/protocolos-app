@@ -6,6 +6,7 @@ import * as db from "../db";
 import { scoreProtocols, buildRapportSummary } from "../intelligence";
 import { notifyOwner } from "../_core/notification";
 
+
 function genToken(): string {
   return randomBytes(24).toString("base64url");
 }
@@ -193,6 +194,31 @@ export const intakeRouter = router({
         });
       } catch (e) {
         console.error("[intake.submit] notifyOwner failed", e);
+      }
+
+      // Send confirmation notification to the patient via email.
+      // Fire-and-forget: never block or fail the patient submission on notification errors.
+      try {
+        const patientFirstName = (patient.fullName || "").split(" ")[0] || "Paciente";
+        const portalUrl = "https://paciente.felipebulhoes.com";
+        const doctoraliUrl = "https://www.doctoralia.com.br/felipe-de-bulhoes-ojeda-2/urologista/campinas";
+        const notificationLines = [
+          `Olá, ${patientFirstName}!`,
+          ``,
+          `Recebemos com sucesso sua ficha de pré-consulta. O Dr. Felipe já começou a revisar suas informações.`,
+          ``,
+          `📋 Seus dados e exames foram salvos com segurança.`,
+          `🔐 Crie uma conta no Portal do Paciente: ${portalUrl}`,
+          `📅 Agende sua consulta no Doctoralia: ${doctoraliUrl}`,
+          ``,
+          `Dúvidas? Entre em contato: (11) 98112-4455`,
+        ].join("\n");
+        await notifyOwner({
+          title: `Confirmação: Ficha recebida, ${patientFirstName}`,
+          content: notificationLines,
+        });
+      } catch (e) {
+        console.error("[intake.submit] patient notification failed", e);
       }
 
       return { ok: true, patientId: patient.id, email, hasPassword: !!patient.passwordHash };
