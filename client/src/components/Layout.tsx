@@ -19,11 +19,14 @@ import {
   GraduationCap,
   FileText,
   Target,
-  ClipboardList
+  ClipboardList,
+  LogOut,
+  Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -33,6 +36,7 @@ export default function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { logout } = useAuth();
 
   // Fechar sidebar no mobile quando mudar de rota
   useEffect(() => {
@@ -48,6 +52,7 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/treinamento", label: "Treinar Equipe", icon: GraduationCap },
     { href: "/fichas", label: "Fichas Pré-Consulta", icon: ClipboardList },
     { href: "/icp", label: "Paciente Ideal (ICP)", icon: Target },
+    { href: "/configuracoes", label: "Configurações", icon: Settings },
   ];
 
   return (
@@ -66,6 +71,9 @@ export default function Layout({ children }: LayoutProps) {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-[#FEFEFE] hover:bg-white/10">
             {theme === "dark" ? <Sun className="w-5 h-5 text-[#B87333]" /> : <Moon className="w-5 h-5 text-[#FEFEFE]" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={logout} className="text-[#FEFEFE] hover:bg-white/10" title="Fazer logout">
+            <LogOut className="w-5 h-5" />
           </Button>
           <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-[#FEFEFE] hover:bg-white/10">
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -153,16 +161,27 @@ export default function Layout({ children }: LayoutProps) {
 
           </div>
 
-          <div className="p-3 bg-white/5 rounded-lg border border-white/10 flex items-center gap-3">
-            <img 
-              src="/images/isotipo.svg" 
-              alt="Dr. Felipe de Bulhões" 
-              className="w-8 h-8 rounded-full bg-white/10 p-1 object-contain invert brightness-0"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold truncate text-[#FEFEFE] font-serif">Dr. Felipe de Bulhões</p>
-              <p className="text-[9px] text-white/50 truncate uppercase tracking-wider font-semibold">Urologista & Cirurgião</p>
+          <div className="space-y-2">
+            <div className="p-3 bg-white/5 rounded-lg border border-white/10 flex items-center gap-3">
+              <img 
+                src="/images/isotipo.svg" 
+                alt="Dr. Felipe de Bulhões" 
+                className="w-8 h-8 rounded-full bg-white/10 p-1 object-contain invert brightness-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold truncate text-[#FEFEFE] font-serif">Dr. Felipe de Bulhões</p>
+                <p className="text-[9px] text-white/50 truncate uppercase tracking-wider font-semibold">Urologista & Cirurgião</p>
+              </div>
             </div>
+            <Button 
+              onClick={logout}
+              variant="outline" 
+              size="sm" 
+              className="w-full text-white border-white/20 hover:bg-red-600/20 hover:border-red-500/50 hover:text-red-200"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Fazer Logout
+            </Button>
           </div>
         </div>
       </aside>

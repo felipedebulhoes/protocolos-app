@@ -18,7 +18,9 @@ import PortalPaciente from "./pages/PortalPaciente";
 import PacienteLanding from "./pages/PacienteLanding";
 import IntakeManager from "./pages/IntakeManager";
 import IntakeDetail from "./pages/IntakeDetail";
+import Configuracoes from "./pages/Configuracoes";
 import { DoctorGuard } from "./components/DoctorGuard";
+import { SessionProvider } from "./components/SessionProvider";
 
 /**
  * Detect whether the current host is the patient-facing domain.
@@ -95,6 +97,9 @@ function Router() {
       <Route path="/fichas/:id">
         <DoctorGuard><IntakeDetail /></DoctorGuard>
       </Route>
+      <Route path="/configuracoes">
+        <DoctorGuard><Configuracoes /></DoctorGuard>
+      </Route>
 
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
@@ -108,8 +113,10 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
-          <Toaster position="top-right" closeButton richColors />
-          <Router />
+          <SessionProvider>
+            <Toaster position="top-right" closeButton richColors />
+            <Router />
+          </SessionProvider>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
