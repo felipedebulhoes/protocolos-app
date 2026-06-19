@@ -11,6 +11,8 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType: string = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
+  console.log(`[storagePut] starting upload for key: ${key}, contentType: ${contentType}`);
+  
   // Get presigned PUT url
   const presignUrl = new URL("v1/storage/presign/put", base() + "/");
   presignUrl.searchParams.set("path", key);
@@ -20,7 +22,9 @@ export async function storagePut(
     headers: { Authorization: `Bearer ${env.BUILT_IN_FORGE_API_KEY}` },
   });
   if (!presignResp.ok) {
-    throw new Error(`storagePut presign failed (${presignResp.status}): ${await presignResp.text()}`);
+    const errorText = await presignResp.text();
+    console.error(`[storagePut] presign failed (${presignResp.status}):`, errorText);
+    throw new Error(`storagePut presign failed (${presignResp.status}): ${errorText}`);
   }
   const { url: putUrl } = (await presignResp.json()) as { url: string };
   if (!putUrl) throw new Error("storagePut: empty presigned url");
@@ -34,8 +38,11 @@ export async function storagePut(
     body: bodyData,
   });
   if (!putResp.ok) {
-    throw new Error(`storagePut upload failed (${putResp.status}): ${await putResp.text()}`);
+    const errorText = await putResp.text();
+    console.error(`[storagePut] upload failed (${putResp.status}):`, errorText);
+    throw new Error(`storagePut upload failed (${putResp.status}): ${errorText}`);
   }
+  console.log(`[storagePut] successfully uploaded ${key}`);
 
   return { key, url: `/manus-storage/${key}` };
 }

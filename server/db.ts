@@ -174,20 +174,22 @@ export async function updateExamFile(
 }
 
 export async function listExamFilesByPatient(patientId: number): Promise<ExamFile[]> {
-  return db
+  const result = await db
     .select()
     .from(examFiles)
     .where(eq(examFiles.patientId, patientId))
     .orderBy(desc(examFiles.createdAt));
+  return result;
 }
 
 export async function listExamFilesByIntake(intakeFormId: number): Promise<ExamFile[]> {
   try {
-    return db
+    const result = await db
       .select()
       .from(examFiles)
       .where(eq(examFiles.intakeFormId, intakeFormId))
       .orderBy(desc(examFiles.createdAt));
+    return result;
   } catch (error) {
     console.error(`[DB] Error fetching exam files for intake ${intakeFormId}:`, error);
     return [];

@@ -37,10 +37,14 @@ async function processUpload(args: {
   intakeFormId: number | null;
   uploadedBy: "patient" | "doctor";
 }) {
+  console.log(`[processUpload] starting for file: ${args.fileName}, size: ${args.fileBase64.length} chars`);
   const buffer = decodeBase64(args.fileBase64);
+  console.log(`[processUpload] decoded buffer size: ${buffer.length} bytes`);
   const safeName = args.fileName.replace(/[^\w.\-]+/g, "_").slice(0, 120) || "exame";
   const key = `exams/${args.patientId ?? "anon"}/${Date.now()}-${safeName}`;
+  console.log(`[processUpload] uploading to key: ${key}`);
   const { url } = await storagePut(key, buffer, args.mimeType || "application/octet-stream");
+  console.log(`[processUpload] upload successful, url: ${url}`);
 
   const file = await db.createExamFile({
     patientId: args.patientId,

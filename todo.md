@@ -25,3 +25,6 @@
 - [x] Implementar UI em Configurações com tabela de membros + botão "Convidar Membro"
 - [x] Adicionar autenticação para usuários convidados (links de convite com token único)
 - [x] Criar página de login/cadastro para membros convidados (TeamJoin.tsx)
+
+## Bugs Encontrados (Jun 2026)
+- [x] Erro ao fazer upload de exames na ficha de pré-consulta (falha ao enviar arquivo PDF) — corrigido: await faltava em listExamFilesByIntake e listExamFilesByPatient
