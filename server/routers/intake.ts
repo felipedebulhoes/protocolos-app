@@ -171,6 +171,7 @@ export const intakeRouter = router({
           .map((s) => s.title)
           .filter(Boolean);
         const patientName = patient.fullName || email;
+        const fichaUrl = `https://protocolos.felipebulhoes.com/fichas/${form.id}`;
         const lines = [
           `Paciente: ${patientName}`,
           `E-mail: ${email}`,
@@ -181,7 +182,9 @@ export const intakeRouter = router({
           topProtocols.length
             ? `Protocolos sugeridos: ${topProtocols.join(", ")}`
             : null,
-        ].filter(Boolean) as string[];
+          ``,
+          `🔗 Revisar ficha: ${fichaUrl}`,
+        ].filter((l) => l !== null) as string[];
         await notifyOwner({
           title: `Nova ficha pré-consulta: ${patientName}`,
           content: lines.join("\n"),

@@ -13,6 +13,7 @@ import { exchangeCodeForUser, parseState } from "./oauth";
 import { signSession } from "./sdk";
 import { upsertUserByOpenId } from "../db";
 import { storageGetSignedUrl } from "./storageProxy";
+import { remindPendingIntakesHandler } from "../scheduledHandlers/remindPendingIntakes";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -68,6 +69,9 @@ async function startServer() {
       return res.status(500).send("OAuth error");
     }
   });
+
+  // ---- Scheduled / Heartbeat callbacks ----
+  app.post("/api/scheduled/remindPendingIntakes", remindPendingIntakesHandler);
 
   // ---- Storage proxy (signed redirect) ----
   app.get("/manus-storage/*", async (req, res) => {

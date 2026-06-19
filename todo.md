@@ -5,3 +5,11 @@
 - [x] Adicionar botão "Portal do Paciente" com ícone de link copiável no sidebar do médico (Layout.tsx)
 - [x] Banner personalizado em PacienteLanding quando acessado via /paciente?token=xxx (exibir "Olá, [Nome] — preencha sua ficha antes da consulta")
 - [x] Redirecionar /ficha/:token para /paciente?token=xxx com banner antes de iniciar o formulário
+
+## Melhorias de Notificação e Dashboard (Jun 2026)
+- [x] Adicionar URL da ficha (protocolos.felipebulhoes.com/fichas/[id]) na notificação notifyOwner
+- [x] Criar job Heartbeat para lembrete automático de fichas pendentes após 24h
+- [x] Adicionar card "Taxa de preenchimento" no dashboard (Home.tsx) com % enviadas vs. pendentes
+
+## Heartbeat Jobs Registrados
+- Cron "remind-pending-intakes": task_uid = butur6qt4jEYZsfNAdEqLF | Executa diariamente às 12:00 UTC | Path: /api/scheduled/remindPendingIntakes

@@ -139,7 +139,7 @@ export default function Home() {
 
         {/* Dashboard de Atividades Recentes */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
             <Card className="border-border bg-card hover:shadow-md transition-shadow">
               <CardContent className="pt-5 pb-4">
                 <div className="flex items-center justify-between">
@@ -190,6 +190,30 @@ export default function Home() {
                     <Activity className="w-5 h-5 text-emerald-600" />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+            {/* Card de Taxa de Preenchimento */}
+            <Card className="border-border bg-card hover:shadow-md transition-shadow col-span-2 md:col-span-1">
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Taxa Preench.</p>
+                    <p className="text-3xl font-bold text-[#B87333] mt-1">{stats.taxaPreenchimento}%</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#B87333]/10 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-[#B87333]" />
+                  </div>
+                </div>
+                {/* Mini progress bar */}
+                <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-[#B87333] transition-all duration-500"
+                    style={{ width: `${stats.taxaPreenchimento}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {stats.fichasEnviadas} de {stats.totalFichas} fichas preenchidas
+                </p>
               </CardContent>
             </Card>
           </div>

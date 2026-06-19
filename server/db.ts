@@ -49,7 +49,7 @@ import {
   type NewExamResult,
   type ExamResult,
 } from "../drizzle/schema";
-import { and, desc } from "drizzle-orm";
+import { and, desc, lt, sql } from "drizzle-orm";
 
 // ---- Patients -------------------------------------------------------------
 
@@ -243,8 +243,10 @@ export async function getDashboardStats(): Promise<{
   totalFichas: number;
   fichasPendentes: number;
   fichasRevisadas: number;
+  fichasEnviadas: number;
+  taxaPreenchimento: number;
 }> {
-  const [totalPatientsRows, totalFichasRows, fichasPendentesRows, fichasRevisadasRows] =
+  const [totalPatientsRows, totalFichasRows, fichasPendentesRows, fichasRevisadasRows, fichasEnviadasRows] =
     await Promise.all([
       db.select({ id: patients.id }).from(patients),
       db.select({ id: intakeForms.id }).from(intakeForms),
@@ -256,13 +258,37 @@ export async function getDashboardStats(): Promise<{
         .select({ id: intakeForms.id })
         .from(intakeForms)
         .where(eq(intakeForms.status, "reviewed")),
+      db
+        .select({ id: intakeForms.id })
+        .from(intakeForms)
+        .where(sql`${intakeForms.status} != 'pending'`),
     ]);
+  const totalFichas = totalFichasRows.length;
+  const fichasEnviadas = fichasEnviadasRows.length;
+  const taxaPreenchimento = totalFichas > 0 ? Math.round((fichasEnviadas / totalFichas) * 100) : 0;
   return {
     totalPatients: totalPatientsRows.length,
-    totalFichas: totalFichasRows.length,
+    totalFichas,
     fichasPendentes: fichasPendentesRows.length,
     fichasRevisadas: fichasRevisadasRows.length,
+    fichasEnviadas,
+    taxaPreenchimento,
   };
+}
+
+/**
+ * Returns pending intake forms created more than `olderThanMs` milliseconds ago.
+ * Used by the Heartbeat reminder job to identify patients who haven't filled their form.
+ */
+export async function listPendingIntakesOlderThan(
+  olderThanMs: number,
+): Promise<IntakeForm[]> {
+  const cutoff = new Date(Date.now() - olderThanMs);
+  return db
+    .select()
+    .from(intakeForms)
+    .where(and(eq(intakeForms.status, "pending"), lt(intakeForms.createdAt, cutoff)))
+    .orderBy(desc(intakeForms.createdAt));
 }
 
 export async function getRecentFichas(limit = 5): Promise<IntakeForm[]> {
