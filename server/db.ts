@@ -152,6 +152,16 @@ export async function listIntakeFormsByPatient(patientId: number): Promise<Intak
     .orderBy(desc(intakeForms.createdAt));
 }
 
+export async function deleteIntakeForm(id: number): Promise<void> {
+  // Apaga exames associados primeiro (exam_results e exam_files)
+  const files = await db.select({ id: examFiles.id }).from(examFiles).where(eq(examFiles.intakeFormId, id));
+  for (const f of files) {
+    await db.delete(examResults).where(eq(examResults.examFileId, f.id));
+  }
+  await db.delete(examFiles).where(eq(examFiles.intakeFormId, id));
+  await db.delete(intakeForms).where(eq(intakeForms.id, id));
+}
+
 // ---- Exam files -----------------------------------------------------------
 
 export async function createExamFile(data: NewExamFile): Promise<ExamFile> {

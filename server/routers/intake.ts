@@ -243,4 +243,12 @@ export const intakeRouter = router({
 
       return { ok: true, patientId: patient.id, email, hasPassword: !!patient.passwordHash };
     }),
+
+  // ----- Doctor: delete an intake form -------------------------------------
+  delete: ownerProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ input }) => {
+      await db.deleteIntakeForm(input.id);
+      return { ok: true };
+    }),
 });

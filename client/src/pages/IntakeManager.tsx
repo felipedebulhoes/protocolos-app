@@ -13,6 +13,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   ClipboardList,
@@ -26,6 +37,7 @@ import {
   CalendarCheck,
   CalendarX,
   Filter,
+  Trash2,
 } from "lucide-react";
 
 function statusBadge(status: string) {
@@ -42,6 +54,13 @@ export default function IntakeManager() {
   const utils = trpc.useUtils();
   const listQuery = trpc.intake.list.useQuery();
   const createLink = trpc.intake.createLink.useMutation();
+  const deleteIntake = trpc.intake.delete.useMutation({
+    onSuccess: () => {
+      utils.intake.list.invalidate();
+      toast.success("Ficha apagada.");
+    },
+    onError: (e) => toast.error(e.message || "Não foi possível apagar a ficha."),
+  });
 
   const [open, setOpen] = useState(false);
   const [invitedName, setInvitedName] = useState("");
@@ -275,33 +294,65 @@ export default function IntakeManager() {
                         )}
                       </div>
                     </div>
-                    {isSubmitted ? (
-                      <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
-                    ) : (
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="bg-white"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            copyLink(f.token);
-                          }}
-                        >
-                          <Copy className="w-4 h-4 mr-1" /> Copiar
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-[#25D366] hover:bg-[#1FB855] text-white"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            openWhatsApp(f.token, f.invitedName, f.invitedPhone);
-                          }}
-                        >
-                          <MessageCircle className="w-4 h-4 mr-1" /> WhatsApp
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!isSubmitted && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="bg-white"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              copyLink(f.token);
+                            }}
+                          >
+                            <Copy className="w-4 h-4 mr-1" /> Copiar
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-[#25D366] hover:bg-[#1FB855] text-white"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openWhatsApp(f.token, f.invitedName, f.invitedPhone);
+                            }}
+                          >
+                            <MessageCircle className="w-4 h-4 mr-1" /> WhatsApp
+                          </Button>
+                        </>
+                      )}
+                      {isSubmitted && <ChevronRight className="w-5 h-5 text-slate-400" />}
+                      {/* Botão apagar — sempre visível, com confirmação */}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="bg-white text-red-500 hover:bg-red-50 hover:text-red-600 border-red-200"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Apagar ficha"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Apagar ficha?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              A ficha de <strong>{name}</strong> e todos os exames associados serão apagados permanentemente. Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-red-600 hover:bg-red-700 text-white"
+                              onClick={() => deleteIntake.mutate({ id: f.id })}
+                            >
+                              Apagar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </CardContent>
                 </Card>
               );
