@@ -41,12 +41,25 @@ export function ExamUploader({
   const [busy, setBusy] = useState(false);
   const [uploaded, setUploaded] = useState<UploadedExam[]>([]);
 
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     for (const file of Array.from(files)) {
+      const fileSizeMB = file.size / (1024 * 1024);
       if (file.size > MAX_MB * 1024 * 1024) {
-        toast.error(`${file.name}: arquivo maior que ${MAX_MB}MB.`);
+        toast.error(
+          `"${file.name}" é muito grande (${formatFileSize(file.size)}). O limite é ${MAX_MB}MB. Tente compactar o PDF ou reduzir a resolução da foto.`,
+          { duration: 6000 }
+        );
         continue;
+      }
+      // Warn if file is large but within limit
+      if (fileSizeMB > 8) {
+        toast.info(`"${file.name}" é grande (${formatFileSize(file.size)}). O envio pode demorar alguns segundos.`, { duration: 4000 });
       }
       setBusy(true);
       try {
@@ -63,8 +76,9 @@ export function ExamUploader({
           toast.warning(`${file.name}: enviado, mas a leitura automática falhou. O Dr. verá o arquivo.`);
         }
       } catch (e) {
-        toast.error(`Falha ao enviar ${file.name}.`);
-        console.error(e);
+        const errorMsg = e instanceof Error ? e.message : "erro desconhecido";
+        toast.error(`Falha ao enviar "${file.name}". ${errorMsg.includes("presign") ? "Tente novamente em alguns segundos." : "Verifique sua conexão e tente novamente."}`, { duration: 6000 });
+        console.error("[ExamUploader] upload error:", e);
       } finally {
         setBusy(false);
       }
@@ -98,6 +112,7 @@ export function ExamUploader({
             <Upload className="w-7 h-7" />
             <span className="text-sm font-semibold">Enviar exame (PDF ou foto)</span>
             <span className="text-xs">{hint ?? "A leitura é automática. Você pode enviar vários."}</span>
+            <span className="text-xs text-slate-400">Máx. {MAX_MB}MB por arquivo • PDF, JPG, PNG</span>
           </>
         )}
       </button>

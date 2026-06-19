@@ -28,3 +28,8 @@
 
 ## Bugs Encontrados (Jun 2026)
 - [x] Erro ao fazer upload de exames na ficha de pré-consulta (falha ao enviar arquivo PDF) — corrigido: await faltava em listExamFilesByIntake e listExamFilesByPatient
+
+## Melhorias de Upload (Jun 2026)
+- [x] Adicionar validação de tamanho de arquivo no ExamUploader (máx 12MB, erro amigável)
+- [x] Adicionar link de download dos exames na notificação ao médico
+- [x] Testar fluxo completo de upload de PDF/imagem na ficha de pré-consulta (confirmado via API)

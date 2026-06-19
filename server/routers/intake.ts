@@ -175,6 +175,14 @@ export const intakeRouter = router({
           .filter(Boolean);
         const patientName = patient.fullName || email;
         const fichaUrl = `https://protocolos.felipebulhoes.com/fichas/${form.id}`;
+        
+        // Build exam download links for the notification
+        const examLinks = intakeExamFiles.map((f, idx) => {
+          const fileLabel = f.fileName || `Exame ${idx + 1}`;
+          const fileUrl = `https://protocolos.felipebulhoes.com${f.fileUrl}`;
+          return `  ${idx + 1}. ${fileLabel} → ${fileUrl}`;
+        });
+        
         const lines = [
           `Paciente: ${patientName}`,
           `E-mail: ${email}`,
@@ -182,6 +190,7 @@ export const intakeRouter = router({
           intakeExamFiles.length
             ? `Exames enviados: ${intakeExamFiles.length}`
             : "Exames enviados: nenhum",
+          ...(examLinks.length > 0 ? examLinks : []),
           topProtocols.length
             ? `Protocolos sugeridos: ${topProtocols.join(", ")}`
             : null,
