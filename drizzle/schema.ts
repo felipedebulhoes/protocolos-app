@@ -8,6 +8,7 @@ import {
   json,
   double,
   index,
+  tinyint,
 } from "drizzle-orm/mysql-core";
 
 // ---------------------------------------------------------------------------
@@ -24,6 +25,14 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow().onUpdateNow(),
   lastSignedIn: timestamp("lastSignedIn"),
+  // Doctor profile fields
+  phone: varchar("phone", { length: 40 }),
+  crm: varchar("crm", { length: 50 }),
+  specialization: varchar("specialization", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  bio: text("bio"),
+  totpSecret: varchar("totpSecret", { length: 255 }),
+  totpEnabled: tinyint("totpEnabled").notNull().default(0),
 });
 
 export type User = typeof users.$inferSelect;

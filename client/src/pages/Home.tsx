@@ -45,6 +45,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Layout from "@/components/Layout";
 import protocolsData from "@/data/protocols.json";
+import { trpc } from "@/lib/trpc";
 
 // Mapeamento dinâmico de ícones do Lucide
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -60,6 +61,10 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
+
+  // Dashboard data
+  const { data: stats } = trpc.user.dashboardStats.useQuery();
+  const { data: recentFichas } = trpc.user.recentFichas.useQuery();
 
   // Carregar favoritos do localStorage
   useEffect(() => {
@@ -131,6 +136,120 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Dashboard de Atividades Recentes */}
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="border-border bg-card hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Pacientes</p>
+                    <p className="text-3xl font-bold text-primary mt-1">{stats.totalPatients}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-primary" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-border bg-card hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Fichas Total</p>
+                    <p className="text-3xl font-bold text-primary mt-1">{stats.totalFichas}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-accent" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-border bg-card hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Pendentes</p>
+                    <p className="text-3xl font-bold text-amber-600 mt-1">{stats.fichasPendentes}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-amber-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-border bg-card hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Revisadas</p>
+                    <p className="text-3xl font-bold text-emerald-600 mt-1">{stats.fichasRevisadas}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                    <Activity className="w-5 h-5 text-emerald-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Fichas Recentes */}
+        {recentFichas && recentFichas.length > 0 && (
+          <Card className="border-border bg-card">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold text-primary flex items-center gap-2">
+                  <FileText className="w-4 h-4" /> Fichas Recentes
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setLocation("/fichas")} className="text-xs text-muted-foreground hover:text-primary">
+                  Ver todas <ChevronRight className="w-3 h-3 ml-1" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-2">
+                {recentFichas.map((ficha) => (
+                  <div
+                    key={ficha.id}
+                    onClick={() => setLocation(`/fichas/${ficha.id}`)}
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <FileText className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {ficha.invitedName || "Paciente sem nome"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {ficha.invitedEmail || "Sem e-mail"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={
+                          ficha.status === "pending"
+                            ? "border-amber-300 text-amber-600 bg-amber-50 dark:bg-amber-900/20"
+                            : ficha.status === "submitted"
+                            ? "border-blue-300 text-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                            : "border-emerald-300 text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20"
+                        }
+                      >
+                        {ficha.status === "pending" ? "Pendente" : ficha.status === "submitted" ? "Enviada" : "Revisada"}
+                      </Badge>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Barra de Busca e Filtros */}
         <div className="space-y-4">

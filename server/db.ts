@@ -213,3 +213,62 @@ export async function deleteExamResultsByFile(examFileId: number): Promise<void>
 }
 
 export { and };
+
+// ---- Doctor profile -------------------------------------------------------
+
+export async function getUserByOpenId(openId: string): Promise<User | undefined> {
+  const rows = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  return rows[0];
+}
+
+export async function updateUserProfile(
+  openId: string,
+  patch: {
+    name?: string;
+    phone?: string | null;
+    crm?: string | null;
+    specialization?: string | null;
+    location?: string | null;
+    bio?: string | null;
+  },
+): Promise<User | undefined> {
+  await db.update(users).set(patch).where(eq(users.openId, openId));
+  return getUserByOpenId(openId);
+}
+
+// ---- Activity stats -------------------------------------------------------
+
+export async function getDashboardStats(): Promise<{
+  totalPatients: number;
+  totalFichas: number;
+  fichasPendentes: number;
+  fichasRevisadas: number;
+}> {
+  const [totalPatientsRows, totalFichasRows, fichasPendentesRows, fichasRevisadasRows] =
+    await Promise.all([
+      db.select({ id: patients.id }).from(patients),
+      db.select({ id: intakeForms.id }).from(intakeForms),
+      db
+        .select({ id: intakeForms.id })
+        .from(intakeForms)
+        .where(eq(intakeForms.status, "pending")),
+      db
+        .select({ id: intakeForms.id })
+        .from(intakeForms)
+        .where(eq(intakeForms.status, "reviewed")),
+    ]);
+  return {
+    totalPatients: totalPatientsRows.length,
+    totalFichas: totalFichasRows.length,
+    fichasPendentes: fichasPendentesRows.length,
+    fichasRevisadas: fichasRevisadasRows.length,
+  };
+}
+
+export async function getRecentFichas(limit = 5): Promise<IntakeForm[]> {
+  return db
+    .select()
+    .from(intakeForms)
+    .orderBy(desc(intakeForms.createdAt))
+    .limit(limit);
+}
