@@ -48,3 +48,8 @@
 - [x] Endpoints tRPC de analytics (distribuição, taxa de alterações, alertas críticos)
 - [x] Página ExamAnalytics.tsx com gráficos Recharts
 - [x] Rota /exames-analytics no App.tsx e link no sidebar
+
+## Protocolo Espermograma com Fluxograma (Jun 2026)
+- [ ] Criar JSON do protocolo de espermograma com valores OMS 2021, nomenclatura e interpretação
+- [ ] Criar página SpermogramFlowchart.tsx com fluxograma interativo de conduta clínica
+- [ ] Integrar no ProtocolDetail e registrar rota no App.tsx

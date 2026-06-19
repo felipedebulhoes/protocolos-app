@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation, Link } from "wouter";
-import { 
-  ArrowLeft, 
+import { ArrowLeft, 
   Heart, 
   Copy, 
   Check, 
@@ -42,7 +41,8 @@ import {
   Video,
   Printer,
   Trash2,
-  MapPin
+  MapPin,
+  GitBranch
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1012,6 +1012,14 @@ export default function ProtocolDetail() {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
+            {protocol.id === "espermograma_fertilidade" && (
+              <Link href="/fluxograma-espermograma">
+                <Button variant="outline" className="gap-2 rounded-xl border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/30">
+                  <GitBranch className="w-4 h-4" />
+                  Ver Fluxograma
+                </Button>
+              </Link>
+            )}
             <Button
               variant="outline"
               size="icon"

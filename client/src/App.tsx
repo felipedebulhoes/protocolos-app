@@ -21,6 +21,7 @@ import IntakeDetail from "./pages/IntakeDetail";
 import Configuracoes from "./pages/Configuracoes";
 import { TeamJoin } from "./pages/TeamJoin";
 import ExamAnalytics from "./pages/ExamAnalytics";
+import SpermogramFlowchart from "./pages/SpermogramFlowchart";
 import { DoctorGuard } from "./components/DoctorGuard";
 import { SessionProvider } from "./components/SessionProvider";
 
@@ -101,6 +102,9 @@ function Router() {
       </Route>
       <Route path="/exames-analytics">
         <DoctorGuard><ExamAnalytics /></DoctorGuard>
+      </Route>
+      <Route path="/fluxograma-espermograma">
+        <DoctorGuard><SpermogramFlowchart /></DoctorGuard>
       </Route>
       <Route path="/configuracoes" component={Configuracoes} />
       <Route path="/team/join" component={TeamJoin} />
