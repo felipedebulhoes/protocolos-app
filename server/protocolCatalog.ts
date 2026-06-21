@@ -12,6 +12,7 @@ export type ProtocolCatalogEntry = {
 };
 
 export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
+  // ─── ANDROLOGIA ──────────────────────────────────────────────────────────
   {
     id: "4_disfuncao_eretil",
     title: "Disfunção Erétil - Abordagem Escalonada",
@@ -45,7 +46,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
   },
   {
     id: "16_ejaculacao_retardada",
-    title: "Ejaculação Retardada e Anorgasmia",
+    title: "Ejaculação Retardada, Anejaculação e Anorgasmia",
     category: "Andrologia",
     keywords: [
       "ejaculacao retardada",
@@ -53,6 +54,11 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "nao consigo ejacular",
       "anorgasmia",
       "ausencia de orgasmo",
+      "nao chego ao orgasmo",
+      "nao goza",
+      "orgasmo dificil",
+      "anejaculacao",
+      "dificuldade de ejacular",
     ],
   },
   {
@@ -95,6 +101,82 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "cancer de prostata operado",
     ],
   },
+  {
+    id: "1_implante_protese_peniana",
+    title: "Implante de Prótese Peniana Inflável",
+    category: "Andrologia",
+    keywords: [
+      "protese peniana",
+      "implante peniano",
+      "protese inflavel",
+      "implante de penis",
+      "cirurgia para erecao",
+      "prótese para impotencia",
+      "disfuncao eretil grave",
+      "falha de tadalafila",
+    ],
+  },
+  {
+    id: "1b_protese_semirrigida",
+    title: "Prótese Peniana Semirígida",
+    category: "Andrologia",
+    keywords: [
+      "protese semirrigida",
+      "implante rigido",
+      "protese malleable",
+      "protese maleavel",
+      "peniana semirigida",
+    ],
+  },
+  {
+    id: "prostatite_cronica_sdcp",
+    title: "Prostatite Crônica / Síndrome de Dor Crônica Pélvica (SDCP)",
+    category: "Andrologia",
+    keywords: [
+      "prostatite",
+      "dor pelvica",
+      "dor no perineu",
+      "dor entre as pernas",
+      "dor na virilha",
+      "dor escrotal cronica",
+      "prostatite cronica",
+      "sdcp",
+      "dor ao ejacular",
+      "ardencia ao ejacular",
+      "dor pos ejaculacao",
+      "dor nos testiculos",
+      "sensacao de peso na pelve",
+    ],
+  },
+  {
+    id: "ginecomastia_masculina",
+    title: "Ginecomastia Masculina - Diagnóstico e Tratamento",
+    category: "Andrologia",
+    keywords: [
+      "ginecomastia",
+      "seio masculino",
+      "mama masculina",
+      "peito crescendo",
+      "crescimento mamario",
+      "glandula mamaria",
+      "sensibilidade no peito",
+    ],
+  },
+  {
+    id: "epididimite_orquite",
+    title: "Epididimite e Orquite - Diagnóstico e Tratamento",
+    category: "Andrologia",
+    keywords: [
+      "epididimite",
+      "inflamacao no testiculo",
+      "orquite",
+      "testiculo inchado",
+      "dor no testiculo com febre",
+      "testiculo aumentado",
+      "epidídimo",
+    ],
+  },
+  // ─── HORMÔNIOS & PERFORMANCE ──────────────────────────────────────────────
   {
     id: "8_trt_performance",
     title: "TRT e Otimização Hormonal Masculina",
@@ -146,6 +228,21 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
     keywords: ["pos ciclo", "tpc", "parar ciclo", "recuperar testiculo"],
   },
   {
+    id: "25_homem_trans",
+    title: "Saúde Hormonal do Homem Trans",
+    category: "Hormônios & Performance",
+    keywords: [
+      "homem trans",
+      "trans",
+      "ftm",
+      "transexual masculino",
+      "hormonioterapia trans",
+      "testosterona para trans",
+      "masculinizacao",
+    ],
+  },
+  // ─── INFERTILIDADE & MICROCIRURGIA ────────────────────────────────────────
+  {
     id: "14_infertilidade_masculina",
     title: "Investigação e Manejo da Infertilidade Masculina",
     category: "Infertilidade & Microcirurgia",
@@ -190,6 +287,38 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
     ],
   },
   {
+    id: "5_micro_tese",
+    title: "Micro-TESE - Extração Microcirúrgica de Espermatozoides",
+    category: "Infertilidade & Microcirurgia",
+    keywords: [
+      "azoospermia",
+      "micro tese",
+      "sem espermatozoide",
+      "nao tem esperma no ejaculado",
+      "extracao de espermatozoide",
+      "tese",
+      "pesa",
+      "recuperacao de esperma",
+    ],
+  },
+  {
+    id: "espermograma_fertilidade",
+    title: "Interpretação do Espermograma e Conduta",
+    category: "Infertilidade & Microcirurgia",
+    keywords: [
+      "espermograma",
+      "qualidade do esperma",
+      "morfologia do esperma",
+      "motilidade",
+      "oligozoospermia",
+      "astenospermia",
+      "astenozoospermia",
+      "teratospermia",
+      "resultado do espermograma",
+    ],
+  },
+  // ─── PROCEDIMENTOS DE CONSULTÓRIO ─────────────────────────────────────────
+  {
     id: "6_vasectomia_sem_bisturi",
     title: "Vasectomia Sem Bisturi",
     category: "Procedimentos de Consultório",
@@ -204,8 +333,62 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
     id: "21_li_eswt_ondas_choque",
     title: "Terapia por Ondas de Choque Extracorpóreas (Li-ESWT)",
     category: "Procedimentos de Consultório",
-    keywords: ["ondas de choque", "li-eswt", "eswt"],
+    keywords: ["ondas de choque", "li-eswt", "eswt", "ondas de choque peniana"],
   },
+  {
+    id: "7_engrossamento_peniano_ha",
+    title: "Engrossamento Peniano com Ácido Hialurônico",
+    category: "Procedimentos de Consultório",
+    keywords: [
+      "engrossamento peniano",
+      "grossura do penis",
+      "acido hialuronico no penis",
+      "calibre do penis",
+      "espessura peniana",
+      "aumento do penis",
+    ],
+  },
+  {
+    id: "11_circuncisao_frenuloplastia",
+    title: "Circuncisão e Frenuloplastia",
+    category: "Procedimentos de Consultório",
+    keywords: [
+      "circuncisao",
+      "postectomia",
+      "fimose",
+      "prepucio",
+      "frenuloplastia",
+      "frenulo curto",
+      "dor durante relacao",
+    ],
+  },
+  {
+    id: "12_lipo_suprapubica_webbing",
+    title: "Lipoaspiração Suprapúbica e Correção de Webbing Peniano",
+    category: "Procedimentos de Consultório",
+    keywords: [
+      "gordura suprapubica",
+      "penis enterrado",
+      "webbing peniano",
+      "lipo suprapubica",
+      "penis escondido",
+      "gordura no penis",
+    ],
+  },
+  {
+    id: "23_prp_intracavernoso",
+    title: "PRP Intracavernoso (Plasma Rico em Plaquetas)",
+    category: "Procedimentos de Consultório",
+    keywords: [
+      "prp",
+      "plasma rico em plaquetas",
+      "injecao no penis",
+      "tratamento regenerativo",
+      "platelet rich plasma",
+      "prp peniano",
+    ],
+  },
+  // ─── UROLOGIA GERAL ───────────────────────────────────────────────────────
   {
     id: "13_hpb_manejo_completo",
     title: "Hiperplasia Prostática Benigna (HPB) - Manejo Clínico e Cirúrgico",
@@ -260,11 +443,40 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
     category: "Urologia Geral",
     keywords: ["dor no testiculo", "dor escrotal", "dor na bolsa", "orquialgia"],
   },
+  // ─── URGÊNCIAS UROLÓGICAS ─────────────────────────────────────────────────
   {
     id: "17_priapismo_emergencia",
     title: "Priapismo - Protocolo de Emergência",
     category: "Urgências Urológicas",
     keywords: ["priapismo", "erecao que nao baixa", "erecao prolongada"],
+  },
+  {
+    id: "torcao_testicular",
+    title: "Torção Testicular - Protocolo de Urgência",
+    category: "Urgências Urológicas",
+    keywords: [
+      "torcao testicular",
+      "dor testiculo repentina",
+      "testiculo doendo muito",
+      "dor aguda no testiculo",
+      "testiculo subiu",
+      "emergencia testicular",
+    ],
+  },
+  // ─── UROLOGIA FEMININA ────────────────────────────────────────────────────
+  {
+    id: "botox_intravesical",
+    title: "Toxina Botulínica Intravesical - Bexiga Hiperativa",
+    category: "Urologia Feminina",
+    keywords: [
+      "botox na bexiga",
+      "botox intravesical",
+      "bexiga hiperativa",
+      "urgencia incontrolavel",
+      "bexiga hiperreativa",
+      "overactive bladder",
+      "incontinencia de urgencia",
+    ],
   },
 ];
 
