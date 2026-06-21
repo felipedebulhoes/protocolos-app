@@ -22,6 +22,15 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Trust exactly one hop of reverse proxy (Manus' own infra, or a single
+  // load balancer in front of this app) so req.ip / req.protocol reflect the
+  // real client instead of the proxy. This matters for rate limiting
+  // (server/_core/rateLimit.ts) and for any IP-based logging. If you put
+  // this app behind additional proxy hops, bump this number to match —
+  // an incorrect value either trusts a spoofable header or reports every
+  // request as coming from the same proxy IP.
+  app.set("trust proxy", 1);
+
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
@@ -104,7 +113,13 @@ async function startServer() {
       const doctorToken = cookies[COOKIE_NAME];
       if (doctorToken) {
         const payload = await verifySession(doctorToken);
-        if (payload?.openId && isOwnerOpenId(payload.openId as string, env.OWNER_OPEN_ID)) {
+        // SECURITY: reject pending-TOTP tokens here too — same reasoning as
+        // createContext in ./context.ts.
+        if (
+          payload?.openId &&
+          payload.pendingTotp !== true &&
+          isOwnerOpenId(payload.openId as string, env.OWNER_OPEN_ID)
+        ) {
           isAuthorizedDoctor = true;
         }
       }

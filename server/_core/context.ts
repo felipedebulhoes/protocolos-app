@@ -33,7 +33,11 @@ export async function createContext({ req, res }: CreateExpressContextOptions): 
   const doctorToken = cookies[COOKIE_NAME];
   if (doctorToken) {
     const payload = await verifySession(doctorToken);
-    if (payload?.openId) {
+    // SECURITY: a "pending TOTP" token (issued right after OAuth, before the
+    // 2FA code is verified — see server/_core/index.ts and
+    // server/routers/totp.ts) is signed the same way as a real session. It
+    // must never grant a real session just because it carries an openId.
+    if (payload?.openId && payload.pendingTotp !== true) {
       const rows = await db.select().from(users).where(eq(users.openId, payload.openId)).limit(1);
       if (rows[0]) {
         user = {

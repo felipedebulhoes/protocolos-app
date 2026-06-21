@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import { router, publicProcedure, patientProcedure } from "../_core/trpc";
 import * as db from "../db";
 import {
@@ -9,20 +8,25 @@ import {
   setPatientSessionCookie,
   clearPatientSessionCookie,
 } from "../patientAuth";
-import { checkRateLimit } from "../_core/rateLimit";
+import { checkRateLimit, clientIp } from "../_core/rateLimit";
 
 const emailSchema = z.string().trim().toLowerCase().email();
 const passwordSchema = z.string().min(6).max(100);
 
-const LOGIN_MAX_ATTEMPTS = 10;
+// Per-email is the primary defense (it's what actually identifies "one
+// account being attacked"). The per-IP bucket is intentionally looser: in
+// production this app sits behind a reverse proxy, so many unrelated
+// patients can share one apparent IP — a tight IP limit would let one
+// attacker (or one bad actor's failed attempts) lock out everyone else
+// behind the same proxy. See server/_core/rateLimit.ts `clientIp` for the
+// trust-proxy caveat.
+const LOGIN_MAX_ATTEMPTS_PER_EMAIL = 10;
+const LOGIN_MAX_ATTEMPTS_PER_IP = 60;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 min
-const REGISTER_MAX_ATTEMPTS = 5;
+const REGISTER_MAX_ATTEMPTS_PER_EMAIL = 5;
+const REGISTER_MAX_ATTEMPTS_PER_IP = 30;
 const REGISTER_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const GENERIC_RATE_LIMIT_MSG = "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
-
-function clientIp(req: CreateExpressContextOptions["req"]): string {
-  return req.ip ?? req.socket?.remoteAddress ?? "unknown";
-}
 
 export const patientAuthRouter = router({
   // ----- Create a portal password (after filling the intake) ----------------
@@ -41,8 +45,8 @@ export const patientAuthRouter = router({
       // "already exists" branch to enumerate registered patients.
       const ip = clientIp(ctx.req);
       if (
-        !checkRateLimit(`register:ip:${ip}`, REGISTER_MAX_ATTEMPTS, REGISTER_WINDOW_MS) ||
-        !checkRateLimit(`register:email:${input.email}`, REGISTER_MAX_ATTEMPTS, REGISTER_WINDOW_MS)
+        !checkRateLimit(`register:ip:${ip}`, REGISTER_MAX_ATTEMPTS_PER_IP, REGISTER_WINDOW_MS) ||
+        !checkRateLimit(`register:email:${input.email}`, REGISTER_MAX_ATTEMPTS_PER_EMAIL, REGISTER_WINDOW_MS)
       ) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: GENERIC_RATE_LIMIT_MSG });
       }
@@ -85,8 +89,8 @@ export const patientAuthRouter = router({
       // make password brute-forcing impractical.
       const ip = clientIp(ctx.req);
       if (
-        !checkRateLimit(`login:ip:${ip}`, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS) ||
-        !checkRateLimit(`login:email:${input.email}`, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS)
+        !checkRateLimit(`login:ip:${ip}`, LOGIN_MAX_ATTEMPTS_PER_IP, LOGIN_WINDOW_MS) ||
+        !checkRateLimit(`login:email:${input.email}`, LOGIN_MAX_ATTEMPTS_PER_EMAIL, LOGIN_WINDOW_MS)
       ) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: GENERIC_RATE_LIMIT_MSG });
       }

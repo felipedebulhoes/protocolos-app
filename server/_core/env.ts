@@ -23,21 +23,36 @@ const isProdEnv = NODE_ENV === "production";
  * - In development we generate a random per-process secret so local runs
  *   still work without a .env file (sessions just won't survive a restart).
  */
+// Known placeholder/example values that must never be treated as a real
+// secret, regardless of length — defense in depth on top of the length
+// check below, in case a future example value happens to be long enough
+// to pass it (this exact mistake was caught in review: an earlier
+// .env.example value was 54 characters long and would have sailed through).
+const JWT_SECRET_DENYLIST = new Set([
+  "replace_me",
+  "changeme",
+  "change-me",
+  "generate-a-32-byte-random-secret-do-not-use-this-value",
+  "dev-secret-change-me",
+]);
+
 function resolveJwtSecret(): string {
-  const fromEnv = process.env.JWT_SECRET;
-  if (fromEnv && fromEnv.trim().length >= 32) {
+  const fromEnv = process.env.JWT_SECRET?.trim();
+  const looksLikePlaceholder = !fromEnv || JWT_SECRET_DENYLIST.has(fromEnv.toLowerCase());
+
+  if (fromEnv && !looksLikePlaceholder && fromEnv.length >= 32) {
     return fromEnv;
   }
   if (isProdEnv) {
     throw new Error(
-      "[env] FATAL: JWT_SECRET is not set (or shorter than 32 chars) in production. " +
-        "Refusing to start with an insecure/default session secret. " +
-        "Set JWT_SECRET to a long random value (e.g. `openssl rand -hex 32`).",
+      "[env] FATAL: JWT_SECRET is not set, is a known placeholder, or is shorter than " +
+        "32 chars, in production. Refusing to start with an insecure/default session " +
+        "secret. Set JWT_SECRET to a long random value (e.g. `openssl rand -hex 32`).",
     );
   }
   console.warn(
-    "[env] JWT_SECRET not set — generating a random development-only secret. " +
-      "Sessions will be invalidated on every restart. Set JWT_SECRET in .env to avoid this.",
+    "[env] JWT_SECRET not set (or is a placeholder) — generating a random development-only " +
+      "secret. Sessions will be invalidated on every restart. Set JWT_SECRET in .env to avoid this.",
   );
   return crypto.randomBytes(32).toString("hex");
 }

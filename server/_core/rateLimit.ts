@@ -7,6 +7,8 @@
 // (Redis, the DB, etc.) keyed the same way.
 // ---------------------------------------------------------------------------
 
+import type { IncomingMessage } from "http";
+
 interface Bucket {
   count: number;
   resetAt: number;
@@ -37,4 +39,18 @@ export function checkRateLimit(key: string, max: number, windowMs: number): bool
   if (bucket.count >= max) return false;
   bucket.count += 1;
   return true;
+}
+
+/**
+ * Best-effort extraction of the caller's IP for rate-limit keying.
+ *
+ * NOTE: behind a reverse proxy, req.ip only reflects the real client IP if
+ * Express's `trust proxy` setting matches your proxy topology (see
+ * app.set("trust proxy", ...) in server/_core/index.ts). Until that's tuned
+ * for your exact deployment, treat the IP-based bucket as a loose secondary
+ * signal, not the primary defense — the per-email / per-token buckets carry
+ * that job.
+ */
+export function clientIp(req: IncomingMessage & { ip?: string }): string {
+  return req.ip ?? req.socket?.remoteAddress ?? "unknown";
 }
