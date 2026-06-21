@@ -11,8 +11,6 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType: string = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
-  console.log(`[storagePut] starting upload for key: ${key}, contentType: ${contentType}`);
-  
   // Get presigned PUT url
   const presignUrl = new URL("v1/storage/presign/put", base() + "/");
   presignUrl.searchParams.set("path", key);
@@ -42,8 +40,6 @@ export async function storagePut(
     console.error(`[storagePut] upload failed (${putResp.status}):`, errorText);
     throw new Error(`storagePut upload failed (${putResp.status}): ${errorText}`);
   }
-  console.log(`[storagePut] successfully uploaded ${key}`);
-
   return { key, url: `/manus-storage/${key}` };
 }
 

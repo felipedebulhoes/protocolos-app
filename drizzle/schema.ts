@@ -54,7 +54,9 @@ export const patients = mysqlTable(
     phone: varchar("phone", { length: 40 }),
     birthDate: varchar("birth_date", { length: 20 }),
     sex: varchar("sex", { length: 16 }),
-    cpf: varchar("cpf", { length: 20 }),
+    // Stores an encrypted blob (see server/_core/crypto.ts), not the raw CPF.
+    // Widened from 20 to fit "v1:<iv>:<tag>:<ciphertext>" (~110 chars for an 11-digit CPF).
+    cpf: varchar("cpf", { length: 255 }),
     city: varchar("city", { length: 120 }),
     state: varchar("state", { length: 40 }),
     notes: text("notes"),

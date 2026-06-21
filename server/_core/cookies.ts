@@ -1,6 +1,6 @@
 import type { SerializeOptions } from "cookie";
 import { isProd } from "./env";
-import { ONE_YEAR_MS } from "@shared/const";
+import { ONE_YEAR_MS, PENDING_TOTP_MAX_AGE_MS } from "@shared/const";
 
 export function getSessionCookieOptions(maxAgeMs: number = ONE_YEAR_MS): SerializeOptions {
   return {
@@ -20,4 +20,9 @@ export function getClearCookieOptions(): SerializeOptions {
     path: "/",
     maxAge: 0,
   };
+}
+
+/** Short-lived cookie holding the "OAuth ok, TOTP still pending" token. */
+export function getPendingTotpCookieOptions(): SerializeOptions {
+  return getSessionCookieOptions(PENDING_TOTP_MAX_AGE_MS);
 }

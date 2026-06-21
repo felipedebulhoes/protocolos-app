@@ -2,7 +2,9 @@ import { SignJWT, jwtVerify } from "jose";
 import { env } from "./env";
 import type { SessionPayload } from "./types/manusTypes";
 
-const secretKey = new TextEncoder().encode(env.JWT_SECRET || "dev-secret-change-me");
+// env.JWT_SECRET is always a resolved, sufficiently long secret by this point
+// (see server/_core/env.ts — it throws at boot in production if unset).
+const secretKey = new TextEncoder().encode(env.JWT_SECRET);
 
 export async function signSession(payload: SessionPayload, expiresIn: string = "365d"): Promise<string> {
   return await new SignJWT({ ...payload })

@@ -1,3 +1,50 @@
+# ProtoUro — protocolos-app
+
+Web app de consulta rápida de protocolos urológicos (CPP + MEV), com portal do
+paciente, intake pré-consulta, upload/leitura de exames e dashboard do médico.
+Uso pessoal do Dr. Felipe de Bulhões durante atendimentos clínicos.
+
+## Rodando localmente
+
+```bash
+pnpm install
+cp .env.example .env   # preencha DATABASE_URL, JWT_SECRET, OWNER_OPEN_ID etc.
+pnpm db:push           # aplica as migrações do Drizzle no MySQL
+pnpm dev                # http://localhost:3000
+```
+
+Variáveis de ambiente: veja `.env.example` para a lista completa e comentada.
+Pontos que merecem atenção antes de subir em produção:
+
+- `JWT_SECRET` e `CPF_ENCRYPTION_KEY` são obrigatórios em produção (o boot
+  falha de propósito se estiverem ausentes — veja `server/_core/env.ts`).
+- Se o paciente tiver CPF cadastrado por alguma feature futura, rode
+  `npx tsx scripts/encrypt-existing-cpfs.ts` uma vez após configurar
+  `CPF_ENCRYPTION_KEY`, para criptografar qualquer valor legado em texto puro.
+- 2FA (TOTP) do médico, quando ativado em Configurações, agora é exigido no
+  login (fluxo em duas etapas via `/login/verificar-totp`).
+
+## Testes e qualidade
+
+```bash
+pnpm check   # tsc --noEmit
+pnpm test    # vitest (server/ e shared/)
+```
+
+Um workflow de CI (`.github/workflows/ci.yml`) roda type-check e testes em
+todo push/PR.
+
+## Estrutura
+
+- `client/` — frontend React (área do médico + portal do paciente)
+- `server/` — API tRPC, auth (OAuth do médico + email/senha do paciente), DB
+- `drizzle/` — schema e migrações MySQL
+- `shared/` — tipos e constantes compartilhados entre client/server
+- `scripts/one-off/` — scripts Python de uso único usados durante o
+  desenvolvimento inicial (não fazem parte do build)
+
+---
+
 # Web App Template (Static Frontend)
 
 Pure React 19 + Tailwind 4 template with shadcn/ui baked in. **Use this README as the checklist for shipping static experiences.**

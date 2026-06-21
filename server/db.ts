@@ -50,12 +50,20 @@ import {
   type ExamResult,
 } from "../drizzle/schema";
 import { and, desc, lt, sql } from "drizzle-orm";
+import { encryptCpf, decryptCpf } from "./_core/crypto";
 
 // ---- Patients -------------------------------------------------------------
 
+// SECURITY: `cpf` is stored encrypted (see server/_core/crypto.ts). These two
+// read functions are the single choke point patient rows pass through, so
+// decryption happens here once instead of at every call site.
+function withDecryptedCpf(row: Patient): Patient {
+  return { ...row, cpf: decryptCpf(row.cpf) };
+}
+
 export async function getPatientById(id: number): Promise<Patient | undefined> {
   const rows = await db.select().from(patients).where(eq(patients.id, id)).limit(1);
-  return rows[0];
+  return rows[0] ? withDecryptedCpf(rows[0]) : undefined;
 }
 
 export async function getPatientByEmail(email: string): Promise<Patient | undefined> {
@@ -64,12 +72,12 @@ export async function getPatientByEmail(email: string): Promise<Patient | undefi
     .from(patients)
     .where(eq(patients.email, email.toLowerCase().trim()))
     .limit(1);
-  return rows[0];
+  return rows[0] ? withDecryptedCpf(rows[0]) : undefined;
 }
 
 export async function createPatient(data: NewPatient): Promise<Patient> {
   const email = data.email.toLowerCase().trim();
-  await db.insert(patients).values({ ...data, email });
+  await db.insert(patients).values({ ...data, email, cpf: encryptCpf(data.cpf) });
   const created = await getPatientByEmail(email);
   return created!;
 }
@@ -86,6 +94,7 @@ export async function upsertPatientByEmail(data: NewPatient): Promise<Patient> {
     if (data.sex) patch.sex = data.sex;
     if (data.city) patch.city = data.city;
     if (data.state) patch.state = data.state;
+    if (data.cpf) patch.cpf = encryptCpf(data.cpf);
     if (Object.keys(patch).length > 0) {
       await db.update(patients).set(patch).where(eq(patients.id, existing.id));
     }
@@ -102,7 +111,10 @@ export async function updatePatientProfile(
   id: number,
   patch: Partial<NewPatient>,
 ): Promise<Patient | undefined> {
-  await db.update(patients).set(patch).where(eq(patients.id, id));
+  // Guard against any future caller writing a raw CPF through this generic
+  // patch path — always encrypt before it reaches the database.
+  const safePatch = patch.cpf ? { ...patch, cpf: encryptCpf(patch.cpf) } : patch;
+  await db.update(patients).set(safePatch).where(eq(patients.id, id));
   return getPatientById(id);
 }
 
@@ -175,6 +187,12 @@ export async function createExamFile(data: NewExamFile): Promise<ExamFile> {
 
 export async function getExamFileById(id: number): Promise<ExamFile | undefined> {
   const rows = await db.select().from(examFiles).where(eq(examFiles.id, id)).limit(1);
+  return rows[0];
+}
+
+/** Look up an exam file by its storage key (used by the storage proxy to authorize access). */
+export async function getExamFileByKey(fileKey: string): Promise<ExamFile | undefined> {
+  const rows = await db.select().from(examFiles).where(eq(examFiles.fileKey, fileKey)).limit(1);
   return rows[0];
 }
 
