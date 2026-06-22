@@ -58,7 +58,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "antibiotico prostata",
     ],
   },
-  // ─── ANDROLOGIA ──────────────────────────────────────────────────────────
+  // ANDROLOGIA
   {
     id: "4_disfuncao_eretil",
     title: "Disfunção Erétil - Abordagem Escalonada",
@@ -243,7 +243,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "gonadotrofinas para espermatogenese",
     ],
   },
-  // ─── HORMÔNIOS & PERFORMANCE ──────────────────────────────────────────────
+  // HORMÔNIOS & PERFORMANCE
   {
     id: "8_trt_performance",
     title: "TRT e Otimização Hormonal Masculina",
@@ -308,7 +308,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "masculinizacao",
     ],
   },
-  // ─── INFERTILIDADE & MICROCIRURGIA ────────────────────────────────────────
+  // INFERTILIDADE & MICROCIRURGIA
   {
     id: "14_infertilidade_masculina",
     title: "Investigação e Manejo da Infertilidade Masculina",
@@ -384,7 +384,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "resultado do espermograma",
     ],
   },
-  // ─── PROCEDIMENTOS DE CONSULTÓRIO ─────────────────────────────────────────
+  // PROCEDIMENTOS DE CONSULTÓRIO
   {
     id: "6_vasectomia_sem_bisturi",
     title: "Vasectomia Sem Bisturi",
@@ -455,7 +455,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "prp peniano",
     ],
   },
-  // ─── UROLOGIA GERAL ───────────────────────────────────────────────────────
+  // UROLOGIA GERAL
   {
     id: "13_hpb_manejo_completo",
     title: "Hiperplasia Prostática Benigna (HPB) - Manejo Clínico e Cirúrgico",
@@ -510,7 +510,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
     category: "Urologia Geral",
     keywords: ["dor no testiculo", "dor escrotal", "dor na bolsa", "orquialgia"],
   },
-  // ─── UROLOGIA GERAL ──────────────────────────────────────────────────────
+  // UROLOGIA GERAL
   {
     id: "cancer_testicular",
     title: "Câncer de Testículo - Estadiamento, Workup e Seguimento",
@@ -549,7 +549,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "enxerto mucosa oral",
     ],
   },
-  // ─── ANDROLOGIA ──────────────────────────────────────────────────────────
+  // ANDROLOGIA
   {
     id: "liquen_escleroso_peniano",
     title: "Líquen Escleroso Peniano (BXO) - Diagnóstico e Tratamento",
@@ -569,7 +569,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "liquen",
     ],
   },
-  // ─── INFERTILIDADE & MICROCIRURGIA ──────────────────────────────────────
+  // INFERTILIDADE & MICROCIRURGIA
   {
     id: "varicocele",
     title: "Varicocele - Diagnóstico, Indicações e Tratamento",
@@ -628,7 +628,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "macs selecao espermatozoide",
     ],
   },
-  // ─── URGÊNCIAS UROLÓGICAS ─────────────────────────────────────────────────
+  // URGÊNCIAS UROLÓGICAS
   {
     id: "fratura_peniana",
     title: "Fratura Peniana e Trauma Genital Agudo - Protocolo de Urgência",
@@ -667,7 +667,7 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "emergencia testicular",
     ],
   },
-  // ─── UROLOGIA FEMININA ────────────────────────────────────────────────────
+  // UROLOGIA FEMININA
   {
     id: "botox_intravesical",
     title: "Toxina Botulínica Intravesical - Bexiga Hiperativa",

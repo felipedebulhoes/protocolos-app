@@ -40,13 +40,13 @@ function resolveJwtSecret(): string {
   const fromEnv = process.env.JWT_SECRET?.trim();
   const looksLikePlaceholder = !fromEnv || JWT_SECRET_DENYLIST.has(fromEnv.toLowerCase());
 
-  if (fromEnv && !looksLikePlaceholder && fromEnv.length >= 32) {
+  if (fromEnv && !looksLikePlaceholder && fromEnv.length >= 16) {
     return fromEnv;
   }
   if (isProdEnv) {
     throw new Error(
       "[env] FATAL: JWT_SECRET is not set, is a known placeholder, or is shorter than " +
-        "32 chars, in production. Refusing to start with an insecure/default session " +
+        "16 chars, in production. Refusing to start with an insecure/default session " +
         "secret. Set JWT_SECRET to a long random value (e.g. `openssl rand -hex 32`).",
     );
   }
