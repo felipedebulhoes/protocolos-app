@@ -38,8 +38,7 @@ export const users = mysqlTable("users", {
   bio: text("bio"),
   totpSecret: varchar("totpSecret", { length: 255 }),
   totpEnabled: tinyint("totpEnabled").notNull().default(0),
-  passwordHash: varchar("password_hash", { length: 255 }),
-  setupToken: varchar("setup_token", { length: 255 }),
+  setupToken: varchar("setupToken", { length: 255 }),
 });
 
 export type User = typeof users.$inferSelect;
@@ -245,3 +244,37 @@ export const passwordResetTokens = mysqlTable(
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type NewPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+// ---------------------------------------------------------------------------
+// Admin audit logs (track admin actions for compliance and security)
+// ---------------------------------------------------------------------------
+export const adminAuditLogs = mysqlTable(
+  "admin_audit_logs",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    adminId: int("admin_id").notNull(), // Who performed the action
+    action: mysqlEnum("action", [
+      "promote_to_admin",
+      "demote_from_admin",
+      "delete_user",
+      "update_user_role",
+      "password_reset_requested",
+      "login",
+      "logout",
+    ]).notNull(),
+    targetUserId: int("target_user_id"), // Who the action was performed on (nullable for login/logout)
+    targetEmail: varchar("target_email", { length: 320 }), // Email of target user
+    details: text("details"), // JSON string with additional context
+    ipAddress: varchar("ip_address", { length: 45 }), // IPv4 or IPv6
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    adminIdIdx: index("admin_audit_logs_admin_id_idx").on(t.adminId),
+    targetUserIdIdx: index("admin_audit_logs_target_user_id_idx").on(t.targetUserId),
+    createdAtIdx: index("admin_audit_logs_created_at_idx").on(t.createdAt),
+  }),
+);
+
+export type AdminAuditLog = typeof adminAuditLogs.$inferSelect;
+export type NewAdminAuditLog = typeof adminAuditLogs.$inferInsert;

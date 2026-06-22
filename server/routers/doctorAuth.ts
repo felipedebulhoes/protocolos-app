@@ -11,6 +11,7 @@ import { db } from "../db";
 import { users, passwordResetTokens } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
+import { sendPasswordResetEmail } from "../_core/email";
 
 const emailSchema = z.string().trim().toLowerCase().email();
 const passwordSchema = z.string().min(8).max(100);
@@ -249,9 +250,13 @@ export const doctorAuthRouter = router({
         expiresAt,
       });
 
-      // TODO: Send email with reset link
-      // const resetUrl = `${ctx.req.protocol}://${ctx.req.get("host")}/reset-senha?token=${resetToken}`;
-      // await sendPasswordResetEmail(user[0].email, resetUrl);
+      // Send email with reset link
+      const protocol = ctx.req.headers["x-forwarded-proto"] || "https";
+      const host = ctx.req.headers["x-forwarded-host"] || ctx.req.headers["host"] || "localhost:3000";
+      const resetUrl = `${protocol}://${host}/reset-senha?token=${resetToken}`;
+      
+      // Type assertion needed because user[0].name is string | null but function accepts string | null
+      await sendPasswordResetEmail(user[0].email, resetUrl, (user[0].name || undefined) as string | undefined);
 
       return {
         ok: true,

@@ -26,6 +26,7 @@ import VerifyTotpLogin from "./pages/VerifyTotpLogin";
 import { DoctorLogin } from "./pages/DoctorLogin";
 import { RegisterAdmin } from "./pages/RegisterAdmin";
 import { ResetPassword } from "./pages/ResetPassword";
+import { ForgotPassword } from "./pages/ForgotPassword";
 import { DoctorGuard } from "./components/DoctorGuard";
 import { SessionProvider } from "./components/SessionProvider";
 
@@ -77,6 +78,7 @@ function Router() {
       <Route path="/login/doctor" component={DoctorLogin} />
       <Route path="/admin/registrar" component={RegisterAdmin} />
       <Route path="/reset-senha" component={ResetPassword} />
+      <Route path="/esqueci-senha" component={ForgotPassword} />
       <Route path="/login/verificar-totp" component={VerifyTotpLogin} />
 
       {/* Patient-shareable diary (reads from local storage, no Manus login) */}
