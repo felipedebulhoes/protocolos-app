@@ -221,3 +221,25 @@ export const teamMembers = mysqlTable(
 
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type NewTeamMember = typeof teamMembers.$inferInsert;
+
+// ---------------------------------------------------------------------------
+// Password reset tokens (for local auth users)
+// ---------------------------------------------------------------------------
+export const passwordResetTokens = mysqlTable(
+  "password_reset_tokens",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("user_id").notNull(),
+    token: varchar("token", { length: 255 }).notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+    usedAt: timestamp("used_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    userIdIdx: index("password_reset_tokens_user_id_idx").on(t.userId),
+    tokenIdx: index("password_reset_tokens_token_idx").on(t.token),
+  }),
+);
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type NewPasswordResetToken = typeof passwordResetTokens.$inferInsert;

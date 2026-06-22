@@ -1,4 +1,3 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,8 @@ import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { DoctorGuard } from "@/components/DoctorGuard";
+import { AdminManagement } from "@/components/AdminManagement";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 function ConfiguracoesContent() {
   const { user } = useAuth();
@@ -552,6 +553,9 @@ function ConfiguracoesContent() {
           )}
         </div>
       </Card>
+
+      {/* ── Gerenciamento de Administradores ── */}
+      {user?.role === "admin" && <AdminManagement />}
     </div>
   );
 }

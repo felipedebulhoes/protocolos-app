@@ -8,8 +8,9 @@ import { signSession } from "../_core/sdk";
 import { hashPassword, verifyPassword } from "../patientAuth";
 import { checkRateLimit, clientIp } from "../_core/rateLimit";
 import { db } from "../db";
-import { users } from "../../drizzle/schema";
+import { users, passwordResetTokens } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { randomBytes } from "crypto";
 
 const emailSchema = z.string().trim().toLowerCase().email();
 const passwordSchema = z.string().min(8).max(100);
@@ -210,4 +211,216 @@ export const doctorAuthRouter = router({
     ctx.res.setHeader("Set-Cookie", serialize(COOKIE_NAME, "", getClearCookieOptions()));
     return { success: true };
   }),
+
+  /**
+   * Request password reset by email.
+   * Generates a reset token and sends it via email (TODO: implement email sending).
+   */
+  forgotPassword: publicProcedure
+    .input(z.object({ email: emailSchema }))
+    .mutation(async ({ ctx, input }) => {
+      // Rate limiting
+      const ip = clientIp(ctx.req);
+      if (!checkRateLimit(`forgot:ip:${ip}`, 5, 60 * 60 * 1000)) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: GENERIC_RATE_LIMIT_MSG });
+      }
+
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, input.email.toLowerCase().trim()))
+        .limit(1);
+
+      // Always return success for security (don't reveal if email exists)
+      if (!user[0]) {
+        return {
+          ok: true,
+          message: "Se o e-mail estiver registrado, você receberá um link de reset.",
+        };
+      }
+
+      // Generate reset token (valid for 1 hour)
+      const resetToken = randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+      await db.insert(passwordResetTokens).values({
+        userId: user[0].id,
+        token: resetToken,
+        expiresAt,
+      });
+
+      // TODO: Send email with reset link
+      // const resetUrl = `${ctx.req.protocol}://${ctx.req.get("host")}/reset-senha?token=${resetToken}`;
+      // await sendPasswordResetEmail(user[0].email, resetUrl);
+
+      return {
+        ok: true,
+        message: "Se o e-mail estiver registrado, você receberá um link de reset.",
+      };
+    }),
+
+  /**
+   * Reset password using a valid reset token.
+   */
+  resetPassword: publicProcedure
+    .input(
+      z.object({
+        token: z.string().min(1),
+        newPassword: passwordSchema,
+      }),
+    )
+    .mutation(async ({ input }) => {
+      // Find valid reset token
+      const resetTokens = await db
+        .select()
+        .from(passwordResetTokens)
+        .where(eq(passwordResetTokens.token, input.token))
+        .limit(1);
+
+      const resetToken = resetTokens[0];
+      if (!resetToken) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Token de reset inválido ou expirado.",
+        });
+      }
+
+      // Check if token is expired
+      if (resetToken.expiresAt < new Date()) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Token de reset expirado.",
+        });
+      }
+
+      // Check if token was already used
+      if (resetToken.usedAt) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Este token de reset já foi utilizado.",
+        });
+      }
+
+      // Hash new password
+      const hash = await hashPassword(input.newPassword);
+
+      // Update user password
+      await db
+        .update(users)
+        .set({ passwordHash: hash })
+        .where(eq(users.id, resetToken.userId));
+
+      // Mark token as used
+      await db
+        .update(passwordResetTokens)
+        .set({ usedAt: new Date() })
+        .where(eq(passwordResetTokens.id, resetToken.id));
+
+      return {
+        ok: true,
+        message: "Senha redefinida com sucesso! Faça login com sua nova senha.",
+      };
+    }),
+
+  /**
+   * List all admin users (admin-only).
+   */
+  listAdmins: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user?.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Apenas administradores podem listar admins.",
+      });
+    }
+
+    const admins = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        createdAt: users.createdAt,
+        lastSignedIn: users.lastSignedIn,
+        loginMethod: users.loginMethod,
+      })
+      .from(users)
+      .where(eq(users.role, "admin"));
+
+    return admins;
+  }),
+
+  /**
+   * Update admin role (admin-only).
+   */
+  updateAdminRole: protectedProcedure
+    .input(
+      z.object({
+        userId: z.number(),
+        newRole: z.enum(["admin", "user"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user?.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Apenas administradores podem atualizar roles.",
+        });
+      }
+
+      // Prevent demoting yourself
+      if (input.userId === ctx.user.id && input.newRole !== "admin") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Você não pode se remover como administrador.",
+        });
+      }
+
+      await db
+        .update(users)
+        .set({ role: input.newRole })
+        .where(eq(users.id, input.userId));
+
+      return { ok: true, message: "Role atualizado com sucesso." };
+    }),
+
+  /**
+   * Delete admin user (admin-only).
+   * Prevents deleting the last admin.
+   */
+  deleteAdmin: protectedProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user?.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Apenas administradores podem deletar admins.",
+        });
+      }
+
+      // Prevent deleting yourself
+      if (input.userId === ctx.user.id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Você não pode deletar sua própria conta.",
+        });
+      }
+
+      // Check if there's at least one other admin
+      const adminCount = await db
+        .select({ count: users.id })
+        .from(users)
+        .where(eq(users.role, "admin"));
+
+      if (adminCount.length === 1) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Não é possível deletar o último administrador.",
+        });
+      }
+
+      // Delete the user
+      await db.delete(users).where(eq(users.id, input.userId));
+
+      return { ok: true, message: "Admin deletado com sucesso." };
+    }),
 });
