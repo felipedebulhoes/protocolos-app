@@ -34,6 +34,8 @@ export const users = mysqlTable("users", {
   bio: text("bio"),
   totpSecret: varchar("totpSecret", { length: 255 }),
   totpEnabled: tinyint("totpEnabled").notNull().default(0),
+  passwordHash: varchar("password_hash", { length: 255 }),
+  setupToken: varchar("setup_token", { length: 255 }),
 });
 
 export type User = typeof users.$inferSelect;
