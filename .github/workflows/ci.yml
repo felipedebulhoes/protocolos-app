@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # version comes from package.json's "packageManager" field — don't
+      # also pass `with: version:` here, pnpm/action-setup refuses to run
+      # if the two specs disagree.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Skip the postinstall build step (it needs a real DB/env to run the
+      # full app build) — CI only needs node_modules to typecheck and test.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Type check
+        run: pnpm run check
+
+      - name: Run tests
+        run: pnpm test

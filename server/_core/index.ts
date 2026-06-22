@@ -7,11 +7,11 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { env, isProd } from "./env";
-import { COOKIE_NAME } from "@shared/const";
-import { getSessionCookieOptions } from "./cookies";
+import { COOKIE_NAME, PATIENT_COOKIE_NAME, PENDING_TOTP_COOKIE_NAME, isOwnerOpenId } from "@shared/const";
+import { getSessionCookieOptions, getPendingTotpCookieOptions } from "./cookies";
 import { exchangeCodeForUser, parseState } from "./oauth";
-import { signSession } from "./sdk";
-import { upsertUserByOpenId } from "../db";
+import { signSession, verifySession, parseCookieHeader } from "./sdk";
+import { upsertUserByOpenId, getExamFileByKey } from "../db";
 import { storageGetSignedUrl } from "./storageProxy";
 import { remindPendingIntakesHandler } from "../scheduledHandlers/remindPendingIntakes";
 
@@ -21,6 +21,15 @@ const __dirname = path.dirname(__filename);
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // Trust exactly one hop of reverse proxy (Manus' own infra, or a single
+  // load balancer in front of this app) so req.ip / req.protocol reflect the
+  // real client instead of the proxy. This matters for rate limiting
+  // (server/_core/rateLimit.ts) and for any IP-based logging. If you put
+  // this app behind additional proxy hops, bump this number to match —
+  // an incorrect value either trusts a spoofable header or reports every
+  // request as coming from the same proxy IP.
+  app.set("trust proxy", 1);
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -56,6 +65,20 @@ async function startServer() {
         email: user.email ?? null,
         avatar: user.avatar ?? null,
       });
+
+      // SECURITY: if this account has TOTP (2FA) enabled, OAuth success alone
+      // is not enough to grant a full session — we issue a short-lived
+      // "pending" token instead and send the browser to the code-entry page.
+      // The real session cookie is only set once totp.verifyLogin confirms
+      // the 6-digit code server-side.
+      if (dbUser.totpEnabled) {
+        const pendingToken = await signSession({ openId: dbUser.openId, pendingTotp: true }, "5m");
+        res.setHeader("Set-Cookie", serialize(PENDING_TOTP_COOKIE_NAME, pendingToken, getPendingTotpCookieOptions()));
+        const totpUrl = new URL(`${baseOrigin}/login/verificar-totp`);
+        totpUrl.searchParams.set("returnPath", returnPath || "/");
+        return res.redirect(totpUrl.toString());
+      }
+
       const token = await signSession({
         openId: dbUser.openId,
         name: dbUser.name ?? "",
@@ -74,10 +97,52 @@ async function startServer() {
   app.post("/api/scheduled/remindPendingIntakes", remindPendingIntakesHandler);
 
   // ---- Storage proxy (signed redirect) ----
+  // SECURITY: every exam file belongs to a patient. Before handing out a
+  // signed URL we require either (a) the doctor/owner session, or (b) a
+  // patient session whose patientId matches the file's owner. Anonymous
+  // requests are rejected — this prevents enumerating other patients'
+  // lab results via guessable storage keys.
   app.get("/manus-storage/*", async (req, res) => {
     try {
       const key = req.path.replace(/^\/manus-storage\//, "");
       if (!key) return res.status(400).send("Missing key");
+
+      const cookies = parseCookieHeader(req.headers.cookie);
+
+      let isAuthorizedDoctor = false;
+      const doctorToken = cookies[COOKIE_NAME];
+      if (doctorToken) {
+        const payload = await verifySession(doctorToken);
+        // SECURITY: reject pending-TOTP tokens here too — same reasoning as
+        // createContext in ./context.ts.
+        if (
+          payload?.openId &&
+          payload.pendingTotp !== true &&
+          isOwnerOpenId(payload.openId as string, env.OWNER_OPEN_ID)
+        ) {
+          isAuthorizedDoctor = true;
+        }
+      }
+
+      let patientId: number | null = null;
+      const patientToken = cookies[PATIENT_COOKIE_NAME];
+      if (patientToken) {
+        const payload = await verifySession(patientToken);
+        const pid = (payload as unknown as { patientId?: number })?.patientId;
+        if (pid) patientId = pid;
+      }
+
+      if (!isAuthorizedDoctor && !patientId) {
+        return res.status(401).send("Unauthorized");
+      }
+
+      if (!isAuthorizedDoctor) {
+        const file = await getExamFileByKey(key);
+        if (!file || file.patientId !== patientId) {
+          return res.status(403).send("Forbidden");
+        }
+      }
+
       const url = await storageGetSignedUrl(key);
       if (!url) return res.status(502).send("No signed url");
       res.setHeader("Cache-Control", "no-store");

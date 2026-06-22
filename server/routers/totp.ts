@@ -1,12 +1,32 @@
 import { z } from "zod";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
-import { ownerProcedure, router } from "../_core/trpc";
+import { serialize } from "cookie";
+import { TRPCError } from "@trpc/server";
+import { ownerProcedure, publicProcedure, router } from "../_core/trpc";
 import { db } from "../db";
 import { users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { parseCookieHeader, verifySession, signSession } from "../_core/sdk";
+import { getSessionCookieOptions, getClearCookieOptions } from "../_core/cookies";
+import { checkRateLimit, clientIp } from "../_core/rateLimit";
+import {
+  COOKIE_NAME,
+  PENDING_TOTP_COOKIE_NAME,
+  TOTP_PENDING_EXPIRED_ERR_MSG,
+  TOTP_INVALID_CODE_ERR_MSG,
+} from "@shared/const";
 
 const APP_NAME = "ProtoUro";
+
+// SECURITY: a 6-digit TOTP code has only 1,000,000 possibilities. Without a
+// hard cap here, someone who reaches this step (stolen/observed first
+// factor, or just an open browser tab) could brute-force it for the entire
+// 5-minute lifetime of the pending cookie. Keyed by the pending token itself
+// so the budget is per login attempt, not shared across different logins.
+const TOTP_VERIFY_MAX_ATTEMPTS_PER_TOKEN = 5;
+const TOTP_VERIFY_MAX_ATTEMPTS_PER_IP = 20;
+const TOTP_VERIFY_WINDOW_MS = 5 * 60 * 1000; // matches the pending token's own expiry
 
 export const totpRouter = router({
   /**
@@ -113,4 +133,74 @@ export const totpRouter = router({
 
     return { enabled: Boolean(row?.totpEnabled) };
   }),
+
+  /**
+   * Second step of doctor login when 2FA is enabled. Reads the short-lived
+   * "pending" cookie set right after a successful OAuth exchange, verifies
+   * the 6-digit TOTP code against the account's secret, and — only then —
+   * issues the real session cookie. publicProcedure on purpose: there is no
+   * full session yet at this point, only the pending one.
+   */
+  verifyLogin: publicProcedure
+    .input(z.object({ code: z.string().min(6).max(6) }))
+    .mutation(async ({ ctx, input }) => {
+      const cookies = parseCookieHeader(ctx.req.headers.cookie);
+      const pendingToken = cookies[PENDING_TOTP_COOKIE_NAME];
+      if (!pendingToken) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: TOTP_PENDING_EXPIRED_ERR_MSG });
+      }
+
+      // Per-IP bucket is a loose secondary signal (see clientIp's trust-proxy
+      // caveat) — the per-token bucket below is what actually bounds the
+      // number of guesses against this specific pending login.
+      checkRateLimit(`totp-verify:ip:${clientIp(ctx.req)}`, TOTP_VERIFY_MAX_ATTEMPTS_PER_IP, TOTP_VERIFY_WINDOW_MS);
+
+      if (!checkRateLimit(`totp-verify:token:${pendingToken}`, TOTP_VERIFY_MAX_ATTEMPTS_PER_TOKEN, TOTP_VERIFY_WINDOW_MS)) {
+        // Budget exhausted for this specific pending login — consume the
+        // pending cookie outright instead of letting it linger until it
+        // naturally expires, so a fresh OAuth + TOTP round is required.
+        ctx.res.setHeader("Set-Cookie", serialize(PENDING_TOTP_COOKIE_NAME, "", getClearCookieOptions()));
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: TOTP_PENDING_EXPIRED_ERR_MSG });
+      }
+
+      const payload = await verifySession(pendingToken);
+      if (!payload?.openId || payload.pendingTotp !== true) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: TOTP_PENDING_EXPIRED_ERR_MSG });
+      }
+
+      const [row] = await db
+        .select()
+        .from(users)
+        .where(eq(users.openId, payload.openId))
+        .limit(1);
+
+      if (!row?.totpSecret || !row.totpEnabled) {
+        // 2FA was disabled mid-flow — nothing to verify, deny and force a fresh login.
+        throw new TRPCError({ code: "UNAUTHORIZED", message: TOTP_PENDING_EXPIRED_ERR_MSG });
+      }
+
+      const isValid = speakeasy.totp.verify({
+        secret: row.totpSecret,
+        encoding: "base32",
+        token: input.code,
+        window: 1,
+      });
+      if (!isValid) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: TOTP_INVALID_CODE_ERR_MSG });
+      }
+
+      const sessionToken = await signSession({
+        openId: row.openId,
+        name: row.name ?? "",
+        email: row.email ?? undefined,
+        avatar: row.avatar ?? undefined,
+      });
+
+      ctx.res.setHeader("Set-Cookie", [
+        serialize(COOKIE_NAME, sessionToken, getSessionCookieOptions()),
+        serialize(PENDING_TOTP_COOKIE_NAME, "", getClearCookieOptions()),
+      ]);
+
+      return { ok: true };
+    }),
 });

@@ -8,9 +8,25 @@ import {
   setPatientSessionCookie,
   clearPatientSessionCookie,
 } from "../patientAuth";
+import { checkRateLimit, clientIp } from "../_core/rateLimit";
 
 const emailSchema = z.string().trim().toLowerCase().email();
 const passwordSchema = z.string().min(6).max(100);
+
+// Per-email is the primary defense (it's what actually identifies "one
+// account being attacked"). The per-IP bucket is intentionally looser: in
+// production this app sits behind a reverse proxy, so many unrelated
+// patients can share one apparent IP — a tight IP limit would let one
+// attacker (or one bad actor's failed attempts) lock out everyone else
+// behind the same proxy. See server/_core/rateLimit.ts `clientIp` for the
+// trust-proxy caveat.
+const LOGIN_MAX_ATTEMPTS_PER_EMAIL = 10;
+const LOGIN_MAX_ATTEMPTS_PER_IP = 60;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 min
+const REGISTER_MAX_ATTEMPTS_PER_EMAIL = 5;
+const REGISTER_MAX_ATTEMPTS_PER_IP = 30;
+const REGISTER_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const GENERIC_RATE_LIMIT_MSG = "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
 
 export const patientAuthRouter = router({
   // ----- Create a portal password (after filling the intake) ----------------
@@ -24,6 +40,17 @@ export const patientAuthRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // SECURITY: throttle account creation per IP and per target e-mail so
+      // this endpoint can't be used to mass-create accounts or hammer the
+      // "already exists" branch to enumerate registered patients.
+      const ip = clientIp(ctx.req);
+      if (
+        !checkRateLimit(`register:ip:${ip}`, REGISTER_MAX_ATTEMPTS_PER_IP, REGISTER_WINDOW_MS) ||
+        !checkRateLimit(`register:email:${input.email}`, REGISTER_MAX_ATTEMPTS_PER_EMAIL, REGISTER_WINDOW_MS)
+      ) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: GENERIC_RATE_LIMIT_MSG });
+      }
+
       const existing = await db.getPatientByEmail(input.email);
       if (existing?.passwordHash) {
         throw new TRPCError({
@@ -58,6 +85,16 @@ export const patientAuthRouter = router({
   login: publicProcedure
     .input(z.object({ email: emailSchema, password: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
+      // SECURITY: throttle login attempts per IP and per target e-mail to
+      // make password brute-forcing impractical.
+      const ip = clientIp(ctx.req);
+      if (
+        !checkRateLimit(`login:ip:${ip}`, LOGIN_MAX_ATTEMPTS_PER_IP, LOGIN_WINDOW_MS) ||
+        !checkRateLimit(`login:email:${input.email}`, LOGIN_MAX_ATTEMPTS_PER_EMAIL, LOGIN_WINDOW_MS)
+      ) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: GENERIC_RATE_LIMIT_MSG });
+      }
+
       const patient = await db.getPatientByEmail(input.email);
       const ok = patient && (await verifyPassword(input.password, patient.passwordHash));
       if (!patient || !ok) {

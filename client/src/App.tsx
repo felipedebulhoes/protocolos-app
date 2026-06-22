@@ -22,6 +22,7 @@ import Configuracoes from "./pages/Configuracoes";
 import { TeamJoin } from "./pages/TeamJoin";
 import ExamAnalytics from "./pages/ExamAnalytics";
 import SpermogramFlowchart from "./pages/SpermogramFlowchart";
+import VerifyTotpLogin from "./pages/VerifyTotpLogin";
 import { DoctorGuard } from "./components/DoctorGuard";
 import { SessionProvider } from "./components/SessionProvider";
 
@@ -68,6 +69,9 @@ function Router() {
       <Route path="/login" component={PortalLogin} />
       <Route path="/portal" component={PortalRoute} />
       <Route path="/ficha/:token" component={FichaPublica} />
+
+      {/* Doctor login: second factor (TOTP) verification step */}
+      <Route path="/login/verificar-totp" component={VerifyTotpLogin} />
 
       {/* Patient-shareable diary (reads from local storage, no Manus login) */}
       <Route path="/diario-paciente/:id" component={DiarioPaciente} />
