@@ -15,6 +15,20 @@
       "when": 1781999882234,
       "tag": "0001_chief_pretty_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1782146823041,
+      "tag": "0002_graceful_rafael_vega",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1782146937832,
+      "tag": "0003_groovy_master_mold",
+      "breakpoints": true
     }
   ]
 }

@@ -72,7 +72,7 @@ async function startServer() {
       // The real session cookie is only set once totp.verifyLogin confirms
       // the 6-digit code server-side.
       if (dbUser.totpEnabled) {
-        const pendingToken = await signSession({ openId: dbUser.openId, pendingTotp: true }, "5m");
+        const pendingToken = await signSession({ openId: dbUser.openId ?? "", pendingTotp: true }, "5m");
         res.setHeader("Set-Cookie", serialize(PENDING_TOTP_COOKIE_NAME, pendingToken, getPendingTotpCookieOptions()));
         const totpUrl = new URL(`${baseOrigin}/login/verificar-totp`);
         totpUrl.searchParams.set("returnPath", returnPath || "/");
@@ -80,7 +80,7 @@ async function startServer() {
       }
 
       const token = await signSession({
-        openId: dbUser.openId,
+        openId: dbUser.openId ?? "",
         name: dbUser.name ?? "",
         email: dbUser.email ?? undefined,
         avatar: dbUser.avatar ?? undefined,

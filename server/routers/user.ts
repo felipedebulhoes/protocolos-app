@@ -22,6 +22,7 @@ const ownerProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const userRouter = router({
   // Get current doctor profile
   getProfile: ownerProcedure.query(async ({ ctx }) => {
+    if (!ctx.user.openId) return null;
     const user = await getUserByOpenId(ctx.user.openId);
     return user ?? null;
   }),
@@ -39,6 +40,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (!ctx.user.openId) throw new Error("User openId not found");
       const updated = await updateUserProfile(ctx.user.openId, input);
       return updated ?? null;
     }),

@@ -12,16 +12,20 @@ import {
 } from "drizzle-orm/mysql-core";
 
 // ---------------------------------------------------------------------------
-// Doctor / staff users (Manus OAuth)
+// Doctor / staff users (Manus OAuth + Local auth support)
 // NOTE: DB uses camelCase column names
 // ---------------------------------------------------------------------------
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
+  // Manus OAuth field (required for OAuth login, optional for local-auth users)
+  openId: varchar("openId", { length: 64 }).unique(),
+  // Local auth fields (optional, only for local-auth users)
+  email: varchar("email", { length: 320 }).unique(),
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  // User profile
   name: text("name"),
-  email: varchar("email", { length: 320 }),
   avatar: varchar("avatar", { length: 1024 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
+  loginMethod: varchar("loginMethod", { length: 64 }).default("manus"), // 'local' or 'manus'
   role: mysqlEnum("role", ["user", "admin"]).notNull().default("user"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow().onUpdateNow(),

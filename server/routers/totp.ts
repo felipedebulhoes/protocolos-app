@@ -190,7 +190,7 @@ export const totpRouter = router({
       }
 
       const sessionToken = await signSession({
-        openId: row.openId,
+        openId: row.openId ?? "",
         name: row.name ?? "",
         email: row.email ?? undefined,
         avatar: row.avatar ?? undefined,
