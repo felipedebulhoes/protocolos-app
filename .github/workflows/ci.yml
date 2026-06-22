@@ -11,9 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # version comes from package.json's "packageManager" field — don't
-      # also pass `with: version:` here, pnpm/action-setup refuses to run
-      # if the two specs disagree.
+      # version comes from package.json's "packageManager" field
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -21,8 +19,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      # Skip the postinstall build step (it needs a real DB/env to run the
-      # full app build) — CI only needs node_modules to typecheck and test.
+      # Skip the postinstall build step — CI only needs typecheck and test.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
@@ -31,3 +28,25 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy to Railway
+        run: npx @railway/cli@latest up --service ${{ secrets.RAILWAY_SERVICE_ID }} --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

@@ -26,10 +26,14 @@ export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
-// Restricts access to the project owner (the physician). Even other
-// authenticated Manus users cannot reach owner-only data.
+/**
+ * Restricts access to the project owner (the physician) OR any user with
+ * role="admin". This allows Felipe to invite admins who can also manage the
+ * team, without needing Manus openId verification for every admin action.
+ */
 export const ownerProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (!isOwnerOpenId(ctx.user.openId, env.OWNER_OPEN_ID)) {
+  const isOwner = isOwnerOpenId(ctx.user.openId, env.OWNER_OPEN_ID) || ctx.user.role === "admin";
+  if (!isOwner) {
     throw new TRPCError({ code: "FORBIDDEN", message: NOT_OWNER_ERR_MSG });
   }
   return next({ ctx });

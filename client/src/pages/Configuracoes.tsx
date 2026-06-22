@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   User, Mail, Phone, MapPin, Building2, Briefcase, Save,
   Shield, ShieldCheck, ShieldOff, QrCode, KeyRound, CheckCircle2,
-  AlertCircle, Loader2, Copy, Check, Users, Trash2, Plus
+  AlertCircle, Loader2, Copy, Check, Users, Trash2, Plus, LogOut, ExternalLink
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
@@ -15,17 +15,19 @@ import { AdminManagement } from "@/components/AdminManagement";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 function ConfiguracoesContent() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const utils = trpc.useUtils();
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteRole, setInviteRole] = useState<"viewer" | "editor" | "admin">("viewer");
+  const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
   const inviteMember = trpc.team.invite.useMutation({
     onSuccess: (data) => {
-      toast.success(`Convite enviado para ${data.email}!`);
+      toast.success(`Convite criado para ${data.email}! Copie o link abaixo e envie para o convidado.`);
       setInviteEmail("");
       setInviteName("");
       setInviteRole("viewer");
+      setLastInviteUrl(data.inviteUrl);
       utils.team.list.invalidate();
     },
     onError: (err) => toast.error(`Erro: ${err.message}`),
@@ -141,9 +143,19 @@ function ConfiguracoesContent() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Configurações da Conta</h1>
-        <p className="text-muted-foreground">Gerencie suas informações de perfil e segurança</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Configurações da Conta</h1>
+          <p className="text-muted-foreground">Gerencie suas informações de perfil e segurança</p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={logout}
+          className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50 shrink-0"
+        >
+          <LogOut className="w-4 h-4" />
+          Sair
+        </Button>
       </div>
 
       {/* ── Perfil do Administrador ── */}
@@ -516,8 +528,30 @@ function ConfiguracoesContent() {
             ) : (
               <Plus className="w-4 h-4 mr-2" />
             )}
-            Enviar Convite
+            Gerar Link de Convite
           </Button>
+
+          {lastInviteUrl && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-xs font-semibold text-green-700 mb-2 flex items-center gap-1">
+                <ExternalLink className="w-3 h-3" />
+                Link de convite gerado — envie para o convidado:
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="text-xs break-all bg-white border border-green-200 px-2 py-1.5 rounded flex-1">
+                  {lastInviteUrl}
+                </code>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="shrink-0 border-green-300 text-green-700 hover:bg-green-50"
+                  onClick={() => { navigator.clipboard.writeText(lastInviteUrl); toast.success("Link copiado!"); }}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Lista de membros */}
