@@ -6,6 +6,7 @@ import { patientAuthRouter } from "./routers/patientAuth";
 import { userRouter } from "./routers/user";
 import { totpRouter } from "./routers/totp";
 import { teamRouter } from "./routers/team";
+import { doctorAuthRouter } from "./routers/doctorAuth";
 
 export const appRouter = router({
   auth: authRouter,
@@ -16,6 +17,7 @@ export const appRouter = router({
   user: userRouter,
   totp: totpRouter,
   team: teamRouter,
+  doctorAuth: doctorAuthRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -2,7 +2,7 @@ import { randomBytes } from "crypto";
 import { TRPCError } from "@trpc/server";
 import { router, ownerProcedure, publicProcedure } from "../_core/trpc";
 import * as db from "../db";
-import { teamMembers } from "../../drizzle/schema";
+import { teamMembers, users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 function genInvitationToken(): string {
@@ -95,7 +95,15 @@ export const teamRouter = router({
       return { ok: true };
     }),
 
-  // Accept team invite (public - no auth required)
+  /**
+   * Accept a team invite (public — no auth required).
+   *
+   * What this does:
+   * 1. Validates the token.
+   * 2. Finds or creates a `users` row for the invited email with the correct role.
+   * 3. Issues a one-time `setupToken` so the frontend can redirect to a
+   *    password-setup page where the new member sets their initial password.
+   */
   acceptInvite: publicProcedure
     .input((val: unknown) => {
       if (typeof val !== "object" || val === null) throw new Error("Invalid input");
@@ -133,6 +141,40 @@ export const teamRouter = router({
         });
       }
 
+      // Map team role to users.role
+      const usersRole: "admin" | "user" =
+        memberRecord.role === "admin" ? "admin" : "user";
+
+      // Generate a one-time setup token so the user can set their password
+      const setupToken = randomBytes(32).toString("base64url");
+
+      // Find or create the user in the `users` table
+      const existingUsers = await db.db
+        .select()
+        .from(users)
+        .where(eq(users.email, memberRecord.email))
+        .limit(1);
+
+      if (existingUsers.length > 0) {
+        // Update existing user's role and setupToken
+        await db.db
+          .update(users)
+          .set({ role: usersRole, setupToken })
+          .where(eq(users.id, existingUsers[0].id));
+      } else {
+        // Create a new user record with a synthetic openId
+        const syntheticOpenId = `local:${randomBytes(16).toString("hex")}`;
+        await db.db.insert(users).values({
+          openId: syntheticOpenId,
+          name: memberRecord.fullName,
+          email: memberRecord.email,
+          role: usersRole,
+          setupToken,
+          loginMethod: "email",
+        });
+      }
+
+      // Mark the invite as accepted
       await db.db
         .update(teamMembers)
         .set({ status: "active", invitationToken: "" })
@@ -143,6 +185,7 @@ export const teamRouter = router({
         fullName: memberRecord.fullName,
         email: memberRecord.email,
         role: memberRecord.role,
+        setupToken,
       };
     }),
 
@@ -164,10 +207,26 @@ export const teamRouter = router({
         });
       }
 
+      // Update team_members role
       await db.db
         .update(teamMembers)
         .set({ role: input.role })
         .where(eq(teamMembers.id, input.memberId));
+
+      // Also sync users.role
+      const member = await db.db
+        .select()
+        .from(teamMembers)
+        .where(eq(teamMembers.id, input.memberId))
+        .limit(1);
+
+      if (member[0]) {
+        const usersRole: "admin" | "user" = input.role === "admin" ? "admin" : "user";
+        await db.db
+          .update(users)
+          .set({ role: usersRole })
+          .where(eq(users.email, member[0].email));
+      }
 
       return { ok: true };
     }),
