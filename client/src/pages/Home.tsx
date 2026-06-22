@@ -99,7 +99,7 @@ export default function Home() {
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.raw_content && p.raw_content.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (p.sections && p.sections.some(sec => sec.content.toLowerCase().includes(searchQuery.toLowerCase())));
+        (p.sections && p.sections.some(sec => typeof sec === 'object' && sec.content && sec.content.toLowerCase().includes(searchQuery.toLowerCase())));
       return matchesCategory && matchesSearch;
     });
   }, [searchQuery, selectedCategory]);

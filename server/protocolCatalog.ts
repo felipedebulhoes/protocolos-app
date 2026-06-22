@@ -648,7 +648,6 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "amputação peniana",
     ],
   },
- ─────────────────────────────────────────────────
   {
     id: "17_priapismo_emergencia",
     title: "Priapismo - Protocolo de Emergência",

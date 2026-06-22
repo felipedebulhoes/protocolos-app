@@ -583,9 +583,9 @@ export default function ProtocolDetail() {
       
       // Injetar medicamentos adjuvantes se selecionados para qualquer seção de receita
       // Como handlePrintDocument recebe o título e o conteúdo bruto, podemos varrer as seções de receita para ver qual coincide
-      const matchingSection = protocol.sections.find((s: any) => s.is_prescription && s.content === content);
+      const matchingSection = protocol.sections.find((s: any) => typeof s === 'object' && s !== null && s.is_prescription && s.content === content);
       if (matchingSection) {
-        const adjuvantsForSection = selectedAdjuvants[matchingSection.title] || [];
+        const adjuvantsForSection = selectedAdjuvants[(matchingSection as any).title] || [];
         if (adjuvantsForSection.length > 0) {
           formattedContent += "\n\n--------------------------------------------------\nMEDICAMENTOS ADJUVANTES SELECIONADOS:\n" + adjuvantsForSection.map((adj, idx) => `${idx + 1}. ${adj}`).join("\n");
         }
