@@ -222,6 +222,27 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
       "epidídimo",
     ],
   },
+  {
+    id: "kallmann_hhg_congenito",
+    title: "Síndrome de Kallmann e Hipogonadismo Hipogonadotrófico Congênito",
+    category: "Andrologia",
+    keywords: [
+      "sindrome de kallmann",
+      "anosmia e ausencia de puberdade",
+      "hipogonadismo hipogonadotrofico",
+      "puberdade ausente",
+      "hhg congenito",
+      "lh fsh baixos com testosterona baixa",
+      "ausencia de puberdade masculina",
+      "testosterona baixa jovem",
+      "hcg para fertilidade",
+      "gonal-f infertilidade hipogonadismo",
+      "infertilidade por hhg",
+      "micropenis congenito",
+      "criptorquidia e infertilidade",
+      "gonadotrofinas para espermatogenese",
+    ],
+  },
   // ─── HORMÔNIOS & PERFORMANCE ──────────────────────────────────────────────
   {
     id: "8_trt_performance",
@@ -689,25 +710,4 @@ export const PROTOCOL_CATALOG: ProtocolCatalogEntry[] = [
 
 export function getProtocolById(id: string): ProtocolCatalogEntry | undefined {
   return PROTOCOL_CATALOG.find((p) => p.id === id);
-}  {
-    id: "kallmann_hhg_congenito",
-    title: "Síndrome de Kallmann e Hipogonadismo Hipogonadotrófico Congênito",
-    category: "Andrologia",
-    keywords: [
-      "sindrome de kallmann",
-      "anosmia e ausencia de puberdade",
-      "hipogonadismo hipogonadotrofico",
-      "puberdade ausente",
-      "hhg congenito",
-      "lh fsh baixos com testosterona baixa",
-      "ausencia de puberdade masculina",
-      "testosterona baixa jovem",
-      "hcg para fertilidade",
-      "gonal-f infertilidade hipogonadismo",
-      "infertilidade por hhg",
-      "micropenis congenito",
-      "criptorquidia e infertilidade",
-      "gonadotrofinas para espermatogenese",
-    ],
-  },
-
+}
