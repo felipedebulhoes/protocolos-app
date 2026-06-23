@@ -9,7 +9,7 @@ import { AlertCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 
-export function DoctorLogin() {
+export default function DoctorLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);

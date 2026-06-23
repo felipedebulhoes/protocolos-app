@@ -23,7 +23,7 @@ import { TeamJoin } from "./pages/TeamJoin";
 import ExamAnalytics from "./pages/ExamAnalytics";
 import SpermogramFlowchart from "./pages/SpermogramFlowchart";
 import VerifyTotpLogin from "./pages/VerifyTotpLogin";
-import { DoctorLogin } from "./pages/DoctorLogin";
+import DoctorLogin from "./pages/DoctorLogin";
 import { RegisterAdmin } from "./pages/RegisterAdmin";
 import { ResetPassword } from "./pages/ResetPassword";
 import { ForgotPassword } from "./pages/ForgotPassword";
@@ -67,19 +67,19 @@ function Router() {
     <Switch>
       <Route path="/" component={RootRoute} />
 
+      {/* Doctor login: local auth and TOTP verification (must come BEFORE /login) */}
+      <Route path="/login/doctor" component={DoctorLogin} />
+      <Route path="/login/verificar-totp" component={VerifyTotpLogin} />
+      <Route path="/admin/registrar" component={RegisterAdmin} />
+      <Route path="/reset-senha" component={ResetPassword} />
+      <Route path="/esqueci-senha" component={ForgotPassword} />
+
       {/* Patient-facing public routes */}
       <Route path="/paciente" component={PacienteLanding} />
       <Route path="/cadastro" component={PortalRegister} />
       <Route path="/login" component={PortalLogin} />
       <Route path="/portal" component={PortalRoute} />
       <Route path="/ficha/:token" component={FichaPublica} />
-
-      {/* Doctor login: local auth and TOTP verification */}
-      <Route path="/login/doctor" component={DoctorLogin} />
-      <Route path="/admin/registrar" component={RegisterAdmin} />
-      <Route path="/reset-senha" component={ResetPassword} />
-      <Route path="/esqueci-senha" component={ForgotPassword} />
-      <Route path="/login/verificar-totp" component={VerifyTotpLogin} />
 
       {/* Patient-shareable diary (reads from local storage, no Manus login) */}
       <Route path="/diario-paciente/:id" component={DiarioPaciente} />

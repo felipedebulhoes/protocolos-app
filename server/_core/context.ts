@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 
 export interface DoctorUser {
   id: number;
-  openId: string;
+  openId: string | null;
   name: string;
   email?: string | null;
   avatar?: string | null;
@@ -39,8 +39,14 @@ export async function createContext({ req, res }: CreateExpressContextOptions): 
     // server/routers/totp.ts) is signed the same way as a real session. It
     // must never grant a real session just because it carries an openId.
     if (payload?.openId && payload.pendingTotp !== true) {
-      const rows = await db.select().from(users).where(eq(users.openId, payload.openId)).limit(1);
-      if (rows[0] && rows[0].openId) {
+      // For local users, openId is a generated string like "local_email_id"
+      // For OAuth users, openId is the actual OAuth ID
+      const rows = await db
+        .select()
+        .from(users)
+        .where(eq(users.openId, payload.openId as string))
+        .limit(1);
+      if (rows[0]) {
         user = {
           id: rows[0].id,
           openId: rows[0].openId,

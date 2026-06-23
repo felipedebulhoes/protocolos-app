@@ -46,7 +46,7 @@ export const totpRouter = router({
     await db
       .update(users)
       .set({ totpSecret: secretObj.base32, totpEnabled: 0 })
-      .where(eq(users.openId, ctx.user.openId));
+      .where(eq(users.id, ctx.user.id));
 
     return { secret: secretObj.base32, qrDataUrl };
   }),
@@ -60,7 +60,7 @@ export const totpRouter = router({
       const [row] = await db
         .select({ totpSecret: users.totpSecret })
         .from(users)
-        .where(eq(users.openId, ctx.user.openId))
+        .where(eq(users.id, ctx.user.id))
         .limit(1);
 
       if (!row?.totpSecret) {
@@ -81,7 +81,7 @@ export const totpRouter = router({
       await db
         .update(users)
         .set({ totpEnabled: 1 })
-        .where(eq(users.openId, ctx.user.openId));
+        .where(eq(users.id, ctx.user.id));
 
       return { success: true };
     }),
@@ -95,7 +95,7 @@ export const totpRouter = router({
       const [row] = await db
         .select({ totpSecret: users.totpSecret, totpEnabled: users.totpEnabled })
         .from(users)
-        .where(eq(users.openId, ctx.user.openId))
+        .where(eq(users.id, ctx.user.id))
         .limit(1);
 
       if (!row?.totpSecret || !row.totpEnabled) {
@@ -116,7 +116,7 @@ export const totpRouter = router({
       await db
         .update(users)
         .set({ totpSecret: null, totpEnabled: 0 })
-        .where(eq(users.openId, ctx.user.openId));
+        .where(eq(users.id, ctx.user.id));
 
       return { success: true };
     }),
@@ -128,7 +128,7 @@ export const totpRouter = router({
     const [row] = await db
       .select({ totpEnabled: users.totpEnabled })
       .from(users)
-      .where(eq(users.openId, ctx.user.openId))
+      .where(eq(users.id, ctx.user.id))
       .limit(1);
 
     return { enabled: Boolean(row?.totpEnabled) };

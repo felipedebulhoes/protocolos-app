@@ -56,6 +56,15 @@ if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
       .register("/sw.js")
       .then((reg) => {
         console.log("Service Worker registrado com sucesso:", reg.scope);
+        // Verifica atualizacoes do SW periodicamente e ao carregar
+        reg.update();
+        // Quando um novo SW assume o controle, recarrega para servir a versao mais recente
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        });
       })
       .catch((err) => {
         console.error("Falha ao registrar o Service Worker:", err);
