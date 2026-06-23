@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
+import { AlertCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 
@@ -13,8 +14,12 @@ export function DoctorLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<"login" | "2fa">("login");
+  const [totpCode, setTotpCode] = useState("");
+  const [userId, setUserId] = useState<number | null>(null);
 
   const loginMutation = trpc.doctorAuth.login.useMutation();
+  const verify2FAMutation = trpc.doctorAuth.verifyTOTPLogin.useMutation();
 
   const handleLocalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +33,8 @@ export function DoctorLogin() {
       });
 
       if (result.ok) {
-        // Redirect to dashboard
+        // Check if 2FA is enabled - for now, redirect directly
+        // In future, check result.requires2FA
         window.location.href = "/";
       }
     } catch (err: any) {
@@ -37,6 +43,89 @@ export function DoctorLogin() {
       setIsLoading(false);
     }
   };
+
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    if (!userId || !totpCode || totpCode.length !== 6) {
+      setError("Digite um código de 6 dígitos");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const result = await verify2FAMutation.mutateAsync({
+        userId,
+        code: totpCode,
+      });
+
+      if (result.ok) {
+        window.location.href = "/";
+      }
+    } catch (err: any) {
+      setError(err.message || "Código TOTP inválido. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (step === "2fa") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-2xl">Verificação 2FA</CardTitle>
+            <CardDescription>
+              Digite o código do seu autenticador
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            <form onSubmit={handleVerify2FA} className="space-y-4">
+              <Input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="000000"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
+                disabled={isLoading}
+              />
+              <Button type="submit" className="w-full" disabled={isLoading || totpCode.length !== 6}>
+                {isLoading ? (
+                  <>
+                    <Spinner className="mr-2 h-4 w-4" />
+                    Verificando...
+                  </>
+                ) : (
+                  "Verificar"
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setStep("login");
+                  setTotpCode("");
+                  setUserId(null);
+                }}
+              >
+                Voltar
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
@@ -50,6 +139,7 @@ export function DoctorLogin() {
         <CardContent className="space-y-4">
           {error && (
             <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}

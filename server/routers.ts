@@ -18,7 +18,6 @@ export const appRouter = router({
   user: userRouter,
   totp: totpRouter,
   team: teamRouter,
-  doctorAuth: doctorAuthRouter,
 });
 
 export type AppRouter = typeof appRouter;

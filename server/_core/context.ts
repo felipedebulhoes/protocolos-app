@@ -12,6 +12,7 @@ export interface DoctorUser {
   email?: string | null;
   avatar?: string | null;
   role: "admin" | "user";
+  totpEnabled?: number;
 }
 
 export interface PatientSession {
@@ -47,6 +48,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions): 
           email: rows[0].email,
           avatar: rows[0].avatar,
           role: rows[0].role,
+          totpEnabled: rows[0].totpEnabled,
         };
       }
     }

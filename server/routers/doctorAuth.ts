@@ -212,6 +212,7 @@ export const doctorAuthRouter = router({
       role: ctx.user.role,
       avatar: ctx.user.avatar,
       loginMethod: "manus", // TODO: fetch from DB
+      totpEnabled: ctx.user.totpEnabled === 1,
     };
   }),
 
@@ -266,7 +267,8 @@ export const doctorAuthRouter = router({
       const resetUrl = `${protocol}://${host}/reset-senha?token=${resetToken}`;
       
       // Type assertion needed because user[0].name is string | null but function accepts string | null
-      await sendPasswordResetEmail(user[0].email, resetUrl, (user[0].name || undefined) as string | undefined);
+      const userEmail = user[0].email || "";
+      await sendPasswordResetEmail(userEmail, resetUrl, (user[0].name || undefined) as string | undefined);
 
       return {
         ok: true,
@@ -437,5 +439,230 @@ export const doctorAuthRouter = router({
       await db.delete(users).where(eq(users.id, input.userId));
 
       return { ok: true, message: "Admin deletado com sucesso." };
+    }),
+
+  /**
+   * Enable 2FA (TOTP) for the current user.
+   * Generates a secret and returns QR code for scanning.
+   */
+  enable2FA: protectedProcedure.mutation(async ({ ctx }) => {
+    if (!ctx.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const speakeasy = await import("speakeasy");
+    const QRCode = await import("qrcode");
+
+    // Generate TOTP secret
+    const secret = speakeasy.generateSecret({
+      name: `ProtoUro (${ctx.user.email})`,
+      issuer: "ProtoUro",
+      length: 32,
+    });
+
+    // Generate QR code
+    const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
+
+    return {
+      secret: secret.base32,
+      qrCode,
+      backupCodes: Array.from({ length: 10 }, () =>
+        Math.random().toString(36).substring(2, 10).toUpperCase()
+      ),
+    };
+  }),
+
+  /**
+   * Verify and confirm 2FA setup.
+   * User must provide a valid TOTP code from their authenticator app.
+   */
+  verify2FA: protectedProcedure
+    .input(
+      z.object({
+        secret: z.string(),
+        code: z.string().length(6),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      const speakeasy = await import("speakeasy");
+
+      // Verify the code
+      const isValid = speakeasy.totp.verify({
+        secret: input.secret,
+        encoding: "base32",
+        token: input.code,
+        window: 2,
+      });
+
+      if (!isValid) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Código TOTP inválido. Tente novamente.",
+        });
+      }
+
+      // Update user with TOTP secret
+      await db
+        .update(users)
+        .set({
+          totpSecret: input.secret,
+          totpEnabled: 1,
+        })
+        .where(eq(users.id, ctx.user.id));
+
+      // Log 2FA activation
+      await logAdminAction({
+        adminId: ctx.user.id,
+        action: "update_user_role", // Using as generic "update" action
+        targetUserId: ctx.user.id,
+        targetEmail: ctx.user.email,
+        ipAddress: clientIp(ctx.req),
+        userAgent: ctx.req.headers["user-agent"] as string | undefined,
+        details: JSON.stringify({ action: "2fa_enabled" }),
+      });
+
+      return {
+        ok: true,
+        message: "2FA ativado com sucesso!",
+      };
+    }),
+
+  /**
+   * Disable 2FA for the current user.
+   * Requires the current password for security.
+   */
+  disable2FA: protectedProcedure
+    .input(
+      z.object({
+        password: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      // Verify password
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, ctx.user.id))
+        .limit(1);
+
+      if (!user[0] || !user[0].passwordHash) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Usuário não encontrado ou sem senha local.",
+        });
+      }
+
+      const passwordValid = await verifyPassword(input.password, user[0].passwordHash);
+      if (!passwordValid) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Senha incorreta.",
+        });
+      }
+
+      // Disable 2FA
+      await db
+        .update(users)
+        .set({
+          totpSecret: null,
+          totpEnabled: 0,
+        })
+        .where(eq(users.id, ctx.user.id));
+
+      // Log 2FA deactivation
+      await logAdminAction({
+        adminId: ctx.user.id,
+        action: "update_user_role",
+        targetUserId: ctx.user.id,
+        targetEmail: ctx.user.email,
+        ipAddress: clientIp(ctx.req),
+        userAgent: ctx.req.headers["user-agent"] as string | undefined,
+        details: JSON.stringify({ action: "2fa_disabled" }),
+      });
+
+      return {
+        ok: true,
+        message: "2FA desativado com sucesso.",
+      };
+    }),
+
+  /**
+   * Verify TOTP code during login.
+   * Called after successful email/password authentication.
+   */
+  verifyTOTPLogin: publicProcedure
+    .input(
+      z.object({
+        userId: z.number(),
+        code: z.string().length(6),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, input.userId))
+        .limit(1);
+
+      if (!user[0] || !user[0].totpSecret || !user[0].totpEnabled) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "2FA não está ativado para este usuário.",
+        });
+      }
+
+      const speakeasy = await import("speakeasy");
+
+      const isValid = speakeasy.totp.verify({
+        secret: user[0].totpSecret,
+        encoding: "base32",
+        token: input.code,
+        window: 2,
+      });
+
+      if (!isValid) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Código TOTP inválido.",
+        });
+      }
+
+      // Generate session token
+      const token = await signSession({
+        openId: user[0].openId ?? `local_${user[0].email}_${user[0].id}`,
+        name: user[0].name ?? "",
+        email: user[0].email ?? undefined,
+        avatar: user[0].avatar ?? undefined,
+      });
+
+      ctx.res.setHeader("Set-Cookie", serialize(COOKIE_NAME, token, getSessionCookieOptions()));
+
+      // Log successful login
+      await logAdminAction({
+        adminId: user[0].id,
+        action: "login",
+        targetEmail: user[0].email,
+        ipAddress: clientIp(ctx.req),
+        userAgent: ctx.req.headers["user-agent"] as string | undefined,
+        details: JSON.stringify({ method: "local", totp: true }),
+      });
+
+      return {
+        ok: true,
+        user: {
+          id: user[0].id,
+          email: user[0].email,
+          name: user[0].name,
+          role: user[0].role,
+        },
+      };
     }),
 });
