@@ -71,9 +71,17 @@ export function DoctorLogin() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Senha
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium">
+                  Senha
+                </label>
+                <a
+                  href="/esqueci-senha"
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  Esqueci a senha
+                </a>
+              </div>
               <Input
                 id="password"
                 type="password"

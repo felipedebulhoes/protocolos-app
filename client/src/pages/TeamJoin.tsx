@@ -20,13 +20,13 @@ export function TeamJoin() {
   const token = new URLSearchParams(window.location.search).get("token");
 
   const acceptInvite = trpc.team.acceptInvite.useMutation();
-  const setupPassword = trpc.doctorAuth.setupPassword.useMutation({
-    onSuccess: (data) => {
+  const setupPassword = trpc.doctorAuth.resetPassword.useMutation({
+    onSuccess: (data: any) => {
       setStatus("success");
       setMessage(`Bem-vindo, ${data.name}! Sua conta está pronta.`);
       setTimeout(() => { window.location.href = "/"; }, 2500);
     },
-    onError: (err) => {
+    onError: (err: any) => {
       toast.error(err.message ?? "Erro ao definir senha");
     },
   });
@@ -68,7 +68,7 @@ export function TeamJoin() {
       toast.error("As senhas não coincidem");
       return;
     }
-    setupPassword.mutate({ setupToken, password });
+    setupPassword.mutate({ token: setupToken, newPassword: password });
   };
 
   return (

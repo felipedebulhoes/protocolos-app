@@ -468,3 +468,33 @@ export async function getExamAnalyticsSummary(): Promise<{
     labsDistribution: labRows.map((r) => ({ labName: r.labName ?? "", count: Number(r.count) })),
   };
 }
+
+// ---- Admin audit logs (track admin actions for security) ----
+
+import { adminAuditLogs, type NewAdminAuditLog } from "../drizzle/schema";
+
+export async function logAdminAction(data: NewAdminAuditLog): Promise<void> {
+  try {
+    await db.insert(adminAuditLogs).values(data);
+  } catch (error) {
+    console.error("[DB] Error logging admin action:", error);
+    // Don't throw — audit failures shouldn't break the main flow
+  }
+}
+
+export async function getAdminAuditLogs(limit = 100): Promise<typeof adminAuditLogs.$inferSelect[]> {
+  return db
+    .select()
+    .from(adminAuditLogs)
+    .orderBy(desc(adminAuditLogs.createdAt))
+    .limit(limit);
+}
+
+export async function getAdminAuditLogsByUserId(userId: number, limit = 50): Promise<typeof adminAuditLogs.$inferSelect[]> {
+  return db
+    .select()
+    .from(adminAuditLogs)
+    .where(eq(adminAuditLogs.adminId, userId))
+    .orderBy(desc(adminAuditLogs.createdAt))
+    .limit(limit);
+}

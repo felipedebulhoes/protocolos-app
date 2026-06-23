@@ -7,7 +7,7 @@ import { getSessionCookieOptions, getClearCookieOptions } from "../_core/cookies
 import { signSession } from "../_core/sdk";
 import { hashPassword, verifyPassword } from "../patientAuth";
 import { checkRateLimit, clientIp } from "../_core/rateLimit";
-import { db } from "../db";
+import { db, logAdminAction } from "../db";
 import { users, passwordResetTokens } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
@@ -178,6 +178,16 @@ export const doctorAuthRouter = router({
       });
 
       ctx.res.setHeader("Set-Cookie", serialize(COOKIE_NAME, token, getSessionCookieOptions()));
+
+      // Log successful login
+      await logAdminAction({
+        adminId: user[0].id,
+        action: "login",
+        targetEmail: user[0].email,
+        ipAddress: clientIp(ctx.req),
+        userAgent: ctx.req.headers["user-agent"] as string | undefined,
+        details: JSON.stringify({ method: "local" }),
+      });
 
       return {
         ok: true,
