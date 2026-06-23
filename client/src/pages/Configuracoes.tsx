@@ -39,6 +39,27 @@ function ConfiguracoesContent() {
     return emailRegex.test(email);
   };
 
+  // Sugestão de correção de domínio comum
+  const commonDomains = [
+    { wrong: "gmial.com", correct: "gmail.com" },
+    { wrong: "gmai.com", correct: "gmail.com" },
+    { wrong: "yahooo.com", correct: "yahoo.com" },
+    { wrong: "hotmial.com", correct: "hotmail.com" },
+    { wrong: "outlok.com", correct: "outlook.com" },
+    { wrong: "icloud.co", correct: "icloud.com" },
+  ];
+
+  const getSuggestedEmail = (email: string): string | null => {
+    const parts = email.split("@");
+    if (parts.length !== 2) return null;
+    
+    const [localPart, domain] = parts;
+    const suggestion = commonDomains.find(d => d.wrong.toLowerCase() === domain.toLowerCase());
+    return suggestion ? `${localPart}@${suggestion.correct}` : null;
+  };
+
+  const suggestedEmail = getSuggestedEmail(inviteEmail);
+
   const handleInvite = () => {
     if (!inviteEmail || !inviteName) {
       toast.error("Preencha e-mail e nome completo");
@@ -534,6 +555,18 @@ function ConfiguracoesContent() {
                   ) : (
                     <AlertCircle className="w-5 h-5 text-red-500" />
                   )}
+                </div>
+              )}
+              {suggestedEmail && !isValidEmail(inviteEmail) && (
+                <div className="absolute left-0 right-0 top-full mt-1 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800 flex items-center justify-between z-10">
+                  <span>Você quis dizer: <span className="font-semibold">{suggestedEmail}</span>?</span>
+                  <button
+                    type="button"
+                    onClick={() => setInviteEmail(suggestedEmail)}
+                    className="ml-2 px-2 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700 transition"
+                  >
+                    Corrigir
+                  </button>
                 </div>
               )}
             </div>

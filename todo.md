@@ -141,3 +141,9 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Borda vermelha + ícone de alerta quando e-mail é inválido
 - [x] Ícones desaparecem quando o campo está vazio (sem feedback visual inicial)
 - [x] TypeScript OK, 43/43 testes passando
+
+## Sugestão de correção de domínio de e-mail
+- [x] Adicionada detecção de erros comuns de digitação (gmial.com, gmai.com, yahooo.com, hotmial.com, outlok.com, icloud.co)
+- [x] Exibição de sugestão com botão "Corrigir" quando domínio inválido é detectado
+- [x] Clique no botão aplica a correção automaticamente
+- [x] TypeScript OK, 43/43 testes passando
