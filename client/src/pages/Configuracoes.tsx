@@ -513,13 +513,30 @@ function ConfiguracoesContent() {
               onChange={(e) => setInviteName(e.target.value)}
               className="bg-background border-border"
             />
-            <Input
-              type="email"
-              placeholder="E-mail"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              className="bg-background border-border"
-            />
+            <div className="relative">
+              <Input
+                type="email"
+                placeholder="E-mail"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className={`bg-background ${
+                  inviteEmail
+                    ? isValidEmail(inviteEmail)
+                      ? "border-green-500 border-2"
+                      : "border-red-500 border-2"
+                    : "border-border"
+                }`}
+              />
+              {inviteEmail && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {isValidEmail(inviteEmail) ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-500" />
+                  )}
+                </div>
+              )}
+            </div>
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as "viewer" | "editor" | "admin")}

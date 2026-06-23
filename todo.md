@@ -134,3 +134,10 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Adicionada validação de formato de e-mail (regex) antes do envio do convite
 - [x] Alerta claro exibido ao usuário se o e-mail for inválido (ex: "E-mail inválido. Verifique o formato")
 - [x] TypeScript OK, 43/43 testes passando
+
+## Validação em tempo real com feedback visual
+- [x] Adicionado feedback visual de cores enquanto o usuário digita o e-mail
+- [x] Borda verde + ícone de checkmark quando e-mail é válido
+- [x] Borda vermelha + ícone de alerta quando e-mail é inválido
+- [x] Ícones desaparecem quando o campo está vazio (sem feedback visual inicial)
+- [x] TypeScript OK, 43/43 testes passando
