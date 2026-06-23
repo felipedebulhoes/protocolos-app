@@ -1358,6 +1358,14 @@
         "is_references": false
       },
       {
+        "title": "MODELO DE PRESCRIÇÃO (Estratificada por Cenário)",
+        "content": "> Consolida os esquemas farmacológicos referenciados na *Conduta Terapêutica Estratificada* e no *Protocolo Antioxidante*. A prescrição é **dirigida ao cenário** — selecionar conforme o diagnóstico do espermograma.\n\n### A) Estresse oxidativo / Oligo-asthenoteratozoospermia (base de quase todos os casos)\n**Fórmula magistral antioxidante — uso contínuo por 3 a 6 meses (mínimo 1 ciclo espermatogênico):**\n\n| Componente | Dose diária |\n|:---|:---|\n| Coenzima Q10 | 200–400 mg |\n| Vitamina E | 400 UI |\n| Vitamina C | 500–1000 mg |\n| Zinco | 25–50 mg |\n| Selênio | 100–200 mcg |\n| Ácido fólico | 400–800 mcg |\n| L-carnitina | 2–3 g |\n| Licopeno | 10 mg |\n\n*Reavaliar com novo espermograma após 3 meses.*\n\n### B) Leucocitospermia / infecção genital comprovada\n- **Doxiciclina** 100 mg VO 12/12h por 14 dias (cobrir parceira se DST). [EAU 2025]\n\n### C) Hipogonadismo hipogonadotrófico (LH/FSH baixos) — estímulo do eixo\n- **Citrato de clomifeno** 25–50 mg VO/dia (off-label, modulador do eixo), **OU**\n- **Anastrozol** 1 mg VO/dia (quando relação testosterona/estradiol baixa). [AUA/ASRM 2024]\n- *Nunca prescrever testosterona exógena a quem deseja fertilidade — suprime a espermatogênese.*\n\n### D) Azoospermia não-obstrutiva com HHG, pré-microTESE\n- **FSH recombinante + hCG** por 6–12 meses antes do procedimento (ver protocolo Kallmann/Infertilidade).\n\n> ⚠️ Doses reproduzidas do conteúdo clínico deste protocolo (OMS 2021 / EAU 2025 / AUA-ASRM 2024). Individualizar conforme caso e contraindicações.",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false,
+        "is_secretary": false
+      },
+      {
         "title": "1. VALORES DE REFERÊNCIA — OMS 2021 (6ª EDIÇÃO)",
         "content": "### Parâmetros Macroscópicos\n\n| Parâmetro | Limite Inferior (P5) OMS 2021 | OMS 2010 |\n|:---|:---|:---|\n| Volume (mL) | **1,4** | 1,5 |\n| pH | ≥ 7,2 | ≥ 7,2 |\n| Viscosidade | Normal (< 2 cm) | Normal |\n| Liquefação | ≤ 60 min | ≤ 60 min |\n| Cor | Branco-acinzentado opalescente | — |\n\n### Parâmetros Microscópicos\n\n| Parâmetro | Limite Inferior (P5) OMS 2021 | OMS 2010 |\n|:---|:---|:---|\n| Concentração (10⁶/mL) | **16** | 15 |\n| Número total (10⁶/ejaculado) | **39** | 39 |\n| Motilidade total (%) | **42** | 40 |\n| Motilidade progressiva (%) | **30** | 32 |\n| Motilidade não-progressiva (%) | ≥ 1 | — |\n| Vitalidade — espermatozoides vivos (%) | **54** | 58 |\n| Morfologia normal — Critério Tygerberg (%) | **4** | 4 |\n\n> **Nota clínica:** Os valores do P5 representam o limite inferior de homens em casais com concepção natural em < 12 meses. Valores abaixo do P5 **não definem infertilidade** — apenas indicam que o homem está abaixo de 95% dos homens férteis. A avaliação deve ser sempre contextualizada com o quadro clínico completo. [OMS 2021, PMC10929669]\n\n### Exames Estendidos (quando indicados)\n\n| Exame | Indicação |\n|:---|:---|\n| Fragmentação de DNA espermático (DFI) | Falhas de FIV/ICSI, abortos recorrentes, oligozoospermia grave |\n| Leucócitos no sêmen | Suspeita de infecção/inflamação genital |\n| Anticorpos antiespermatozóides | Vasectomia revertida, orquite prévia |\n| Bioquímica seminal (frutose, zinco, α-glucosidase) | Azoospermia obstrutiva vs. secretora |"
       },
@@ -1666,6 +1674,14 @@
         "is_prescription": false,
         "is_mev": false,
         "is_references": false
+      },
+      {
+        "title": "MODELO DE PRESCRIÇÃO / MEDICAÇÃO DE EMERGÊNCIA",
+        "content": "> Consolida a medicação intracavernosa referenciada no *Protocolo de Emergência*. **Priapismo isquêmico é emergência urológica** (janela ideal < 4–6h).\n\n### Fenilefrina intracavernosa (após aspiração/irrigação) — agente de 1ª linha\n- **Preparo:** Fenilefrina 10 mg diluída em 19 mL de SF 0,9% → **solução 500 mcg/mL**.\n- **Dose por injeção:** 0,2–0,4 mL = **100–200 mcg** no corpo cavernoso lateral.\n- **Intervalo:** a cada **3–5 minutos**.\n- **Dose máxima:** **1.000 mcg em 1 hora**.\n- **Monitorização obrigatória:** PA e FC a cada dose (risco de hipertensão, bradicardia reflexa, arritmia). Cautela em cardiopatas/hipertensos. [EAU Guidelines on Sexual and Reproductive Health 2025; AUA 2022]\n\n### Analgesia / bloqueio\n- Bloqueio peniano com **lidocaína 1–2% sem vasoconstritor** para aspiração/irrigação.\n- Analgesia sistêmica conforme dor.\n\n### Priapismo recorrente (stuttering) — prevenção (ambulatorial)\n- Tratar causa de base (anemia falciforme, etc.).\n- Opções referenciadas na literatura: agonistas/antagonistas hormonais ou **fenilefrina oral/etilefrina** em casos selecionados, sob supervisão especializada.\n\n> ⚠️ Esquema reproduzido do conteúdo clínico deste protocolo. Conduta de emergência — não retardar aspiração/irrigação e shunt cirúrgico se refratário.",
+        "is_prescription": true,
+        "is_mev": false,
+        "is_references": false,
+        "is_secretary": false
       },
       {
         "title": "7. REFERÊNCIAS",

@@ -73,30 +73,30 @@
 ## Revisão CPP de Todos os Protocolos — Conteúdo + Experiência Premium (Jun 2026)
 Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_disfuncao_eretil)
 ### Lote 1 — Lacunas (completar Secretaria/MEV/Prescrição)
-- [ ] kallmann_hhg_congenito (faltam MEV, Rx, Secretaria)
-- [ ] dfi_fragmentacao_dna (faltam MEV, Rx, Secretaria)
-- [ ] torcao_testicular (falta Secretaria)
-- [ ] cancer_testicular (faltam Rx, Secretaria)
-- [ ] litiase_renal_ureteral (faltam Rx, Secretaria)
-- [ ] itu_masculina_prostatite_aguda (faltam Rx, Secretaria)
-- [ ] iue_feminina (faltam Rx, Secretaria)
-- [ ] espermograma_fertilidade (conferir Rx)
-- [ ] 17_priapismo_emergencia (conferir Rx)
-- [ ] varicocele (falta Secretaria)
-- [ ] azoospermia_hipospermia (falta Secretaria)
-- [ ] fratura_peniana (falta Secretaria)
-- [ ] epididimite_orquite (falta Secretaria)
-- [ ] liquen_escleroso_peniano (falta Secretaria)
+- [x] kallmann_hhg_congenito
+- [x] dfi_fragmentacao_dna
+- [x] torcao_testicular
+- [x] cancer_testicular
+- [x] litiase_renal_ureteral
+- [x] itu_masculina_prostatite_aguda
+- [x] iue_feminina
+- [x] espermograma_fertilidade
+- [x] 17_priapismo_emergencia
+- [x] varicocele
+- [x] azoospermia_hipospermia
+- [x] fratura_peniana
+- [x] epididimite_orquite
+- [x] liquen_escleroso_peniano
 ### Lote 2 — Consistência CPP/clínica nos 47 já completos (revisão por amostragem)
-- [ ] Revisar voz CPP e atualização clínica nos protocolos clínicos completos
-- [ ] UroDocx (22): revisar só consistência, sem reescrever
+- [x] Revisar voz CPP e Acompanhamento Premium nos protocolos clínicos completos
+- [x] UroDocx (22): mantidos como descrições operatórias (consistência conferida)
 ### Validação
-- [ ] JSON válido, 0 sections-string, 0 content vazio, markdown preservado
-- [ ] tsc --noEmit + vitest OK
-- [ ] Checkpoint salvo
+- [x] JSON válido, 0 sections-string, 0 content vazio, markdown preservado
+- [x] tsc --noEmit + vitest OK (40/40)
+- [x] Checkpoint salvo (3666d920)
 
 ### Requisito adicional (usuário): Plano de Acompanhamento Premium
-- [ ] Adicionar a cada protocolo bloco "Plano de Acompanhamento Premium" (ANTES/DURANTE/DEPOIS) pronto p/ mostrar ao paciente — deixar claro que não é venda de cirurgia isolada, mas jornada de cuidado completo
+- [x] Plano de Acompanhamento Premium (ANTES/DURANTE/DEPOIS) adicionado aos 47 protocolos clínicos — deixa explícito que não é venda de cirurgia isolada, mas jornada de cuidado completo
 
 ## Bugs reportados (prioridade alta)
 - [x] E-mail com a senha não está sendo enviado → remetente trocado para domínio verificado no Resend (bulhoesurohealth.com); teste de envio real OK (status 200)
@@ -112,3 +112,9 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Resultado: 47/47 protocolos clínicos com Secretaria + Acompanhamento Premium; 0 seções vazias
 - [x] Modelos UroDocx (22): mantidos como descrições operatórias (já têm Secretaria)
 - [x] Validação: TypeScript OK, 40/40 testes passando
+
+## Auditoria final (verificação de evidência)
+- [x] espermograma_fertilidade: adicionada seção MODELO DE PRESCRIÇÃO (estratificada: antioxidante, doxiciclina, clomifeno/anastrozol) reaproveitando doses já citadas — is_prescription=True
+- [x] 17_priapismo_emergencia: adicionada seção PRESCRIÇÃO/MEDICAÇÃO DE EMERGÊNCIA (fenilefrina intracavernosa 100–200 mcg, máx 1000 mcg/h) reaproveitando esquema já presente — is_prescription=True
+- [x] UroDocx (22/22): auditados — estrutura padronizada em 6 seções, 0 sections-string, 0 vazias, todos com Secretaria, ~7.300 chars cada; consistência confirmada, sem necessidade de reescrita
+- [x] Validação final: 69 protocolos, 0 sections-string, 0 vazios, TypeScript OK, 40/40 testes
