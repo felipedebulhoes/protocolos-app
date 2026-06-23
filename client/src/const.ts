@@ -6,7 +6,7 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
  * redirect the user back after successful authentication.
  */
 export const getLoginUrl = (returnPath: string = "/") => {
-  const base = "/doctor-login";
+  const base = "/login/doctor";
   if (returnPath && returnPath !== "/") {
     return `${base}?returnPath=${encodeURIComponent(returnPath)}`;
   }

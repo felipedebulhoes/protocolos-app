@@ -70,6 +70,8 @@ function Router() {
 
       {/* Doctor login: local auth and TOTP verification (must come BEFORE /login) */}
       <Route path="/login/doctor" component={DoctorLogin} />
+      {/* Alias for legacy links that pointed to /doctor-login */}
+      <Route path="/doctor-login" component={DoctorLogin} />
       <Route path="/login/verificar-totp" component={VerifyTotpLogin} />
       <Route path="/admin/registrar" component={RegisterAdmin} />
       <Route path="/reset-senha" component={ResetPassword} />

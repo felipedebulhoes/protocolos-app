@@ -9,7 +9,7 @@ export async function sendPasswordResetEmail(
 ) {
   try {
     const result = await resend.emails.send({
-      from: "noreply@protocolos.felipebulhoes.com",
+      from: "ProtoUro <noreply@bulhoesurohealth.com>",
       to: email,
       subject: "Redefinir sua senha - ProtoUro",
       html: `
@@ -56,7 +56,7 @@ export async function sendSetupLinkEmail(
 ) {
   try {
     const result = await resend.emails.send({
-      from: "noreply@protocolos.felipebulhoes.com",
+      from: "ProtoUro <noreply@bulhoesurohealth.com>",
       to: email,
       subject: "Crie sua senha de acesso - ProtoUro",
       html: `

@@ -166,7 +166,7 @@ export function TeamJoin() {
             <p className="text-sm text-muted-foreground mb-6">{message}</p>
             <Button
               className="w-full bg-[#B87333] hover:bg-[#B87333]/90"
-              onClick={() => window.location.href = "/doctor-login"}
+              onClick={() => window.location.href = "/login/doctor"}
             >
               Ir para o login
             </Button>

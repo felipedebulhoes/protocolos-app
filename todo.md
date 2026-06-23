@@ -69,3 +69,35 @@
 - [x] Aplicar parser aos 16 protocolos (16/16 convertidos, 0 seções vazias, contagem 1:1 preservada)
 - [x] Validar integridade dos 69: JSON válido, 0 sections-string restantes, 0 content vazio, markdown preservado (tabelas/blockquotes/listas)
 - [x] TypeScript sem erros (tsc --noEmit) + 38 testes vitest passando
+
+## Revisão CPP de Todos os Protocolos — Conteúdo + Experiência Premium (Jun 2026)
+Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_disfuncao_eretil)
+### Lote 1 — Lacunas (completar Secretaria/MEV/Prescrição)
+- [ ] kallmann_hhg_congenito (faltam MEV, Rx, Secretaria)
+- [ ] dfi_fragmentacao_dna (faltam MEV, Rx, Secretaria)
+- [ ] torcao_testicular (falta Secretaria)
+- [ ] cancer_testicular (faltam Rx, Secretaria)
+- [ ] litiase_renal_ureteral (faltam Rx, Secretaria)
+- [ ] itu_masculina_prostatite_aguda (faltam Rx, Secretaria)
+- [ ] iue_feminina (faltam Rx, Secretaria)
+- [ ] espermograma_fertilidade (conferir Rx)
+- [ ] 17_priapismo_emergencia (conferir Rx)
+- [ ] varicocele (falta Secretaria)
+- [ ] azoospermia_hipospermia (falta Secretaria)
+- [ ] fratura_peniana (falta Secretaria)
+- [ ] epididimite_orquite (falta Secretaria)
+- [ ] liquen_escleroso_peniano (falta Secretaria)
+### Lote 2 — Consistência CPP/clínica nos 47 já completos (revisão por amostragem)
+- [ ] Revisar voz CPP e atualização clínica nos protocolos clínicos completos
+- [ ] UroDocx (22): revisar só consistência, sem reescrever
+### Validação
+- [ ] JSON válido, 0 sections-string, 0 content vazio, markdown preservado
+- [ ] tsc --noEmit + vitest OK
+- [ ] Checkpoint salvo
+
+### Requisito adicional (usuário): Plano de Acompanhamento Premium
+- [ ] Adicionar a cada protocolo bloco "Plano de Acompanhamento Premium" (ANTES/DURANTE/DEPOIS) pronto p/ mostrar ao paciente — deixar claro que não é venda de cirurgia isolada, mas jornada de cuidado completo
+
+## Bugs reportados (prioridade alta)
+- [x] E-mail com a senha não está sendo enviado → remetente trocado para domínio verificado no Resend (bulhoesurohealth.com); teste de envio real OK (status 200)
+- [x] Página de login não abre → getLoginUrl apontava para /doctor-login (inexistente); corrigido para /login/doctor + alias de rota + correção no TeamJoin
