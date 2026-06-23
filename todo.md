@@ -129,3 +129,8 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Deletados convites duplicados (8 → 4 membros): mantidos apenas os mais recentes de cada e-mail
 - [x] Adicionada normalização de e-mail para minúsculas no fluxo de convite (invite): previne duplicatas por variação de maiúsculas
 - [x] TypeScript OK, 43/43 testes passando
+
+## Validação de e-mail no frontend
+- [x] Adicionada validação de formato de e-mail (regex) antes do envio do convite
+- [x] Alerta claro exibido ao usuário se o e-mail for inválido (ex: "E-mail inválido. Verifique o formato")
+- [x] TypeScript OK, 43/43 testes passando

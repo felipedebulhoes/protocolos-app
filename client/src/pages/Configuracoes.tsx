@@ -33,11 +33,23 @@ function ConfiguracoesContent() {
     onError: (err) => toast.error(`Erro: ${err.message}`),
   });
 
+  // Validação de formato de e-mail
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleInvite = () => {
     if (!inviteEmail || !inviteName) {
       toast.error("Preencha e-mail e nome completo");
       return;
     }
+    
+    if (!isValidEmail(inviteEmail)) {
+      toast.error("E-mail inválido. Verifique o formato (ex: usuario@dominio.com)");
+      return;
+    }
+    
     inviteMember.mutate({
       email: inviteEmail,
       fullName: inviteName,
