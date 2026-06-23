@@ -40,11 +40,14 @@ export const teamRouter = router({
         });
       }
 
-      // Check if member already exists
+      // Normalize email to lowercase to prevent duplicates from case variations
+      const normalizedEmail = input.email.toLowerCase().trim();
+
+      // Check if member already exists (case-insensitive)
       const existing = await db.db
         .select()
         .from(teamMembers)
-        .where(eq(teamMembers.email, input.email));
+        .where(eq(teamMembers.email, normalizedEmail));
 
       if (existing.length > 0 && existing[0].status !== "inactive") {
         throw new TRPCError({
@@ -57,7 +60,7 @@ export const teamRouter = router({
 
       await db.db.insert(teamMembers).values({
         invitationToken: token,
-        email: input.email,
+        email: normalizedEmail,
         fullName: input.fullName,
         role: input.role,
         status: "pending",
@@ -66,7 +69,7 @@ export const teamRouter = router({
       const inviteUrl = `https://protocolos.felipebulhoes.com/team/join?token=${token}`;
 
       return {
-        email: input.email,
+        email: normalizedEmail,
         inviteUrl,
         token,
       };

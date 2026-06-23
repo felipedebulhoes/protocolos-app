@@ -124,3 +124,8 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Correção no código: aceite agora grava token único (used:{id}:{ts}:{rand}) em vez de ""
 - [x] Correção de dados: registro 120001 com token vazio recebeu token used: único (0 tokens vazios restantes)
 - [x] Teste de regressão adicionado (acceptInvite.regression.test.ts); 43/43 testes OK
+
+## Limpeza de dados e normalização de e-mail
+- [x] Deletados convites duplicados (8 → 4 membros): mantidos apenas os mais recentes de cada e-mail
+- [x] Adicionada normalização de e-mail para minúsculas no fluxo de convite (invite): previne duplicatas por variação de maiúsculas
+- [x] TypeScript OK, 43/43 testes passando
