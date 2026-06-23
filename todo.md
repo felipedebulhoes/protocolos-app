@@ -62,3 +62,10 @@
 - [x] UI AdminManagement: enviar link de senha + apagar usuário
 - [x] Botão cancelar/remover convite e membro em Configurações
 - [x] Função pura shared/userManagement.ts + testes vitest (7 testes)
+## Incorporação CPP nos Protocolos — Estruturação de Sections (Jun 2026)
+- [x] Diagnóstico: 16 protocolos com sections como lista de strings (conteúdo CPP estava em raw_content)
+- [x] Confirmar renderização em ProtocolDetail.tsx (section.title/content + flags is_mev/is_prescription/is_references/is_secretary via Streamdown)
+- [x] Parser determinístico (fix_protocols_sections.py): divide raw_content por '## N. TÍTULO', cria objetos {title, content, flags}
+- [x] Aplicar parser aos 16 protocolos (16/16 convertidos, 0 seções vazias, contagem 1:1 preservada)
+- [x] Validar integridade dos 69: JSON válido, 0 sections-string restantes, 0 content vazio, markdown preservado (tabelas/blockquotes/listas)
+- [x] TypeScript sem erros (tsc --noEmit) + 38 testes vitest passando
