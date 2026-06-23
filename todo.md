@@ -53,3 +53,12 @@
 - [x] Criar JSON do protocolo de espermograma com valores OMS 2021, nomenclatura e interpretação
 - [x] Criar página SpermogramFlowchart.tsx com fluxograma interativo de conduta clínica
 - [x] Integrar no ProtocolDetail e registrar rota no App.tsx
+
+## Gestão de Usuários — Configurações (Jun 2026)
+- [x] Endpoint team.listAllUsers (lista todos os usuários com status de senha)
+- [x] Endpoint team.sendSetupLink (gera token + envia email de criação de senha)
+- [x] Endpoint team.deleteUser (apaga usuário, regras de segurança via canDeleteUser)
+- [x] Página /criar-senha (CreatePassword) reutilizando resetPassword
+- [x] UI AdminManagement: enviar link de senha + apagar usuário
+- [x] Botão cancelar/remover convite e membro em Configurações
+- [x] Função pura shared/userManagement.ts + testes vitest (7 testes)

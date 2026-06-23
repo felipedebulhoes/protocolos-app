@@ -576,6 +576,24 @@ function ConfiguracoesContent() {
                     <Badge className={member.status === "active" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}>
                       {member.status === "active" ? "Ativo" : "Pendente"}
                     </Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      disabled={removeMember.isPending}
+                      onClick={() => {
+                        const isPending = member.status !== "active";
+                        const msg = isPending
+                          ? `Cancelar o convite de ${member.email}?`
+                          : `Remover ${member.fullName} da equipe?`;
+                        if (window.confirm(msg)) {
+                          removeMember.mutate({ memberId: member.id });
+                        }
+                      }}
+                      title={member.status === "active" ? "Remover membro" : "Cancelar convite"}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               ))}

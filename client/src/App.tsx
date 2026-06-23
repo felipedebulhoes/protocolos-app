@@ -26,6 +26,7 @@ import VerifyTotpLogin from "./pages/VerifyTotpLogin";
 import DoctorLogin from "./pages/DoctorLogin";
 import { RegisterAdmin } from "./pages/RegisterAdmin";
 import { ResetPassword } from "./pages/ResetPassword";
+import { CreatePassword } from "./pages/CreatePassword";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { DoctorGuard } from "./components/DoctorGuard";
 import { SessionProvider } from "./components/SessionProvider";
@@ -72,6 +73,7 @@ function Router() {
       <Route path="/login/verificar-totp" component={VerifyTotpLogin} />
       <Route path="/admin/registrar" component={RegisterAdmin} />
       <Route path="/reset-senha" component={ResetPassword} />
+      <Route path="/criar-senha" component={CreatePassword} />
       <Route path="/esqueci-senha" component={ForgotPassword} />
 
       {/* Patient-facing public routes */}

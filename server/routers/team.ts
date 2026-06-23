@@ -2,8 +2,10 @@ import { randomBytes } from "crypto";
 import { TRPCError } from "@trpc/server";
 import { router, ownerProcedure, publicProcedure } from "../_core/trpc";
 import * as db from "../db";
-import { teamMembers, users } from "../../drizzle/schema";
+import { teamMembers, users, passwordResetTokens } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { sendSetupLinkEmail } from "../_core/email";
+import { canDeleteUser } from "../../shared/userManagement";
 
 function genInvitationToken(): string {
   return randomBytes(32).toString("base64url");
@@ -227,6 +229,150 @@ export const teamRouter = router({
           .set({ role: usersRole })
           .where(eq(users.email, member[0].email));
       }
+
+      return { ok: true };
+    }),
+
+  /**
+   * List ALL users (not only admins) with password/setup status.
+   * Owner/admin only.
+   */
+  listAllUsers: ownerProcedure.query(async () => {
+    const rows = await db.db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        loginMethod: users.loginMethod,
+        passwordHash: users.passwordHash,
+        createdAt: users.createdAt,
+        lastSignedIn: users.lastSignedIn,
+      })
+      .from(users);
+
+    return rows.map((u) => ({
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      role: u.role,
+      loginMethod: u.loginMethod,
+      hasPassword: !!u.passwordHash,
+      createdAt: u.createdAt,
+      lastSignedIn: u.lastSignedIn,
+    }));
+  }),
+
+  /**
+   * Generate a password-setup token for an existing user and email them a
+   * link to create their password. Owner/admin only.
+   */
+  sendSetupLink: ownerProcedure
+    .input((val: unknown) => {
+      if (typeof val !== "object" || val === null) throw new Error("Invalid input");
+      const obj = val as Record<string, unknown>;
+      return { userId: Number(obj.userId || 0) };
+    })
+    .mutation(async ({ input }) => {
+      if (!input.userId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "userId is required" });
+      }
+
+      const target = await db.db
+        .select()
+        .from(users)
+        .where(eq(users.id, input.userId))
+        .limit(1);
+
+      if (!target[0] || !target[0].email) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Usuário não encontrado." });
+      }
+
+      // Generate a setup token valid for 7 days, stored in password_reset_tokens
+      const token = randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      await db.db.insert(passwordResetTokens).values({
+        userId: target[0].id,
+        token,
+        expiresAt,
+      });
+
+      const setupUrl = `https://protocolos.felipebulhoes.com/criar-senha?token=${token}`;
+      const emailResult = await sendSetupLinkEmail(
+        target[0].email,
+        setupUrl,
+        target[0].name,
+      );
+
+      return {
+        ok: true,
+        emailSent: emailResult.success,
+        email: target[0].email,
+      };
+    }),
+
+  /**
+   * Permanently delete a user from the `users` table and deactivate any
+   * matching team member. Owner/admin only. Cannot delete yourself or the
+   * last admin.
+   */
+  deleteUser: ownerProcedure
+    .input((val: unknown) => {
+      if (typeof val !== "object" || val === null) throw new Error("Invalid input");
+      const obj = val as Record<string, unknown>;
+      return { userId: Number(obj.userId || 0) };
+    })
+    .mutation(async ({ ctx, input }) => {
+      if (!input.userId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "userId is required" });
+      }
+
+      const target = await db.db
+        .select()
+        .from(users)
+        .where(eq(users.id, input.userId))
+        .limit(1);
+
+      if (!target[0]) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Usuário não encontrado." });
+      }
+
+      // Count admins only when needed to validate the last-admin rule
+      let totalAdmins = Number.MAX_SAFE_INTEGER;
+      if (target[0].role === "admin") {
+        const admins = await db.db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.role, "admin"));
+        totalAdmins = admins.length;
+      }
+
+      const check = canDeleteUser({
+        actorId: ctx.user.id,
+        targetId: input.userId,
+        targetRole: target[0].role === "admin" ? "admin" : "user",
+        totalAdmins,
+      });
+      if (!check.ok) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: check.reason });
+      }
+
+      // Deactivate matching team member(s) by email
+      if (target[0].email) {
+        await db.db
+          .update(teamMembers)
+          .set({ status: "inactive" })
+          .where(eq(teamMembers.email, target[0].email));
+      }
+
+      // Remove any pending reset tokens for this user
+      await db.db
+        .delete(passwordResetTokens)
+        .where(eq(passwordResetTokens.userId, input.userId));
+
+      // Delete the user
+      await db.db.delete(users).where(eq(users.id, input.userId));
 
       return { ok: true };
     }),
