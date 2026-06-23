@@ -118,3 +118,9 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] 17_priapismo_emergencia: adicionada seção PRESCRIÇÃO/MEDICAÇÃO DE EMERGÊNCIA (fenilefrina intracavernosa 100–200 mcg, máx 1000 mcg/h) reaproveitando esquema já presente — is_prescription=True
 - [x] UroDocx (22/22): auditados — estrutura padronizada em 6 seções, 0 sections-string, 0 vazias, todos com Secretaria, ~7.300 chars cada; consistência confirmada, sem necessidade de reescrita
 - [x] Validação final: 69 protocolos, 0 sections-string, 0 vazios, TypeScript OK, 40/40 testes
+
+## Bug: Erro ao aceitar convite (Failed query update team_members)
+- [x] Causa: invitation_token é NOT NULL + UNIQUE; o aceite gravava token = "" → 2º aceite colidia no índice único
+- [x] Correção no código: aceite agora grava token único (used:{id}:{ts}:{rand}) em vez de ""
+- [x] Correção de dados: registro 120001 com token vazio recebeu token used: único (0 tokens vazios restantes)
+- [x] Teste de regressão adicionado (acceptInvite.regression.test.ts); 43/43 testes OK

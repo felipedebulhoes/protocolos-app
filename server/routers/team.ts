@@ -176,10 +176,14 @@ export const teamRouter = router({
         });
       }
 
-      // Mark the invite as accepted
+      // Mark the invite as accepted.
+      // IMPORTANT: invitation_token is NOT NULL + UNIQUE, so we cannot reuse ""
+      // (a second accepted invite would collide on the unique index -> failed query).
+      // We replace it with a unique, non-reusable sentinel value instead.
+      const usedToken = `used:${memberRecord.id}:${Date.now()}:${randomBytes(8).toString("hex")}`;
       await db.db
         .update(teamMembers)
-        .set({ status: "active", invitationToken: "" })
+        .set({ status: "active", invitationToken: usedToken })
         .where(eq(teamMembers.id, memberRecord.id));
 
       return {
