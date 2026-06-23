@@ -101,3 +101,14 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 ## Bugs reportados (prioridade alta)
 - [x] E-mail com a senha não está sendo enviado → remetente trocado para domínio verificado no Resend (bulhoesurohealth.com); teste de envio real OK (status 200)
 - [x] Página de login não abre → getLoginUrl apontava para /doctor-login (inexistente); corrigido para /login/doctor + alias de rota + correção no TeamJoin
+
+## Revisão CPP — Progresso
+- [x] Lote 1A: Kallmann, DFI (Rx+MEV+Secretaria+Acompanhamento)
+- [x] Lote 1B: câncer testicular, litíase, ITU/prostatite, IUE
+- [x] Lote 1C: torção, varicocele, azoospermia, fratura, epididimite, líquen, espermograma, priapismo (Secretaria + Acompanhamento)
+- [x] Lote 2A: Acompanhamento Premium em 21 protocolos (Andrologia, Infertilidade, Consultório)
+- [x] Lote 2B: Acompanhamento Premium em Hormônios, Urologia Geral/Feminina restantes
+- [x] Completar Secretaria no estenose_uretral
+- [x] Resultado: 47/47 protocolos clínicos com Secretaria + Acompanhamento Premium; 0 seções vazias
+- [x] Modelos UroDocx (22): mantidos como descrições operatórias (já têm Secretaria)
+- [x] Validação: TypeScript OK, 40/40 testes passando
