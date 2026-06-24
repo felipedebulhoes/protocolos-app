@@ -153,6 +153,6 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] TypeScript OK, 43/43 testes passando
 
 ## Otimização dos Blocos de Acompanhamento Premium — Pacote Completo de Transformação (Fase 2)
-- [ ] Redesenhar bloco com estrutura extensa: Pré-op (vitaminas/suplementos com justificativa científica), Durante, Pós-op (multidisciplinar: fisioterapeuta, nutricionista, educador físico)
-- [ ] Aplicar novo bloco a todos os protocolos cirúrgicos/procedimentos (20+ protocolos)
-- [ ] Validar integridade e salvar checkpoint
+- [x] Redesenhar bloco com estrutura extensa: Pré-op (vitaminas/suplementos com justificativa científica), Durante, Pós-op (multidisciplinar: fisioterapeuta, nutricionista, educador físico)
+- [x] Aplicar novo bloco a todos os protocolos cirúrgicos/procedimentos (10 protocolos: IPP, varicocelectomia, microTESE, reversão vasectomia, vasectomia, circuncisão, Li-ESWT, PRP, HPB)
+- [x] Validar integridade e salvar checkpoint (JSON OK, 43/43 testes, TypeScript OK, checkpoint b37aaf31)
