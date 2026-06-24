@@ -263,7 +263,12 @@ export const doctorAuthRouter = router({
 
       // Send email with reset link
       const protocol = ctx.req.headers["x-forwarded-proto"] || "https";
-      const host = ctx.req.headers["x-forwarded-host"] || ctx.req.headers["host"] || "localhost:3000";
+      // Use the correct domain: if x-forwarded-host is a staging domain, use the real domain
+      let host = ctx.req.headers["x-forwarded-host"] || ctx.req.headers["host"] || "localhost:3000";
+      // Map staging domains to production domains
+      if (host.includes("railway.app") || host.includes("manus.computer")) {
+        host = "protocolos.felipebulhoes.com";
+      }
       const resetUrl = `${protocol}://${host}/reset-senha?token=${resetToken}`;
       
       // Type assertion needed because user[0].name is string | null but function accepts string | null

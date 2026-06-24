@@ -147,3 +147,7 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Exibição de sugestão com botão "Corrigir" quando domínio inválido é detectado
 - [x] Clique no botão aplica a correção automaticamente
 - [x] TypeScript OK, 43/43 testes passando
+
+## Bug: Link de reset de senha apontava para domínio de staging
+- [x] Corrigido: URL de reset agora força o domínio correto (protocolos.felipebulhoes.com) quando x-forwarded-host é um domínio de staging (railway.app, manus.computer)
+- [x] TypeScript OK, 43/43 testes passando
