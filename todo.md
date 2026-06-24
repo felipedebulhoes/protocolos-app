@@ -151,3 +151,8 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 ## Bug: Link de reset de senha apontava para domínio de staging
 - [x] Corrigido: URL de reset agora força o domínio correto (protocolos.felipebulhoes.com) quando x-forwarded-host é um domínio de staging (railway.app, manus.computer)
 - [x] TypeScript OK, 43/43 testes passando
+
+## Otimização dos Blocos de Acompanhamento Premium — Pacote Completo de Transformação (Fase 2)
+- [ ] Redesenhar bloco com estrutura extensa: Pré-op (vitaminas/suplementos com justificativa científica), Durante, Pós-op (multidisciplinar: fisioterapeuta, nutricionista, educador físico)
+- [ ] Aplicar novo bloco a todos os protocolos cirúrgicos/procedimentos (20+ protocolos)
+- [ ] Validar integridade e salvar checkpoint
