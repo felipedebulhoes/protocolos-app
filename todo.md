@@ -156,3 +156,10 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Redesenhar bloco com estrutura extensa: Pré-op (vitaminas/suplementos com justificativa científica), Durante, Pós-op (multidisciplinar: fisioterapeuta, nutricionista, educador físico)
 - [x] Aplicar novo bloco a todos os protocolos cirúrgicos/procedimentos (10 protocolos: IPP, varicocelectomia, microTESE, reversão vasectomia, vasectomia, circuncisão, Li-ESWT, PRP, HPB)
 - [x] Validar integridade e salvar checkpoint (JSON OK, 43/43 testes, TypeScript OK, checkpoint b37aaf31)
+
+## Geração de PDF com Identidade Visual (Fase 1 e 2)
+- [x] Preparar estrutura de PDF com identidade visual (A4, seções clínicas, logo, cores, tipografia)
+- [x] Implementar gerador de PDF no backend (tRPC) com WeasyPrint
+- [ ] Adicionar botão de download na UI (ProtocolDetail.tsx)
+- [ ] Testar e validar PDF (download, conteúdo, visual)
+- [ ] Salvar checkpoint e entregar
