@@ -109,6 +109,22 @@ export default function ProtocolDetail() {
 
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
+  
+  // Guard clause para protocol
+  if (!protocol) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Protocolo não encontrado</h1>
+            <Button onClick={() => setLocation("/")} variant="outline">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   const generatePdfMutation = trpc.pdf.generateProtocolPdf.useMutation();
 
@@ -742,7 +758,7 @@ export default function ProtocolDetail() {
               </Accordion>
             ))}
 
-            {/* Seção de Medicamentos Adjuvantes */}
+            {/* Seção de Medicamentos Adjuvantes - DESABILITADA */}
             {false && (
               <Card className="mb-6">
                 <CardHeader>
@@ -752,20 +768,20 @@ export default function ProtocolDetail() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">Selecione os medicamentos que deseja incluir no receituário:</p>
-                  {protocol.adjuvant_meds.map((med: any, index: number) => (
+                  {false && protocol && protocol.adjuvant_meds && protocol.adjuvant_meds.length > 0 ? protocol!.adjuvant_meds.map((med: any, index: number) => (
                     <div key={index} className="flex items-center space-x-2 mb-2">
                       <input
                         type="checkbox"
                         id={`med-${index}`}
-                        checked={selectedAdjuvants[protocol.title]?.includes(`${med.name} ${med.desc}`) || false}
-                        onChange={() => handleToggleAdjuvant(protocol.title, `${med.name} ${med.desc}`)}
+                        checked={protocol && protocol.title ? (selectedAdjuvants[protocol.title]?.includes(`${med.name} ${med.desc}`) || false) : false}
+                        onChange={() => handleToggleAdjuvant(protocol?.title || '', `${med.name} ${med.desc}`)}
                         className="form-checkbox h-4 w-4 text-blue-600"
                       />
                       <label htmlFor={`med-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                         <strong>{med.name}</strong>: {med.desc}
                       </label>
                     </div>
-                  ))}
+                  )) : <p className="text-muted-foreground">Nenhum medicamento adjuvante disponível</p>}
                   <Accordion type="single" collapsible className="w-full mt-4">
                     <AccordionItem value="custom-meds">
                       <AccordionTrigger className="text-md font-semibold text-primary-foreground hover:no-underline">
@@ -815,7 +831,7 @@ export default function ProtocolDetail() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">Marque os itens auditados antes da alta do paciente:</p>
-                  {checklistItems[protocol.id]?.map((item) => (
+                  {protocol && protocol.id ? checklistItems[protocol!.id]?.map((item: any) => (
                     <div key={item.id} className="flex items-center space-x-2 mb-2">
                       <input
                         type="checkbox"
@@ -828,7 +844,7 @@ export default function ProtocolDetail() {
                         {item.text}
                       </label>
                     </div>
-                  ))}
+                  )) : <p className="text-muted-foreground">Carregando auditoria...</p>}
                   <Button onClick={handleResetChecklist} variant="outline" className="mt-4">Reiniciar Auditoria</Button>
                 </CardContent>
               </Card>
@@ -859,8 +875,8 @@ export default function ProtocolDetail() {
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label className="text-right">Retornos</Label>
                         <div className="col-span-3 space-y-2">
-                          <p className="text-sm"><strong>D+7:</strong> {returnDates.d7}</p>
-                          <p className="text-sm"><strong>D+30:</strong> {returnDates.d30}</p>
+                          <p className="text-sm"><strong>D+7:</strong> {returnDates?.d7}</p>
+                          <p className="text-sm"><strong>D+30:</strong> {returnDates?.d30}</p>
                         </div>
                       </div>
                     )}

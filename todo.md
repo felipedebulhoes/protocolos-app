@@ -160,6 +160,6 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 ## Geração de PDF com Identidade Visual (Fase 1 e 2)
 - [x] Preparar estrutura de PDF com identidade visual (A4, seções clínicas, logo, cores, tipografia)
 - [x] Implementar gerador de PDF no backend (tRPC) com WeasyPrint
-- [ ] Adicionar botão de download na UI (ProtocolDetail.tsx)
-- [ ] Testar e validar PDF (download, conteúdo, visual)
-- [ ] Salvar checkpoint e entregar
+- [x] Adicionar botão de download na UI (ProtocolDetail.tsx) com integração tRPC
+- [ ] Corrigir erros de TypeScript remanescentes (protocol possibly undefined, returnDates possibly null)
+- [ ] Testar e validar PDF (download, conteúdo, visual) e entregar
