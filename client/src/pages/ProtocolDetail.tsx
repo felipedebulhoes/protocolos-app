@@ -185,23 +185,27 @@ export default function ProtocolDetail() {
 <html lang="pt-BR"><head><meta charset="utf-8" />
 <title>${protocol.title}</title>
 <style>
-  @page { size: A4; margin: 18mm 16mm 20mm 16mm; }
+  @page {
+    size: A4;
+    margin: 18mm 16mm 22mm 16mm;
+    @bottom-right { content: "Página " counter(page) " de " counter(pages); font-family: Arial, sans-serif; font-size: 9px; color: #8b97a1; }
+  }
   * { box-sizing: border-box; }
-  body { font-family: Georgia, 'Times New Roman', serif; color: #1C3D5A; line-height: 1.55; margin: 0; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #1C3D5A; line-height: 1.55; margin: 0; counter-reset: page; }
   .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #B87333; padding-bottom: 12px; margin-bottom: 18px; }
   .header img { height: 56px; object-fit: contain; }
   .header .meta { text-align: right; font-size: 11px; color: #6b7a86; font-family: Arial, sans-serif; }
-  h1 { font-size: 22px; color: #1C3D5A; margin: 0 0 4px; }
+  h1 { font-size: 22px; color: #1C3D5A; margin: 0 0 4px; break-after: avoid; page-break-after: avoid; }
   .cat { display: inline-block; background: #1C3D5A; color: #fff; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; font-family: Arial, sans-serif; }
-  .intro { font-size: 13px; color: #34505f; margin: 12px 0 20px; font-style: italic; }
-  .sec { margin-bottom: 16px; page-break-inside: avoid; }
-  .sec h2 { font-size: 15px; color: #B87333; border-left: 4px solid #B87333; padding-left: 8px; margin: 0 0 6px; font-family: Arial, sans-serif; }
+  .intro { font-size: 13px; color: #34505f; margin: 12px 0 20px; font-style: italic; break-inside: avoid; page-break-inside: avoid; }
+  .sec { margin-bottom: 16px; break-inside: avoid; page-break-inside: avoid; }
+  .sec h2 { font-size: 15px; color: #B87333; border-left: 4px solid #B87333; padding-left: 8px; margin: 0 0 6px; font-family: Arial, sans-serif; break-after: avoid; page-break-after: avoid; }
   .sec-body { font-size: 12.5px; }
-  .sec-body p { margin: 4px 0; }
-  .sec-body ul { margin: 4px 0 4px 18px; padding: 0; }
-  .sec-body li { margin: 2px 0; }
+  .sec-body p { margin: 4px 0; orphans: 3; widows: 3; break-inside: avoid; page-break-inside: avoid; }
+  .sec-body ul { margin: 4px 0 4px 18px; padding: 0; break-inside: avoid; page-break-inside: avoid; }
+  .sec-body li { margin: 2px 0; break-inside: avoid; page-break-inside: avoid; }
   .sec-body a { color: #1C3D5A; text-decoration: underline; word-break: break-all; }
-  .footer { position: fixed; bottom: 8mm; left: 16mm; right: 16mm; border-top: 1px solid #d8dde1; padding-top: 6px; font-size: 9.5px; color: #8b97a1; display: flex; justify-content: space-between; font-family: Arial, sans-serif; }
+  .footer { margin-top: 24px; border-top: 1px solid #d8dde1; padding-top: 6px; font-size: 9.5px; color: #8b97a1; display: flex; justify-content: space-between; font-family: Arial, sans-serif; break-inside: avoid; page-break-inside: avoid; }
 </style></head>
 <body>
   <div class="header">
