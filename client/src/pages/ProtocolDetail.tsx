@@ -48,6 +48,7 @@ import { ArrowLeft,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,9 +109,15 @@ export default function ProtocolDetail() {
   // Estado para a data do procedimento cirúrgico (Automação de Retornos)
   const [procedureDate, setProcedureDate] = useState("");
   // Estados do modal de geração de PDF (independentes dos demais campos)
+  // Inicializados a partir do sessionStorage para reaproveitar o paciente na mesma sessão
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
-  const [pdfPatientName, setPdfPatientName] = useState("");
-  const [pdfProcedureDate, setPdfProcedureDate] = useState("");
+  const [pdfPatientName, setPdfPatientName] = useState(
+    () => (typeof window !== "undefined" ? sessionStorage.getItem("pdf_patient_name") || "" : "")
+  );
+  const [pdfProcedureDate, setPdfProcedureDate] = useState(
+    () => (typeof window !== "undefined" ? sessionStorage.getItem("pdf_procedure_date") || "" : "")
+  );
+  const [pdfObservations, setPdfObservations] = useState("");
 
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
@@ -192,6 +199,11 @@ export default function ProtocolDetail() {
               : ""
           }</div>`
         : "";
+    const observationsBlock = pdfObservations.trim()
+      ? `<section class="sec obs"><h2>Observações do Médico</h2><div class="sec-body">${mdToHtml(
+          pdfObservations.trim()
+        )}</div></section>`
+      : "";
 
     const sectionsHtml = clinicalSections
       .map(
@@ -221,6 +233,7 @@ export default function ProtocolDetail() {
   .cat { display: inline-block; background: #1C3D5A; color: #fff; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; font-family: Arial, sans-serif; }
   .intro { font-size: 13px; color: #34505f; margin: 12px 0 20px; font-style: italic; break-inside: avoid; page-break-inside: avoid; }
   .patient { display: flex; gap: 28px; flex-wrap: wrap; background: #f4f1ec; border-left: 4px solid #B87333; padding: 8px 12px; margin: 12px 0 18px; font-size: 12px; font-family: Arial, sans-serif; color: #1C3D5A; break-inside: avoid; page-break-inside: avoid; }
+  .sec.obs { background: #f4f1ec; padding: 10px 12px; border-left: 4px solid #B87333; margin-top: 18px; }
   .sec { margin-bottom: 16px; break-inside: avoid; page-break-inside: avoid; }
   .sec h2 { font-size: 15px; color: #B87333; border-left: 4px solid #B87333; padding-left: 8px; margin: 0 0 6px; font-family: Arial, sans-serif; break-after: avoid; page-break-after: avoid; }
   .sec-body { font-size: 12.5px; }
@@ -240,6 +253,7 @@ export default function ProtocolDetail() {
   ${patientBlock}
   <div class="intro">${protocol.intro || ""}</div>
   ${sectionsHtml}
+  ${observationsBlock}
   <div class="footer">
     <span>Dr. Felipe de Bulhões — Urologia &amp; Andrologia</span>
     <span>Este material é educativo e não substitui a consulta médica.</span>
@@ -261,6 +275,11 @@ export default function ProtocolDetail() {
         printWindow.print();
       }, 400);
     };
+    // Memorizar paciente e data na sessão para reuso em outros protocolos
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("pdf_patient_name", pdfPatientName);
+      sessionStorage.setItem("pdf_procedure_date", pdfProcedureDate);
+    }
     toast.success("Use 'Salvar como PDF' na janela de impressão.");
     setPdfDialogOpen(false);
   };
@@ -837,6 +856,16 @@ export default function ProtocolDetail() {
                         type="date"
                         value={pdfProcedureDate}
                         onChange={(e) => setPdfProcedureDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pdfObservations">Observações personalizadas</Label>
+                      <Textarea
+                        id="pdfObservations"
+                        placeholder="Parágrafo livre que aparecerá ao final do documento (opcional)"
+                        value={pdfObservations}
+                        onChange={(e) => setPdfObservations(e.target.value)}
+                        rows={4}
                       />
                     </div>
                   </div>
