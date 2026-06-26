@@ -195,3 +195,14 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Adicionar bloco de Linha de Cuidado Integral aos novos e consolidados
 - [x] FOCO CENTRAL: cada protocolo evidencia a LINHA DE CUIDADO INTEGRAL com narrativa "o que voce realmente adquire"
 - [x] Validar JSON (73 protocolos, sem duplicação), testes (tsc 0 erros + 53 vitest), salvar checkpoint
+
+## Revisão do PDF/Impressão do Paciente — 2026-06-26
+- [x] Reforçar filtro: excluir is_secretary, is_references, is_prescription + bloqueio por título (técnica cirúrgica, cálculo de anestésico, script, contorno de objeções, TCLE, modelos de prótese)
+- [x] Higienizar a seção CPP: remover rapport/scripts/objeções, manter só a narrativa de acolhimento
+- [x] Garantir inclusão da CPP (higienizada), MEV e Linha de Cuidado Integral/Acompanhamento Premium
+- [x] Dar destaque visual à seção de Linha de Cuidado Integral (caixa destacada cobre + ✨)
+- [x] Adicionar suporte a tabelas Markdown no PDF (equipe multidisciplinar etc.)
+- [x] Frase-âncora abaixo do título reforçando "linha de cuidado completa"
+- [x] Polir identidade visual do PDF (logo, azul-petróleo #1C3D5A, cobre #B87333)
+- [x] Extrair pipeline puro para shared/pdfPatientFilter.ts + 9 testes de regressão contra os 73 protocolos
+- [x] Validar (tsc 0 erros + 64/64 vitest), salvar checkpoint

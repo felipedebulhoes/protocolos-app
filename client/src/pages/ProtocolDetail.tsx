@@ -59,6 +59,7 @@ import { Streamdown } from "streamdown";
 import Layout from "@/components/Layout";
 import protocolsData from "@/data/protocols.json";
 import { trpc } from "@/lib/trpc";
+import { buildPatientSections, isCareJourneySection } from "@shared/pdfPatientFilter";
 
 // Mapeamento dinâmico de ícones do Lucide
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -145,12 +146,40 @@ export default function ProtocolDetail() {
     const lines = md.split(/\r?\n/);
     let html = "";
     let inList = false;
-    for (let raw of lines) {
-      let line = raw.trimEnd();
-      const inline = (t: string) =>
-        escapeHtml(t)
-          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-          .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>');
+    const inline = (t: string) =>
+      escapeHtml(t)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>');
+    const splitRow = (row: string) =>
+      row
+        .trim()
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .split("|")
+        .map(c => c.trim());
+    const isTableSep = (row: string) => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(row);
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trimEnd();
+      // Detecta tabela Markdown: linha de cabeçalho com '|' seguida de linha separadora
+      if (
+        /\|/.test(line) &&
+        i + 1 < lines.length &&
+        isTableSep(lines[i + 1])
+      ) {
+        if (inList) { html += "</ul>"; inList = false; }
+        const headers = splitRow(line);
+        let table = "<table><thead><tr>" + headers.map(h => `<th>${inline(h)}</th>`).join("") + "</tr></thead><tbody>";
+        i += 2; // pula cabeçalho e separador
+        while (i < lines.length && /\|/.test(lines[i]) && lines[i].trim() !== "") {
+          const cells = splitRow(lines[i]);
+          table += "<tr>" + cells.map(c => `<td>${inline(c)}</td>`).join("") + "</tr>";
+          i++;
+        }
+        i--; // compensa o incremento do for
+        table += "</tbody></table>";
+        html += table;
+        continue;
+      }
       if (/^\s*[-*]\s+/.test(line)) {
         if (!inList) { html += "<ul>"; inList = true; }
         html += `<li>${inline(line.replace(/^\s*[-*]\s+/, ""))}</li>`;
@@ -172,13 +201,10 @@ export default function ProtocolDetail() {
   const handleDownloadPdf = async () => {
     if (!protocol) return;
 
-    // Apenas seções clínicas voltadas ao paciente (exclui técnica cirúrgica, secretaria e referências)
-    const clinicalSections = protocol.sections.filter(
-      (s: any) =>
-        !s.is_secretary &&
-        !s.is_references &&
-        !/técnica cirúrgica|tecnica cirurgica/i.test(s.title || "")
-    );
+    // Allow-list de segurança: somente seções voltadas ao paciente entram no PDF.
+    // Pipeline puro (testado em shared/pdfPatientFilter.ts): exclui secretaria, referências,
+    // prescrição e títulos internos; higieniza a CPP removendo rapport/scripts/objeções.
+    const clinicalSections = buildPatientSections(protocol.sections as any);
 
     const logoUrl = `${window.location.origin}/images/logo_landscape.svg`;
     const dateStr = new Date().toLocaleDateString("pt-BR");
@@ -206,13 +232,14 @@ export default function ProtocolDetail() {
       : "";
 
     const sectionsHtml = clinicalSections
-      .map(
-        (s: any) => `
-        <section class="sec">
-          <h2>${s.title}</h2>
+      .map((s: any) => {
+        const highlight = isCareJourneySection(s.title || "");
+        return `
+        <section class="sec${highlight ? " care" : ""}">
+          <h2>${highlight ? "✨ " : ""}${s.title}</h2>
           <div class="sec-body">${mdToHtml(s.content)}</div>
-        </section>`
-      )
+        </section>`;
+      })
       .join("");
 
     const printHtml = `<!DOCTYPE html>
@@ -231,11 +258,24 @@ export default function ProtocolDetail() {
   .header .meta { text-align: right; font-size: 11px; color: #6b7a86; font-family: Arial, sans-serif; }
   h1 { font-size: 22px; color: #1C3D5A; margin: 0 0 4px; break-after: avoid; page-break-after: avoid; }
   .cat { display: inline-block; background: #1C3D5A; color: #fff; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; font-family: Arial, sans-serif; }
-  .intro { font-size: 13px; color: #34505f; margin: 12px 0 20px; font-style: italic; break-inside: avoid; page-break-inside: avoid; }
+  .intro { font-size: 13px; color: #34505f; margin: 12px 0 12px; font-style: italic; break-inside: avoid; page-break-inside: avoid; }
+  .anchor { font-size: 12.5px; color: #1C3D5A; background: #eef1f4; border-left: 4px solid #1C3D5A; padding: 8px 12px; margin: 0 0 20px; font-family: Arial, sans-serif; break-inside: avoid; page-break-inside: avoid; }
+  .anchor strong { color: #B87333; }
   .patient { display: flex; gap: 28px; flex-wrap: wrap; background: #f4f1ec; border-left: 4px solid #B87333; padding: 8px 12px; margin: 12px 0 18px; font-size: 12px; font-family: Arial, sans-serif; color: #1C3D5A; break-inside: avoid; page-break-inside: avoid; }
   .sec.obs { background: #f4f1ec; padding: 10px 12px; border-left: 4px solid #B87333; margin-top: 18px; }
   .sec { margin-bottom: 16px; break-inside: avoid; page-break-inside: avoid; }
   .sec h2 { font-size: 15px; color: #B87333; border-left: 4px solid #B87333; padding-left: 8px; margin: 0 0 6px; font-family: Arial, sans-serif; break-after: avoid; page-break-after: avoid; }
+  /* Destaque da Linha de Cuidado Integral / Acompanhamento Premium */
+  .sec.care { background: #f7f3ee; border: 1px solid #e3d4c2; border-left: 5px solid #B87333; border-radius: 4px; padding: 14px 16px; margin: 20px 0; }
+  .sec.care h2 { font-size: 16px; color: #1C3D5A; border-left: none; padding-left: 0; }
+  .sec.care .sec-body { color: #34505f; }
+  .sec.care .sec-body strong { color: #B87333; }
+  .sec.care .sec-body table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; }
+  .sec.care .sec-body th, .sec.care .sec-body td { border: 1px solid #e3d4c2; padding: 4px 6px; text-align: left; vertical-align: top; }
+  .sec.care .sec-body th { background: #1C3D5A; color: #fff; font-family: Arial, sans-serif; }
+  .sec-body table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; }
+  .sec-body th, .sec-body td { border: 1px solid #d8dde1; padding: 4px 6px; text-align: left; vertical-align: top; }
+  .sec-body th { background: #eef1f4; color: #1C3D5A; font-family: Arial, sans-serif; }
   .sec-body { font-size: 12.5px; }
   .sec-body p { margin: 4px 0; orphans: 3; widows: 3; break-inside: avoid; page-break-inside: avoid; }
   .sec-body ul { margin: 4px 0 4px 18px; padding: 0; break-inside: avoid; page-break-inside: avoid; }
@@ -252,6 +292,7 @@ export default function ProtocolDetail() {
   <h1>${protocol.title}</h1>
   ${patientBlock}
   <div class="intro">${protocol.intro || ""}</div>
+  <div class="anchor">Mais do que um procedimento, você recebe uma <strong>linha de cuidado completa</strong> &mdash; com acompanhamento antes, durante e depois, e acesso direto ao Dr.&nbsp;Felipe e sua equipe multidisciplinar.</div>
   ${sectionsHtml}
   ${observationsBlock}
   <div class="footer">
