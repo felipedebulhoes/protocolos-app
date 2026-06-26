@@ -37,6 +37,30 @@ describe("Integridade dos protocolos", () => {
     expect(clinical.length).toBeGreaterThan(0);
   });
 
+  it("os 4 novos protocolos de mentoria estão presentes", () => {
+    const ids = (protocols as any[]).map((p) => p.id);
+    for (const id of [
+      "sindrome_metabolica_saude_masculina",
+      "toxina_botulinica_estetica_genital",
+      "escrotoplastia_estetica",
+      "glandulas_tyson_laser",
+    ]) {
+      expect(ids, `Protocolo ${id} ausente`).toContain(id);
+    }
+  });
+
+  it("nenhum protocolo tem seção de Linha de Cuidado duplicada", () => {
+    for (const p of protocols as any[]) {
+      const linha = (p.sections as any[]).filter((s) =>
+        /linha de cuidado/i.test(s.title || "")
+      );
+      expect(
+        linha.length,
+        `Protocolo "${p.title}" tem ${linha.length} blocos de Linha de Cuidado`
+      ).toBeLessThanOrEqual(1);
+    }
+  });
+
   it("cada seção clínica tem título e conteúdo", () => {
     for (const p of protocols as any[]) {
       for (const s of p.sections as any[]) {

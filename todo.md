@@ -179,3 +179,19 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Aplicar o bloco clínico aos protocolos não-cirúrgicos no JSON (7 protocolos, sem duplicação)
 - [x] Criar landing page "Jornada Premium" (CPP, timeline, depoimentos, CTA) em /jornada-premium
 - [x] Testar (47/47), TypeScript limpo, salvar checkpoint
+
+## Grade de Estética Genital Masculina + Saúde Metabólica (Mentoria) — 2026-06-26
+- [x] Pesquisar evidência GLP-1/tirzepatida (testosterona/espermograma) — meta-análise Andrology 2025, ECRs 2025
+- [x] Pesquisar evidência: toxina botulínica estética genital, glândulas de Tyson a laser, escrotoplastia, preenchimento peniano HA, vasectomia sem bisturi e sem agulha
+- [x] Auditar estrutura interna dos 4 protocolos a consolidar (7_HA, 11_circuncisao, 12_lipo, 6_vasectomia)
+- [x] Criar NOVO: Síndrome Metabólica & Saúde Masculina (GLP-1/Ozempic/tirzepatida)
+- [x] Criar NOVO: Toxina Botulínica na Estética Genital Masculina
+- [x] Criar NOVO: Escrotoplastia Estética (Scrotal Lift)
+- [x] Criar NOVO: Remoção de Glândulas de Tyson a Laser
+- [x] Consolidar/renomear: 11_circuncisao_frenuloplastia -> Postectomia Cosmética com Grampeador
+- [x] Expandir: 7_engrossamento_peniano_ha (preenchimento peniano, técnica detalhada)
+- [x] Expandir: 12_lipo_suprapubica_webbing (lipectomia e dermolipectomia)
+- [x] Atualizar: 6_vasectomia_sem_bisturi -> Vasectomia sem Bisturi e sem Agulha
+- [x] Adicionar bloco de Linha de Cuidado Integral aos novos e consolidados
+- [x] FOCO CENTRAL: cada protocolo evidencia a LINHA DE CUIDADO INTEGRAL com narrativa "o que voce realmente adquire"
+- [x] Validar JSON (73 protocolos, sem duplicação), testes (tsc 0 erros + 53 vitest), salvar checkpoint
