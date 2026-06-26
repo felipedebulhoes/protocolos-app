@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
@@ -17,6 +17,8 @@ import {
   MapPin,
   Video,
   BookOpen,
+  Printer,
+  ArrowLeft,
 } from "lucide-react";
 
 const WHATSAPP_NUMERO = "5511981124455";
@@ -82,8 +84,43 @@ const seguranca = [
 ];
 
 export default function GuiaGLP1() {
+  const [, navigate] = useLocation();
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Estilos de impressão: oculta navegação/CTAs internos, deixa o material limpo para o paciente */}
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          header { position: static !important; }
+          .brand-gradient { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          section { break-inside: avoid; }
+        }
+      `}</style>
+
+      {/* ── BARRA INTERNA (equipe) — não aparece no PDF ─────────────────── */}
+      <div className="no-print bg-muted/60 border-b border-border">
+        <div className="container flex items-center justify-between py-3">
+          <button
+            onClick={() => navigate("/")}
+            className="btn-press inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Voltar aos protocolos
+          </button>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline text-xs text-muted-foreground font-light">
+              Material interno — gere o PDF e entregue ao paciente
+            </span>
+            <Button
+              size="sm"
+              onClick={() => window.print()}
+              className="btn-press cobre-gradient text-white shadow-sm"
+            >
+              <Printer className="w-4 h-4 mr-2" /> Imprimir / Salvar PDF
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* ── HEADER ──────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
         <div className="container flex items-center justify-between py-4">
@@ -102,7 +139,7 @@ export default function GuiaGLP1() {
               </p>
             </div>
           </div>
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-2 no-print">
             <a href={AGENDAMENTO_URL} target="_blank" rel="noopener noreferrer">
               <Button
                 size="sm"

@@ -83,8 +83,6 @@ function Router() {
       {/* Patient-facing public routes */}
       <Route path="/paciente" component={PacienteLanding} />
       <Route path="/jornada-premium" component={JornadaPremium} />
-      <Route path="/guia-glp1" component={GuiaGLP1} />
-      <Route path="/canetas-emagrecedoras" component={GuiaGLP1} />
       <Route path="/cadastro" component={PortalRegister} />
       <Route path="/login" component={PortalLogin} />
       <Route path="/portal" component={PortalRoute} />
@@ -127,7 +125,16 @@ function Router() {
       <Route path="/fluxograma-espermograma">
         <DoctorGuard><SpermogramFlowchart /></DoctorGuard>
       </Route>
-      <Route path="/configuracoes" component={Configuracoes} />
+      {/* Material para a equipe gerar e entregar ao paciente (interno) */}
+      <Route path="/guia-glp1">
+        <DoctorGuard><GuiaGLP1 /></DoctorGuard>
+      </Route>
+      <Route path="/canetas-emagrecedoras">
+        <DoctorGuard><GuiaGLP1 /></DoctorGuard>
+      </Route>
+      <Route path="/configuracoes">
+        <DoctorGuard><Configuracoes /></DoctorGuard>
+      </Route>
       <Route path="/team/join" component={TeamJoin} />
 
       <Route path="/404" component={NotFound} />

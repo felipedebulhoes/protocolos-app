@@ -222,3 +222,22 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Revisar campos CRM/RQE: substituídos 148 "XXXXX" + 3 "[CRM]" + 45 com pontuação divergente -> padrão único CRM-SP 202291 / RQE 146538 (Urologia) em 37 protocolos; corrigido CRM antigo incorreto 241.135
 - [x] Adicionados 3 testes de regressão (sem XXXXX, sem 241.135, assinatura usa CRM/RQE reais)
 - [x] Validar (tsc 0 erros + 67/67 vitest), salvar checkpoint
+
+## Site 100% interno + Guia GLP-1 como material interno — 2026-06-26
+- [x] Proteger rota /configuracoes com DoctorGuard (estava sem login)
+- [x] Proteger rotas /guia-glp1 e /canetas-emagrecedoras com DoctorGuard
+- [x] Converter Guia GLP-1 em material interno: barra com botão Imprimir/Salvar PDF + @media print que oculta navegação/CTAs
+- [x] Adicionar link do Guia GLP-1 no menu interno (sidebar) como "Material: Canetas (GLP-1)"
+- [x] Validar (tsc 0 erros + 67/67 vitest)
+
+## Orçamentos PRO (TUSS/OPME/Justificativa/Assinatura) — 2026-06-26
+- [x] Finalizar pendências (rotas protegidas + Guia GLP-1) e salvar checkpoint
+- [ ] Extrair e indexar pacote oficial TUSS/OPME (TISS 202605) em JSON pesquisável
+- [ ] Schema: orçamento com itens TUSS, lista OPME, justificativa, hash/QR de verificação
+- [ ] Backend: helpers + procedures (criar/editar orçamento, busca TUSS, verificação pública)
+- [ ] UI Orçamentos: adicionar código TUSS por item, seção OPME, campo justificativa clínica
+- [ ] PDF do orçamento: layout convênio + autenticação visual (assinatura, CRM/RQE, QR/hash)
+- [ ] Página pública de verificação do documento (/verificar/:hash)
+- [ ] Preparar assinatura ICP-Brasil A1 no servidor (certificado como secret, ativável)
+- [ ] Validar (tsc + vitest), salvar checkpoint
+- [ ] Pedir ao Felipe: PNG da assinatura + confirmação de troca do certificado
