@@ -52,6 +52,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import Layout from "@/components/Layout";
@@ -106,6 +107,10 @@ export default function ProtocolDetail() {
 
   // Estado para a data do procedimento cirúrgico (Automação de Retornos)
   const [procedureDate, setProcedureDate] = useState("");
+  // Estados do modal de geração de PDF (independentes dos demais campos)
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
+  const [pdfPatientName, setPdfPatientName] = useState("");
+  const [pdfProcedureDate, setPdfProcedureDate] = useState("");
 
   // Buscar dados do protocolo atual
   const protocol = protocolsData.find(p => p.id === protocolId);
@@ -170,6 +175,23 @@ export default function ProtocolDetail() {
 
     const logoUrl = `${window.location.origin}/images/logo_landscape.svg`;
     const dateStr = new Date().toLocaleDateString("pt-BR");
+    const procDateStr = pdfProcedureDate
+      ? new Date(pdfProcedureDate + "T00:00:00").toLocaleDateString("pt-BR")
+      : "";
+    const escapeHtml = (v: string) =>
+      v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const patientBlock =
+      pdfPatientName.trim() || procDateStr
+        ? `<div class="patient">${
+            pdfPatientName.trim()
+              ? `<span><strong>Paciente:</strong> ${escapeHtml(pdfPatientName.trim())}</span>`
+              : ""
+          }${
+            procDateStr
+              ? `<span><strong>Data do procedimento:</strong> ${procDateStr}</span>`
+              : ""
+          }</div>`
+        : "";
 
     const sectionsHtml = clinicalSections
       .map(
@@ -198,6 +220,7 @@ export default function ProtocolDetail() {
   h1 { font-size: 22px; color: #1C3D5A; margin: 0 0 4px; break-after: avoid; page-break-after: avoid; }
   .cat { display: inline-block; background: #1C3D5A; color: #fff; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; font-family: Arial, sans-serif; }
   .intro { font-size: 13px; color: #34505f; margin: 12px 0 20px; font-style: italic; break-inside: avoid; page-break-inside: avoid; }
+  .patient { display: flex; gap: 28px; flex-wrap: wrap; background: #f4f1ec; border-left: 4px solid #B87333; padding: 8px 12px; margin: 12px 0 18px; font-size: 12px; font-family: Arial, sans-serif; color: #1C3D5A; break-inside: avoid; page-break-inside: avoid; }
   .sec { margin-bottom: 16px; break-inside: avoid; page-break-inside: avoid; }
   .sec h2 { font-size: 15px; color: #B87333; border-left: 4px solid #B87333; padding-left: 8px; margin: 0 0 6px; font-family: Arial, sans-serif; break-after: avoid; page-break-after: avoid; }
   .sec-body { font-size: 12.5px; }
@@ -214,6 +237,7 @@ export default function ProtocolDetail() {
   </div>
   <span class="cat">${protocol.category}</span>
   <h1>${protocol.title}</h1>
+  ${patientBlock}
   <div class="intro">${protocol.intro || ""}</div>
   ${sectionsHtml}
   <div class="footer">
@@ -238,6 +262,7 @@ export default function ProtocolDetail() {
       }, 400);
     };
     toast.success("Use 'Salvar como PDF' na janela de impressão.");
+    setPdfDialogOpen(false);
   };
 
   // Função para calcular datas de retorno (D+7 e D+30) com dias da semana em português
@@ -784,9 +809,47 @@ export default function ProtocolDetail() {
             <CardTitle className="flex flex-col items-center text-center">
               <h1 className="text-3xl font-bold text-primary-foreground mb-2">{protocol.title}</h1>
               <p className="text-sm text-muted-foreground">ID: {protocol.id}</p>
-              <Button onClick={handleDownloadPdf} className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={() => setPdfDialogOpen(true)} className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Download className="mr-2 h-4 w-4" /> Baixar PDF
               </Button>
+              <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Gerar PDF do Protocolo</DialogTitle>
+                    <DialogDescription>
+                      Preencha os dados abaixo (opcionais) para personalizar o documento entregue ao paciente.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-2 text-left">
+                    <div className="space-y-2">
+                      <Label htmlFor="pdfPatientName">Nome do paciente</Label>
+                      <Input
+                        id="pdfPatientName"
+                        placeholder="Ex.: João da Silva"
+                        value={pdfPatientName}
+                        onChange={(e) => setPdfPatientName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pdfProcedureDate">Data do procedimento</Label>
+                      <Input
+                        id="pdfProcedureDate"
+                        type="date"
+                        value={pdfProcedureDate}
+                        onChange={(e) => setPdfProcedureDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter className="gap-2 sm:gap-0">
+                    <Button variant="outline" onClick={() => setPdfDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleDownloadPdf} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                      <Download className="mr-2 h-4 w-4" /> Gerar PDF
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardTitle>
           </CardHeader>
           <CardContent>
