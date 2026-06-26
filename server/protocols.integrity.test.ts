@@ -69,4 +69,44 @@ describe("Integridade dos protocolos", () => {
       }
     }
   });
+
+  it("nenhum protocolo contém placeholder de CRM/RQE (XXXXX)", () => {
+    for (const p of protocols as any[]) {
+      const blob = JSON.stringify(p);
+      expect(
+        blob.includes("XXXXX"),
+        `Protocolo "${p.title}" ainda contém placeholder XXXXX (CRM/RQE não preenchido)`
+      ).toBe(false);
+    }
+  });
+
+  it("nenhum protocolo contém o CRM antigo incorreto (241.135)", () => {
+    for (const p of protocols as any[]) {
+      const blob = JSON.stringify(p);
+      expect(
+        blob.includes("241.135"),
+        `Protocolo "${p.title}" contém CRM incorreto 241.135`
+      ).toBe(false);
+    }
+  });
+
+  it("toda assinatura de receituário usa o CRM/RQE reais do Dr. Felipe", () => {
+    for (const p of protocols as any[]) {
+      const blob = JSON.stringify(p);
+      // Se menciona CRM-SP, deve ser o número real
+      if (blob.includes("CRM-SP")) {
+        expect(
+          blob.includes("CRM-SP 202291"),
+          `Protocolo "${p.title}" menciona CRM-SP mas não o número real 202291`
+        ).toBe(true);
+      }
+      // Se menciona RQE, deve ser o número real de Urologia
+      if (/RQE\s/.test(blob)) {
+        expect(
+          blob.includes("RQE 146538"),
+          `Protocolo "${p.title}" menciona RQE mas não o número real 146538`
+        ).toBe(true);
+      }
+    }
+  });
 });

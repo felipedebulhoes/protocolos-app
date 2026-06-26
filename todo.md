@@ -214,3 +214,11 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Capa adapta-se quando não há nome do paciente ("Plano de cuidado personalizado")
 - [x] Validar visualmente via render WeasyPrint (logo branco visível sobre faixa azul)
 - [x] Validar (tsc 0 erros + 64/64 vitest), salvar checkpoint
+
+## Novas demandas — 2026-06-26 (filtro estética + guia GLP-1 + CRM/RQE)
+- [x] Auditar categorização atual e identificar protocolos de estética genital
+- [x] Criar/atribuir categoria "Estética Genital" (6 protocolos reclassificados) — filtro aparece automaticamente na Home
+- [x] Criar guia do paciente sobre GLP-1 (Ozempic/Mounjaro) em linguagem leiga: emagrecimento → testosterona → fertilidade (GuiaGLP1.tsx, rotas /guia-glp1 e /canetas-emagrecedoras)
+- [x] Revisar campos CRM/RQE: substituídos 148 "XXXXX" + 3 "[CRM]" + 45 com pontuação divergente -> padrão único CRM-SP 202291 / RQE 146538 (Urologia) em 37 protocolos; corrigido CRM antigo incorreto 241.135
+- [x] Adicionados 3 testes de regressão (sem XXXXX, sem 241.135, assinatura usa CRM/RQE reais)
+- [x] Validar (tsc 0 erros + 67/67 vitest), salvar checkpoint
