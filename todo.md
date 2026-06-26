@@ -161,5 +161,13 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Preparar estrutura de PDF com identidade visual (A4, seções clínicas, logo, cores, tipografia)
 - [x] Implementar gerador de PDF no backend (tRPC) com WeasyPrint
 - [x] Adicionar botão de download na UI (ProtocolDetail.tsx) com integração tRPC
-- [ ] Corrigir erros de TypeScript remanescentes (protocol possibly undefined, returnDates possibly null)
-- [ ] Testar e validar PDF (download, conteúdo, visual) e entregar
+- [x] Corrigir erros de TypeScript remanescentes (protocol possibly undefined, returnDates possibly null) - guard clauses e non-null assertions aplicadas
+- [ ] Testar e validar PDF (download, conteúdo, visual) no browser e entregar
+
+## Correção de Bugs Críticos (PDF + Página em branco)
+- [ ] Investigar por que a página da prótese peniana está sem conteúdo (provável crash por erro runtime)
+- [ ] Corrigir imports quebrados no server/routers.ts (voiceTranscription, storage)
+- [ ] Corrigir todos os erros de TypeScript remanescentes em ProtocolDetail.tsx
+- [ ] Corrigir a falha ao baixar o PDF (validar procedimento tRPC + script Python)
+- [ ] Testar download de PDF e renderização da página no browser
+- [ ] Salvar checkpoint e entregar

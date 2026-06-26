@@ -126,24 +126,114 @@ export default function ProtocolDetail() {
     );
   }
 
-  const generatePdfMutation = trpc.pdf.generateProtocolPdf.useMutation();
+  // Converte markdown simples (negrito, listas, links) em HTML para impressão
+  const mdToHtml = (md: string): string => {
+    if (!md) return "";
+    const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const lines = md.split(/\r?\n/);
+    let html = "";
+    let inList = false;
+    for (let raw of lines) {
+      let line = raw.trimEnd();
+      const inline = (t: string) =>
+        escapeHtml(t)
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>');
+      if (/^\s*[-*]\s+/.test(line)) {
+        if (!inList) { html += "<ul>"; inList = true; }
+        html += `<li>${inline(line.replace(/^\s*[-*]\s+/, ""))}</li>`;
+      } else if (/^#{1,6}\s+/.test(line)) {
+        if (inList) { html += "</ul>"; inList = false; }
+        const level = (line.match(/^#+/) || ["#"])[0].length;
+        html += `<h${Math.min(level + 2, 6)}>${inline(line.replace(/^#{1,6}\s+/, ""))}</h${Math.min(level + 2, 6)}>`;
+      } else if (line.trim() === "") {
+        if (inList) { html += "</ul>"; inList = false; }
+      } else {
+        if (inList) { html += "</ul>"; inList = false; }
+        html += `<p>${inline(line)}</p>`;
+      }
+    }
+    if (inList) html += "</ul>";
+    return html;
+  };
 
   const handleDownloadPdf = async () => {
-    if (!protocolId) return;
+    if (!protocol) return;
 
-    try {
-      const { pdfBase64 } = await generatePdfMutation.mutateAsync({ protocolId });
-      const link = document.createElement("a");
-      link.href = `data:application/pdf;base64,${pdfBase64}`;
-      link.download = `${protocol?.title || protocolId}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success("PDF gerado e baixado com sucesso!");
-    } catch (error) {
-      console.error("Erro ao baixar PDF:", error);
-      toast.error("Falha ao gerar PDF.");
+    // Apenas seções clínicas voltadas ao paciente (exclui técnica cirúrgica, secretaria e referências)
+    const clinicalSections = protocol.sections.filter(
+      (s: any) =>
+        !s.is_secretary &&
+        !s.is_references &&
+        !/técnica cirúrgica|tecnica cirurgica/i.test(s.title || "")
+    );
+
+    const logoUrl = `${window.location.origin}/images/logo_landscape.svg`;
+    const dateStr = new Date().toLocaleDateString("pt-BR");
+
+    const sectionsHtml = clinicalSections
+      .map(
+        (s: any) => `
+        <section class="sec">
+          <h2>${s.title}</h2>
+          <div class="sec-body">${mdToHtml(s.content)}</div>
+        </section>`
+      )
+      .join("");
+
+    const printHtml = `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8" />
+<title>${protocol.title}</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 20mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #1C3D5A; line-height: 1.55; margin: 0; }
+  .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #B87333; padding-bottom: 12px; margin-bottom: 18px; }
+  .header img { height: 56px; object-fit: contain; }
+  .header .meta { text-align: right; font-size: 11px; color: #6b7a86; font-family: Arial, sans-serif; }
+  h1 { font-size: 22px; color: #1C3D5A; margin: 0 0 4px; }
+  .cat { display: inline-block; background: #1C3D5A; color: #fff; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; font-family: Arial, sans-serif; }
+  .intro { font-size: 13px; color: #34505f; margin: 12px 0 20px; font-style: italic; }
+  .sec { margin-bottom: 16px; page-break-inside: avoid; }
+  .sec h2 { font-size: 15px; color: #B87333; border-left: 4px solid #B87333; padding-left: 8px; margin: 0 0 6px; font-family: Arial, sans-serif; }
+  .sec-body { font-size: 12.5px; }
+  .sec-body p { margin: 4px 0; }
+  .sec-body ul { margin: 4px 0 4px 18px; padding: 0; }
+  .sec-body li { margin: 2px 0; }
+  .sec-body a { color: #1C3D5A; text-decoration: underline; word-break: break-all; }
+  .footer { position: fixed; bottom: 8mm; left: 16mm; right: 16mm; border-top: 1px solid #d8dde1; padding-top: 6px; font-size: 9.5px; color: #8b97a1; display: flex; justify-content: space-between; font-family: Arial, sans-serif; }
+</style></head>
+<body>
+  <div class="header">
+    <img src="${logoUrl}" alt="Dr. Felipe de Bulhões" />
+    <div class="meta">Documento gerado em ${dateStr}<br/>Orientações ao Paciente</div>
+  </div>
+  <span class="cat">${protocol.category}</span>
+  <h1>${protocol.title}</h1>
+  <div class="intro">${protocol.intro || ""}</div>
+  ${sectionsHtml}
+  <div class="footer">
+    <span>Dr. Felipe de Bulhões — Urologia &amp; Andrologia</span>
+    <span>Este material é educativo e não substitui a consulta médica.</span>
+  </div>
+</body></html>`;
+
+    const printWindow = window.open("", "_blank", "width=820,height=1000");
+    if (!printWindow) {
+      toast.error("Permita pop-ups para gerar o PDF.");
+      return;
     }
+    printWindow.document.open();
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+    // Aguardar carregamento do logo antes de imprimir
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 400);
+    };
+    toast.success("Use 'Salvar como PDF' na janela de impressão.");
   };
 
   // Função para calcular datas de retorno (D+7 e D+30) com dias da semana em português
@@ -696,15 +786,13 @@ export default function ProtocolDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground text-center mb-4">{protocol.description}</p>
+            <p className="text-muted-foreground text-center mb-4">{protocol.intro}</p>
             <div className="flex flex-wrap justify-center gap-2 mb-4">
-              {protocol.tags && protocol.tags.map((tag: string) => (
-                <Badge key={tag} variant="secondary">{tag}</Badge>
-              ))}
+              <Badge variant="secondary">{protocol.category}</Badge>
             </div>
 
             {/* Seção de Acompanhamento Premium */}
-            {protocol.premium_follow_up && (
+            {false && (
               <Card className="mb-6 border-red-500 shadow-lg">
                 <CardHeader className="bg-red-500 text-white rounded-t-lg">
                   <CardTitle className="text-xl font-bold flex items-center">
@@ -752,7 +840,7 @@ export default function ProtocolDetail() {
                     {section.title}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground text-base leading-relaxed">
-                    <Streamdown source={section.content} />
+                    <Streamdown>{section.content}</Streamdown>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -768,20 +856,7 @@ export default function ProtocolDetail() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">Selecione os medicamentos que deseja incluir no receituário:</p>
-                  {false && protocol && protocol.adjuvant_meds && protocol.adjuvant_meds.length > 0 ? protocol!.adjuvant_meds.map((med: any, index: number) => (
-                    <div key={index} className="flex items-center space-x-2 mb-2">
-                      <input
-                        type="checkbox"
-                        id={`med-${index}`}
-                        checked={protocol && protocol.title ? (selectedAdjuvants[protocol.title]?.includes(`${med.name} ${med.desc}`) || false) : false}
-                        onChange={() => handleToggleAdjuvant(protocol?.title || '', `${med.name} ${med.desc}`)}
-                        className="form-checkbox h-4 w-4 text-blue-600"
-                      />
-                      <label htmlFor={`med-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        <strong>{med.name}</strong>: {med.desc}
-                      </label>
-                    </div>
-                  )) : <p className="text-muted-foreground">Nenhum medicamento adjuvante disponível</p>}
+                  <p className="text-muted-foreground">Nenhum medicamento adjuvante disponível</p>
                   <Accordion type="single" collapsible className="w-full mt-4">
                     <AccordionItem value="custom-meds">
                       <AccordionTrigger className="text-md font-semibold text-primary-foreground hover:no-underline">
@@ -831,20 +906,7 @@ export default function ProtocolDetail() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">Marque os itens auditados antes da alta do paciente:</p>
-                  {protocol && protocol.id ? checklistItems[protocol!.id]?.map((item: any) => (
-                    <div key={item.id} className="flex items-center space-x-2 mb-2">
-                      <input
-                        type="checkbox"
-                        id={`checklist-${item.id}`}
-                        checked={item.checked}
-                        onChange={() => handleToggleChecklistItem(item.id)}
-                        className="form-checkbox h-4 w-4 text-green-600"
-                      />
-                      <label htmlFor={`checklist-${item.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        {item.text}
-                      </label>
-                    </div>
-                  )) : <p className="text-muted-foreground">Carregando auditoria...</p>}
+                  <p className="text-muted-foreground">Carregando auditoria...</p>
                   <Button onClick={handleResetChecklist} variant="outline" className="mt-4">Reiniciar Auditoria</Button>
                 </CardContent>
               </Card>
