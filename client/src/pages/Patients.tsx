@@ -52,6 +52,9 @@ import QRCode from "qrcode";
 import { trpc } from "@/lib/trpc";
 import { searchProcedures, searchOpme, type TussProcedure, type TussOpme } from "@/lib/tuss";
 
+// OPME selecionado com campos financeiros opcionais (camada de UI)
+type OpmeItem = TussOpme & { quantidade?: number; precoUnitario?: number };
+
 interface HormonioRegistro {
   data: string;
   total: number;
@@ -273,7 +276,7 @@ export default function Patients() {
   // Novos campos para envio ao convênio (TUSS / OPME / Justificativa)
   const [orcamentoTussList, setOrcamentoTussList] = useState<TussProcedure[]>([]);
   const [orcamentoTussQuery, setOrcamentoTussQuery] = useState("");
-  const [orcamentoOpmeList, setOrcamentoOpmeList] = useState<TussOpme[]>([]);
+  const [orcamentoOpmeList, setOrcamentoOpmeList] = useState<OpmeItem[]>([]);
   const [orcamentoOpmeQuery, setOrcamentoOpmeQuery] = useState("");
   const [orcamentoJustificativa, setOrcamentoJustificativa] = useState("");
   const [orcamentoGerando, setOrcamentoGerando] = useState(false);
@@ -5599,7 +5602,7 @@ Ficamos à disposição!`;
                         type="button"
                         onClick={() => {
                           if (!orcamentoOpmeList.some((x) => x.codigo === o.codigo)) {
-                            setOrcamentoOpmeList([...orcamentoOpmeList, o]);
+                            setOrcamentoOpmeList([...orcamentoOpmeList, { ...o, quantidade: 1 }]);
                           }
                           setOrcamentoOpmeQuery("");
                         }}
@@ -5616,16 +5619,63 @@ Ficamos à disposição!`;
                 )}
               </div>
               {orcamentoOpmeList.length > 0 && (
-                <div className="space-y-1">
-                  {orcamentoOpmeList.map((o) => (
-                    <div key={o.codigo} className="flex items-center gap-2 rounded-lg bg-card px-2.5 py-1.5 border border-border/60">
-                      <span className="font-mono text-[10px] font-bold text-[#B87333] shrink-0">{o.codigo}</span>
-                      <span className="flex-1 text-[11px] text-primary leading-tight">{o.termo}{o.fabricante ? ` — ${o.fabricante}` : ""}</span>
-                      <button type="button" onClick={() => setOrcamentoOpmeList(orcamentoOpmeList.filter((x) => x.codigo !== o.codigo))} className="text-muted-foreground hover:text-red-500">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
+                <div className="space-y-1.5">
+                  {orcamentoOpmeList.map((o, idx) => {
+                    const qtd = o.quantidade ?? 1;
+                    const preco = o.precoUnitario ?? 0;
+                    const subtotal = qtd * preco;
+                    return (
+                      <div key={o.codigo} className="rounded-lg bg-card px-2.5 py-2 border border-border/60">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-muted-foreground shrink-0 w-4 text-center">{idx + 1}</span>
+                          <span className="font-mono text-[10px] font-bold text-[#B87333] shrink-0">{o.codigo}</span>
+                          <span className="flex-1 text-[11px] text-primary leading-tight">{o.termo}{o.fabricante ? ` — ${o.fabricante}` : ""}</span>
+                          <button type="button" onClick={() => setOrcamentoOpmeList(orcamentoOpmeList.filter((x) => x.codigo !== o.codigo))} className="text-muted-foreground hover:text-red-500">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5 pl-6">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[9px] text-muted-foreground uppercase">Qtd</span>
+                            <Input
+                              type="number" min={1} step={1}
+                              value={qtd}
+                              onChange={(e) => {
+                                const v = Math.max(1, parseInt(e.target.value) || 1);
+                                setOrcamentoOpmeList(orcamentoOpmeList.map((x) => x.codigo === o.codigo ? { ...x, quantidade: v } : x));
+                              }}
+                              className="h-7 w-14 rounded-lg text-[11px] px-2"
+                            />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[9px] text-muted-foreground uppercase">R$ Unit.</span>
+                            <Input
+                              type="number" min={0} step={0.01}
+                              value={o.precoUnitario ?? ""}
+                              placeholder="opcional"
+                              onChange={(e) => {
+                                const raw = e.target.value;
+                                const v = raw === "" ? undefined : Math.max(0, parseFloat(raw) || 0);
+                                setOrcamentoOpmeList(orcamentoOpmeList.map((x) => x.codigo === o.codigo ? { ...x, precoUnitario: v } : x));
+                              }}
+                              className="h-7 w-24 rounded-lg text-[11px] px-2"
+                            />
+                          </div>
+                          <span className="ml-auto text-[11px] font-bold text-[#1C3D5A]">
+                            {subtotal > 0 ? subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {orcamentoOpmeList.some((o) => (o.precoUnitario ?? 0) > 0) && (
+                    <div className="flex items-center justify-between rounded-lg bg-[#B87333]/10 px-3 py-2 border border-[#B87333]/30">
+                      <span className="text-[11px] font-bold text-[#1C3D5A] uppercase tracking-wider">Total OPME (estimado)</span>
+                      <span className="text-[13px] font-extrabold text-[#B87333]">
+                        {orcamentoOpmeList.reduce((acc, o) => acc + (o.quantidade ?? 1) * (o.precoUnitario ?? 0), 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                      </span>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -5713,15 +5763,36 @@ Ficamos à disposição!`;
                   </table>
                 ` : "";
 
+                const opmeComPreco = orcamentoOpmeList.some((o) => (o.precoUnitario ?? 0) > 0);
+                const vOpmeTotal = orcamentoOpmeList.reduce((acc, o) => acc + (o.quantidade ?? 1) * (o.precoUnitario ?? 0), 0);
                 const opmeHtml = orcamentoOpmeList.length > 0 ? `
                   <div class="section-title">OPME — Órteses, Próteses e Materiais Especiais</div>
                   <table>
-                    <thead><tr><th style="width: 22%;">Código TUSS</th><th>Material / Dispositivo</th><th style="width: 25%;">Fabricante Ref.</th></tr></thead>
+                    <thead><tr>
+                      <th style="width: 5%; text-align:center;">#</th>
+                      <th style="width: 16%;">Código TUSS</th>
+                      <th>Material / Dispositivo</th>
+                      <th style="width: 18%;">Fabricante Ref.</th>
+                      ${opmeComPreco ? `<th style="width: 7%; text-align:center;">Qtd</th><th style="width: 13%; text-align:right;">Vlr. Unit.</th><th style="width: 14%; text-align:right;">Subtotal</th>` : ""}
+                    </tr></thead>
                     <tbody>
-                      ${orcamentoOpmeList.map((o) => `<tr><td style="font-weight:bold;color:#B87333;font-family:monospace;">${o.codigo}</td><td>${o.termo}</td><td>${o.fabricante || "—"}</td></tr>`).join("")}
+                      ${orcamentoOpmeList.map((o, i) => {
+                        const q = o.quantidade ?? 1;
+                        const pu = o.precoUnitario ?? 0;
+                        const sub = q * pu;
+                        return `<tr>
+                          <td style="text-align:center;color:#64748B;">${i + 1}</td>
+                          <td style="font-weight:bold;color:#B87333;font-family:monospace;">${o.codigo}</td>
+                          <td>${o.termo}</td>
+                          <td>${o.fabricante || "—"}</td>
+                          ${opmeComPreco ? `<td style="text-align:center;">${q}</td><td style="text-align:right;">${pu > 0 ? formatMoeda(pu) : "—"}</td><td style="text-align:right;font-weight:bold;">${pu > 0 ? formatMoeda(sub) : "—"}</td>` : ""}
+                        </tr>`;
+                      }).join("")}
+                      ${opmeComPreco ? `<tr><td colspan="6" style="text-align:right;font-weight:bold;color:#1C3D5A;background:#F8FAFC;">Total estimado de OPME</td><td style="text-align:right;font-weight:bold;color:#B87333;background:#F8FAFC;">${formatMoeda(vOpmeTotal)}</td></tr>` : ""}
                     </tbody>
                   </table>
-                  <p style="font-size:8px;color:#94A3B8;margin-top:-12px;margin-bottom:18px;">Conforme Padrão TISS/TUSS vigente (ANS). Marcas de referência citadas para fins técnicos; aceita-se similar de qualidade equivalente conforme legislação de OPME (Lei 12.842/2013 e RN ANS).</p>
+                  ${opmeComPreco ? `<p style="font-size:8px;color:#94A3B8;margin-top:-12px;margin-bottom:6px;">Valores de OPME meramente estimativos, sujeitos a confirmação junto ao fornecedor/hospital e à cotação vigente na data da cirurgia.</p>` : ""}
+                  <p style="font-size:8px;color:#94A3B8;margin-top:${opmeComPreco ? "0" : "-12px"};margin-bottom:18px;">Conforme Padrão TISS/TUSS vigente (ANS). Marcas de referência citadas para fins técnicos; aceita-se similar de qualidade equivalente conforme legislação de OPME (Lei 12.842/2013 e RN ANS).</p>
                 ` : "";
 
                 const justificativaHtml = orcamentoJustificativa.trim() ? `

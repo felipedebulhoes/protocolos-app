@@ -244,7 +244,7 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Validar (tsc 0 erros + 76/76 vitest), salvar checkpoint
 
 ## Orçamento Financeiro OPME — 2026-06-26
-- [ ] Campo opcional de preço por item de OPME (e quantidade) na UI do orçamento
-- [ ] Numeração dos itens + subtotal por item + total geral de OPME
-- [ ] Refletir valores/subtotais/total no HTML do PDF (seção OPME financeira)
-- [ ] Validar (tsc + vitest), salvar checkpoint
+- [x] Campo opcional de preço por item de OPME (e quantidade) na UI do orçamento
+- [x] Numeração dos itens + subtotal por item + total geral de OPME
+- [x] Refletir valores/subtotais/total no HTML do PDF (seção OPME financeira)
+- [x] Validar (tsc 0 erros + 76/76 vitest), salvar checkpoint
