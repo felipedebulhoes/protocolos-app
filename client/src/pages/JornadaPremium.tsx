@@ -15,7 +15,11 @@ import {
   Award,
 } from "lucide-react";
 
-const AGENDAMENTO_URL = "https://www.felipebulhoes.com";
+const WHATSAPP_NUMERO = "5511981124455";
+const WHATSAPP_MSG = encodeURIComponent(
+  "Olá! Vim pela página Jornada Premium e gostaria de agendar uma consulta com o Dr. Felipe de Bulhões."
+);
+const AGENDAMENTO_URL = `https://wa.me/${WHATSAPP_NUMERO}?text=${WHATSAPP_MSG}`;
 
 const pilares = [
   {
