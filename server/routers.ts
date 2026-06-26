@@ -12,6 +12,7 @@ import { userRouter } from "./routers/user";
 import { totpRouter } from "./routers/totp";
 import { teamRouter } from "./routers/team";
 import { doctorAuthRouter } from "./routers/doctorAuth";
+import { verificationRouter } from "./routers/verification";
 
 export const appRouter = router({
   auth: authRouter,
@@ -23,6 +24,7 @@ export const appRouter = router({
   user: userRouter,
   totp: totpRouter,
   team: teamRouter,
+  verification: verificationRouter,
   llm: router({
     invoke: publicProcedure
       .input(z.any())

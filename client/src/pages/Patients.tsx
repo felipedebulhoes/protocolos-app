@@ -17,7 +17,9 @@ import {
   TrendingUp,
   CalendarClock,
   FileSpreadsheet,
-  CheckSquare
+  CheckSquare,
+  Plus,
+  ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -46,6 +48,9 @@ import {
   Legend as RechartsLegend, 
   ReferenceLine 
 } from "recharts";
+import QRCode from "qrcode";
+import { trpc } from "@/lib/trpc";
+import { searchProcedures, searchOpme, type TussProcedure, type TussOpme } from "@/lib/tuss";
 
 interface HormonioRegistro {
   data: string;
@@ -265,6 +270,14 @@ export default function Patients() {
   const [orcamentoValorMateriais, setOrcamentoValorHospitalMateriais] = useState("8000");
   const [orcamentoValorAcompanhamento, setOrcamentoValorAcompanhamento] = useState("3000");
   const [orcamentoObs, setOrcamentoObs] = useState("");
+  // Novos campos para envio ao convênio (TUSS / OPME / Justificativa)
+  const [orcamentoTussList, setOrcamentoTussList] = useState<TussProcedure[]>([]);
+  const [orcamentoTussQuery, setOrcamentoTussQuery] = useState("");
+  const [orcamentoOpmeList, setOrcamentoOpmeList] = useState<TussOpme[]>([]);
+  const [orcamentoOpmeQuery, setOrcamentoOpmeQuery] = useState("");
+  const [orcamentoJustificativa, setOrcamentoJustificativa] = useState("");
+  const [orcamentoGerando, setOrcamentoGerando] = useState(false);
+  const criarVerificacao = trpc.verification.create.useMutation();
 
   // Catálogo de procedimentos urológicos premium do Dr. Felipe de Bulhões (CPP)
   const procedimentosCatalogo = [
@@ -3609,7 +3622,7 @@ export default function Patients() {
                                           </div>
                                         </div>
                                         <div class="clinic-info">
-                                          <strong>CRM-SP 241.135 | RQE 112.445</strong><br>
+                                          <strong>CRM-SP 202291 | RQE 146538</strong><br>
                                           drfelipebulhoes@bulhoesurohealth.com<br>
                                           WhatsApp: (11) 98112-4455
                                         </div>
@@ -3723,7 +3736,7 @@ export default function Patients() {
                                         ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" />` : `<div style="height: 45px;"></div>`}
                                         <div class="signature-line"></div>
                                         <strong style="font-size: 11px; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</strong><br>
-                                        <span style="font-size: 9px; color: #64748B;">Urologista - CRM-SP 241.135 | RQE 112.445</span><br>
+                                        <span style="font-size: 9px; color: #64748B;">Urologista - CRM-SP 202291 | RQE 146538</span><br>
                                         <span style="font-size: 7px; color: #94A3B8; margin-top: 6px; display: block; font-family: monospace;">Assinado digitalmente via ICP-Brasil (e-CPF) • Hash SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
                                       </div>
 
@@ -4337,7 +4350,7 @@ Ficamos à disposição!`;
                                           </div>
                                         </div>
                                         <div class="clinic-info">
-                                          <strong>CRM-SP 241.135 | RQE 112.445</strong><br>
+                                          <strong>CRM-SP 202291 | RQE 146538</strong><br>
                                           drfelipebulhoes@bulhoesurohealth.com
                                         </div>
                                       </div>
@@ -4413,7 +4426,7 @@ Ficamos à disposição!`;
                                           ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" />` : `<div style="height: 35px;"></div>`}
                                           <div class="signature-line"></div>
                                           <strong style="font-size: 10px; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</strong><br>
-                                          <span style="font-size: 8px; color: #64748B;">Urologista - CRM-SP 241.135</span>
+                                          <span style="font-size: 8px; color: #64748B;">Urologista - CRM-SP 202291</span>
                                         </div>
                                       </div>
 
@@ -5190,7 +5203,7 @@ Ficamos à disposição!`;
                         </div>
                       </div>
                       <div class="clinic-info">
-                        <strong>CRM-SP 241.135 | RQE 112.445</strong><br>
+                        <strong>CRM-SP 202291 | RQE 146538</strong><br>
                         drfelipebulhoes@bulhoesurohealth.com<br>
                         WhatsApp: (11) 98112-4455
                       </div>
@@ -5222,7 +5235,7 @@ Ficamos à disposição!`;
                         ${useSignature && signatureUrl ? `<img src="${signatureUrl}" class="signature-img" style="max-height: 50px; margin-bottom: 5px;" />` : `<div style="height: 40px;"></div>`}
                         <div class="signature-line" style="width: 220px; border-top: 1px solid #CBD5E1; margin: 0 auto 8px auto;"></div>
                         <strong style="font-size: 11px; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</strong><br>
-                        <span style="font-size: 9px; color: #64748B;">Urologista - CRM-SP 241.135 | RQE 112.445</span><br>
+                        <span style="font-size: 9px; color: #64748B;">Urologista - CRM-SP 202291 | RQE 146538</span><br>
                         <span style="font-size: 7px; color: #94A3B8; margin-top: 4px; display: block; font-family: monospace;">Hash ICP-Brasil SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
                       </div>
                     </div>
@@ -5512,6 +5525,122 @@ Ficamos à disposição!`;
                 className="min-h-[100px] rounded-xl text-xs bg-card leading-relaxed"
               />
             </div>
+
+            {/* === SEÇÃO CONVÊNIO: Códigos TUSS === */}
+            <div className="space-y-2 rounded-xl border border-[#1C3D5A]/15 bg-[#1C3D5A]/[0.03] p-3">
+              <Label className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                <FileSpreadsheet className="w-3.5 h-3.5 text-[#B87333]" /> Códigos TUSS (Procedimentos p/ Convênio)
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  value={orcamentoTussQuery}
+                  onChange={(e) => setOrcamentoTussQuery(e.target.value)}
+                  placeholder="Busque por nome ou código TUSS (ex: próstata, varicocele, 31010012)"
+                  className="h-9 pl-8 rounded-xl text-xs bg-card"
+                />
+                {orcamentoTussQuery.trim().length >= 2 && (
+                  <div className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-xl border border-border bg-card shadow-lg">
+                    {searchProcedures(orcamentoTussQuery, 12).map((p) => (
+                      <button
+                        key={p.codigo}
+                        type="button"
+                        onClick={() => {
+                          if (!orcamentoTussList.some((x) => x.codigo === p.codigo)) {
+                            setOrcamentoTussList([...orcamentoTussList, p]);
+                          }
+                          setOrcamentoTussQuery("");
+                        }}
+                        className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-secondary/40 border-b border-border/40 last:border-0"
+                      >
+                        <span className="font-mono text-[10px] font-bold text-[#B87333] shrink-0">{p.codigo}</span>
+                        <span className="text-[11px] text-primary leading-tight">{p.termo}</span>
+                      </button>
+                    ))}
+                    {searchProcedures(orcamentoTussQuery, 12).length === 0 && (
+                      <div className="px-3 py-2 text-[11px] text-muted-foreground">Nenhum código TUSS encontrado.</div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {orcamentoTussList.length > 0 && (
+                <div className="space-y-1">
+                  {orcamentoTussList.map((p) => (
+                    <div key={p.codigo} className="flex items-center gap-2 rounded-lg bg-card px-2.5 py-1.5 border border-border/60">
+                      <span className="font-mono text-[10px] font-bold text-[#B87333] shrink-0">{p.codigo}</span>
+                      <span className="flex-1 text-[11px] text-primary leading-tight">{p.termo}</span>
+                      <button type="button" onClick={() => setOrcamentoTussList(orcamentoTussList.filter((x) => x.codigo !== p.codigo))} className="text-muted-foreground hover:text-red-500">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* === SEÇÃO CONVÊNIO: OPME === */}
+            <div className="space-y-2 rounded-xl border border-[#1C3D5A]/15 bg-[#1C3D5A]/[0.03] p-3">
+              <Label className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                <Clipboard className="w-3.5 h-3.5 text-[#B87333]" /> Lista de OPME (Órteses, Próteses e Materiais Especiais)
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  value={orcamentoOpmeQuery}
+                  onChange={(e) => setOrcamentoOpmeQuery(e.target.value)}
+                  placeholder="Busque OPME (ex: prótese peniana, esfíncter, duplo J, sling)"
+                  className="h-9 pl-8 rounded-xl text-xs bg-card"
+                />
+                {orcamentoOpmeQuery.trim().length >= 2 && (
+                  <div className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto rounded-xl border border-border bg-card shadow-lg">
+                    {searchOpme(orcamentoOpmeQuery, 12).map((o) => (
+                      <button
+                        key={o.codigo}
+                        type="button"
+                        onClick={() => {
+                          if (!orcamentoOpmeList.some((x) => x.codigo === o.codigo)) {
+                            setOrcamentoOpmeList([...orcamentoOpmeList, o]);
+                          }
+                          setOrcamentoOpmeQuery("");
+                        }}
+                        className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-secondary/40 border-b border-border/40 last:border-0"
+                      >
+                        <span className="font-mono text-[10px] font-bold text-[#B87333] shrink-0">{o.codigo}</span>
+                        <span className="text-[11px] text-primary leading-tight">{o.termo}{o.fabricante ? ` — ${o.fabricante}` : ""}</span>
+                      </button>
+                    ))}
+                    {searchOpme(orcamentoOpmeQuery, 12).length === 0 && (
+                      <div className="px-3 py-2 text-[11px] text-muted-foreground">Nenhum OPME encontrado.</div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {orcamentoOpmeList.length > 0 && (
+                <div className="space-y-1">
+                  {orcamentoOpmeList.map((o) => (
+                    <div key={o.codigo} className="flex items-center gap-2 rounded-lg bg-card px-2.5 py-1.5 border border-border/60">
+                      <span className="font-mono text-[10px] font-bold text-[#B87333] shrink-0">{o.codigo}</span>
+                      <span className="flex-1 text-[11px] text-primary leading-tight">{o.termo}{o.fabricante ? ` — ${o.fabricante}` : ""}</span>
+                      <button type="button" onClick={() => setOrcamentoOpmeList(orcamentoOpmeList.filter((x) => x.codigo !== o.codigo))} className="text-muted-foreground hover:text-red-500">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* === SEÇÃO CONVÊNIO: Justificativa Clínica === */}
+            <div className="space-y-1.5">
+              <Label htmlFor="orcamento-justificativa" className="text-xs font-bold text-primary uppercase tracking-wider">Justificativa Clínica para o Convênio:</Label>
+              <Textarea
+                id="orcamento-justificativa"
+                value={orcamentoJustificativa}
+                onChange={(e) => setOrcamentoJustificativa(e.target.value)}
+                placeholder="Fundamentação clínica para autorização (indicação, falha de tratamento conservador, diretrizes/guidelines, CID, exames que sustentam a indicação)..."
+                className="min-h-[90px] rounded-xl text-xs bg-card leading-relaxed"
+              />
+            </div>
           </div>
 
           <DialogFooter className="border-t border-border/40 pt-4 gap-2">
@@ -5528,19 +5657,10 @@ Ficamos à disposição!`;
             </Button>
             <Button
               size="sm"
-              disabled={!orcamentoProcedimento || !orcamentoPaciente}
-              onClick={() => {
+              disabled={!orcamentoProcedimento || !orcamentoPaciente || orcamentoGerando}
+              onClick={async () => {
                 if (!orcamentoPaciente || !orcamentoProcedimento) return;
-
-                // Gerar o documento em PDF timbrado via iframe de impressão
-                const printFrame = document.createElement("iframe");
-                printFrame.style.position = "fixed";
-                printFrame.style.right = "0";
-                printFrame.style.bottom = "0";
-                printFrame.style.width = "0";
-                printFrame.style.height = "0";
-                printFrame.style.border = "0";
-                document.body.appendChild(printFrame);
+                setOrcamentoGerando(true);
 
                 const docToday = new Date().toLocaleDateString("pt-BR");
                 const validadeDate = new Date();
@@ -5557,8 +5677,80 @@ Ficamos à disposição!`;
                   return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
                 };
 
-                const useSignature = localStorage.getItem("protouro_use_signature") === "true";
-                const signatureUrl = localStorage.getItem("protoUro_signature_data") || "";
+                // Assinatura oficial processada (PNG transparente) + fallback localStorage
+                const ASSINATURA_OFICIAL = "/manus-storage/assinatura_felipe_1e22a021.png";
+                const useSignature = true;
+                const signatureUrl = localStorage.getItem("protoUro_signature_data") || ASSINATURA_OFICIAL;
+
+                // Gerar código de verificação autenticada do documento (server-side) + QR Code
+                let codigoVerificacao = "";
+                let qrDataUrl = "";
+                try {
+                  const verif = await criarVerificacao.mutateAsync({
+                    docType: "orcamento",
+                    patientName: orcamentoPaciente.nome,
+                    procedureName: orcamentoProcedimento,
+                    totalLabel: formatMoeda(vTotal),
+                    validUntil: validadeStr,
+                    icpSigned: false,
+                  });
+                  codigoVerificacao = verif.code;
+                  const verifUrl = `${window.location.origin}/verificar/${verif.code}`;
+                  qrDataUrl = await QRCode.toDataURL(verifUrl, { width: 220, margin: 1, color: { dark: "#1C3D5A", light: "#FFFFFF" } });
+                } catch (err) {
+                  console.error("Falha ao gerar código de verificação", err);
+                  toast.error("Não foi possível gerar o código de autenticação. O documento será gerado sem QR de verificação.");
+                }
+
+                // Blocos HTML dinâmicos para convênio
+                const tussHtml = orcamentoTussList.length > 0 ? `
+                  <div class="section-title">Códigos TUSS (Terminologia Unificada da Saúde Suplementar)</div>
+                  <table>
+                    <thead><tr><th style="width: 22%;">Código TUSS</th><th>Descrição do Procedimento</th></tr></thead>
+                    <tbody>
+                      ${orcamentoTussList.map((p) => `<tr><td style="font-weight:bold;color:#B87333;font-family:monospace;">${p.codigo}</td><td>${p.termo}</td></tr>`).join("")}
+                    </tbody>
+                  </table>
+                ` : "";
+
+                const opmeHtml = orcamentoOpmeList.length > 0 ? `
+                  <div class="section-title">OPME — Órteses, Próteses e Materiais Especiais</div>
+                  <table>
+                    <thead><tr><th style="width: 22%;">Código TUSS</th><th>Material / Dispositivo</th><th style="width: 25%;">Fabricante Ref.</th></tr></thead>
+                    <tbody>
+                      ${orcamentoOpmeList.map((o) => `<tr><td style="font-weight:bold;color:#B87333;font-family:monospace;">${o.codigo}</td><td>${o.termo}</td><td>${o.fabricante || "—"}</td></tr>`).join("")}
+                    </tbody>
+                  </table>
+                  <p style="font-size:8px;color:#94A3B8;margin-top:-12px;margin-bottom:18px;">Conforme Padrão TISS/TUSS vigente (ANS). Marcas de referência citadas para fins técnicos; aceita-se similar de qualidade equivalente conforme legislação de OPME (Lei 12.842/2013 e RN ANS).</p>
+                ` : "";
+
+                const justificativaHtml = orcamentoJustificativa.trim() ? `
+                  <div class="section-title">Justificativa Clínica para Autorização</div>
+                  <div style="font-size:9.5px;color:#334155;margin-bottom:20px;line-height:1.6;text-align:justify;border-left:3px solid #B87333;padding-left:12px;">
+                    ${orcamentoJustificativa.replace(/\n/g, "<br>")}
+                  </div>
+                ` : "";
+
+                const authHtml = codigoVerificacao ? `
+                  <div class="auth-box">
+                    ${qrDataUrl ? `<img src="${qrDataUrl}" class="auth-qr" alt="QR de verificação" />` : ""}
+                    <div class="auth-text">
+                      <strong>DOCUMENTO AUTENTICADO</strong>
+                      Código de verificação: <b>${codigoVerificacao}</b><br>
+                      Valide a autenticidade em: ${window.location.origin.replace(/^https?:\/\//, "")}/verificar/${codigoVerificacao}
+                    </div>
+                  </div>
+                ` : "";
+
+                // Gerar o documento em PDF timbrado via iframe de impressão
+                const printFrame = document.createElement("iframe");
+                printFrame.style.position = "fixed";
+                printFrame.style.right = "0";
+                printFrame.style.bottom = "0";
+                printFrame.style.width = "0";
+                printFrame.style.height = "0";
+                printFrame.style.border = "0";
+                document.body.appendChild(printFrame);
 
                 const htmlContent = `
                   <!DOCTYPE html>
@@ -5748,6 +5940,43 @@ Ficamos à disposição!`;
                         text-align: center;
                       }
                       
+                      .auth-box {
+                        display: flex;
+                        align-items: center;
+                        gap: 14px;
+                        margin-top: 30px;
+                        padding: 12px 16px;
+                        border: 1px solid rgba(184, 115, 51, 0.4);
+                        border-radius: 10px;
+                        background-color: #FBF7F2;
+                      }
+                      
+                      .auth-qr {
+                        width: 70px;
+                        height: 70px;
+                        flex-shrink: 0;
+                      }
+                      
+                      .auth-text {
+                        font-size: 8.5px;
+                        color: #475569;
+                        line-height: 1.6;
+                      }
+                      
+                      .auth-text strong {
+                        display: block;
+                        font-size: 10px;
+                        color: #1C3D5A;
+                        letter-spacing: 1px;
+                        margin-bottom: 3px;
+                      }
+                      
+                      .auth-text b {
+                        color: #B87333;
+                        font-family: monospace;
+                        font-size: 11px;
+                      }
+                      
                       .signature-line {
                         border-top: 1px solid #94A3B8;
                         margin-top: 40px;
@@ -5878,6 +6107,13 @@ Ficamos à disposição!`;
                       ${orcamentoTipo === "honorarios" ? `<p><strong>5. Observação de Custos Hospitalares:</strong> Custos de hospital e materiais não estão inclusos neste orçamento e são de inteira responsabilidade do paciente diretamente com a instituição de saúde escolhida.</p>` : ""}
                     </div>
                     
+                    ${tussHtml}
+                    ${opmeHtml}
+                    ${justificativaHtml}
+                    
+                    <!-- Autenticação do Documento -->
+                    ${authHtml}
+                    
                     <!-- Área de Assinaturas -->
                     <div class="signature-container">
                       <div class="signature-box">
@@ -5889,7 +6125,7 @@ Ficamos à disposição!`;
                         ${useSignature && signatureUrl ? `<img src="${signatureUrl}" style="height: 45px; margin-bottom: -15px;" />` : `<div style="height: 30px;"></div>`}
                         <div class="signature-line"></div>
                         <span style="font-weight: bold; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</span><br>
-                        <span style="font-size: 8px; color: #64748B;">Urologista • CRM-SP 241.135 | RQE 112.445</span>
+                        <span style="font-size: 8px; color: #64748B;">Urologista • CRM-SP 202291 | RQE 146538</span>
                       </div>
                     </div>
                     
@@ -5942,7 +6178,13 @@ Ficamos à disposição!`;
                   toast.success("Orçamento CPP gerado com sucesso para impressão e salvo no prontuário!");
                   setOrcamentoOpen(false);
                   setOrcamentoPaciente(null);
+                  setOrcamentoTussList([]);
+                  setOrcamentoOpmeList([]);
+                  setOrcamentoJustificativa("");
+                  setOrcamentoTussQuery("");
+                  setOrcamentoOpmeQuery("");
                 }
+                setOrcamentoGerando(false);
               }}
               className="h-9 rounded-xl text-xs font-bold copper-gradient text-white"
             >

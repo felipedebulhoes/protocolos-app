@@ -18,6 +18,7 @@ import PortalPaciente from "./pages/PortalPaciente";
 import PacienteLanding from "./pages/PacienteLanding";
 import JornadaPremium from "./pages/JornadaPremium";
 import GuiaGLP1 from "./pages/GuiaGLP1";
+import VerifyDocument from "./pages/VerifyDocument";
 import IntakeManager from "./pages/IntakeManager";
 import IntakeDetail from "./pages/IntakeDetail";
 import Configuracoes from "./pages/Configuracoes";
@@ -90,6 +91,10 @@ function Router() {
 
       {/* Patient-shareable diary (reads from local storage, no Manus login) */}
       <Route path="/diario-paciente/:id" component={DiarioPaciente} />
+
+      {/* Verificação pública de autenticidade de documentos (QR no orçamento) */}
+      <Route path="/verificar/:codigo" component={VerifyDocument} />
+      <Route path="/verificar" component={VerifyDocument} />
 
       {/* Physician-only routes (gated by DoctorGuard / ownerProcedure on backend) */}
       <Route path="/protocolo/:id">

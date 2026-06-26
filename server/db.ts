@@ -498,3 +498,43 @@ export async function getAdminAuditLogsByUserId(userId: number, limit = 50): Pro
     .orderBy(desc(adminAuditLogs.createdAt))
     .limit(limit);
 }
+
+// ---- Document verifications (autenticação de orçamentos via QR/código) ----
+import {
+  documentVerifications,
+  type NewDocumentVerification,
+  type DocumentVerification,
+} from "../drizzle/schema";
+
+export async function createDocumentVerification(
+  data: NewDocumentVerification,
+): Promise<DocumentVerification> {
+  await db.insert(documentVerifications).values(data);
+  const rows = await db
+    .select()
+    .from(documentVerifications)
+    .where(eq(documentVerifications.code, data.code))
+    .limit(1);
+  return rows[0];
+}
+
+export async function getDocumentVerificationByCode(
+  code: string,
+): Promise<DocumentVerification | null> {
+  const rows = await db
+    .select()
+    .from(documentVerifications)
+    .where(eq(documentVerifications.code, code))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function listDocumentVerifications(
+  limit = 100,
+): Promise<DocumentVerification[]> {
+  return db
+    .select()
+    .from(documentVerifications)
+    .orderBy(desc(documentVerifications.createdAt))
+    .limit(limit);
+}

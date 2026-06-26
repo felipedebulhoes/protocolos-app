@@ -1,0 +1,1126 @@
+[
+ {
+  "codigo": "10101012",
+  "termo": "Consulta em consultório (no horário normal ou preestabelecido)"
+ },
+ {
+  "codigo": "10101039",
+  "termo": "Consulta em pronto socorro"
+ },
+ {
+  "codigo": "10102019",
+  "termo": "Visita hospitalar (paciente internado)"
+ },
+ {
+  "codigo": "20101015",
+  "termo": "Acompanhamento clínico ambulatorial pós-transplante renal - por avaliação"
+ },
+ {
+  "codigo": "20101171",
+  "termo": "Rejeição de enxerto renal - tratamento ambulatorial - avaliação clínica diária"
+ },
+ {
+  "codigo": "20103190",
+  "termo": "Disfunção vésico-uretral"
+ },
+ {
+  "codigo": "20104049",
+  "termo": "Cateterismo vesical em retenção urinária"
+ },
+ {
+  "codigo": "20104057",
+  "termo": "Cauterização química vesical"
+ },
+ {
+  "codigo": "20104111",
+  "termo": "Dilatação uretral (sessão)"
+ },
+ {
+  "codigo": "20104154",
+  "termo": "Instilação vesical ou uretral"
+ },
+ {
+  "codigo": "20105037",
+  "termo": "Fornecimento de equipamentos coletores e adjuvantes para colostomia, ileostomia e urostomia, sonda vesical de demora e coletor de urina"
+ },
+ {
+  "codigo": "20201010",
+  "termo": "Acompanhamento clínico de transplante renal no período de internação do receptor e do doador (pós-operatório até 15 dias)"
+ },
+ {
+  "codigo": "20201060",
+  "termo": "Rejeição de enxerto renal - tratamento internado - avaliação clínica diária - por visita"
+ },
+ {
+  "codigo": "20201133",
+  "termo": "Acompanhamento médico na litotripsia extracorpórea"
+ },
+ {
+  "codigo": "30731011",
+  "termo": "Abertura de bainha tendinosa - tratamento cirúrgico"
+ },
+ {
+  "codigo": "30805139",
+  "termo": "Pericardiotomia com abertura pleuro-pericárdica (qualquer técnica)"
+ },
+ {
+  "codigo": "30805252",
+  "termo": "Pericardiotomia com abertura pleuro-pericárdica por vídeo"
+ },
+ {
+  "codigo": "30906016",
+  "termo": "Aneurisma de aorta abdominal infra-renal"
+ },
+ {
+  "codigo": "30906024",
+  "termo": "Aneurisma de aorta abdominal supra-renal"
+ },
+ {
+  "codigo": "30906156",
+  "termo": "Artéria renal bilateral revascularização"
+ },
+ {
+  "codigo": "30910013",
+  "termo": "Aneurisma roto ou trombosado de aorta abdominal abaixo da artéria renal"
+ },
+ {
+  "codigo": "30910030",
+  "termo": "Aneurismas rotos ou trombosados de aorta abdominal acima da artéria renal"
+ },
+ {
+  "codigo": "31004075",
+  "termo": "Esfincteroplastia anal (qualquer técnica)"
+ },
+ {
+  "codigo": "31004105",
+  "termo": "Fissurectomia com ou sem esfincterotomia"
+ },
+ {
+  "codigo": "31004202",
+  "termo": "Hemorroidectomia aberta ou fechada, com ou sem esfincterotomia, sem grampeador"
+ },
+ {
+  "codigo": "31004270",
+  "termo": "Reconstituição de esfincter anal por plástica muscular (qualquer técnica)"
+ },
+ {
+  "codigo": "31004334",
+  "termo": "Esfincterotomia  - ânus"
+ },
+ {
+  "codigo": "31101011",
+  "termo": "Abscesso renal ou peri-renal - drenagem cirúrgica"
+ },
+ {
+  "codigo": "31101020",
+  "termo": "Abscesso renal ou peri-renal - drenagem percutânea"
+ },
+ {
+  "codigo": "31101038",
+  "termo": "Adrenalectomia unilateral"
+ },
+ {
+  "codigo": "31101046",
+  "termo": "Angioplastia renal unilateral a céu aberto"
+ },
+ {
+  "codigo": "31101054",
+  "termo": "Angioplastia renal unilateral transluminal"
+ },
+ {
+  "codigo": "31101062",
+  "termo": "Autotransplante renal unilateral"
+ },
+ {
+  "codigo": "31101070",
+  "termo": "Biópsia renal cirúrgica unilateral"
+ },
+ {
+  "codigo": "31101089",
+  "termo": "Cisto renal - escleroterapia percutânea - por cisto"
+ },
+ {
+  "codigo": "31101100",
+  "termo": "Estenose de junção pieloureteral - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31101151",
+  "termo": "Nefrectomia parcial com ureterectomia"
+ },
+ {
+  "codigo": "31101160",
+  "termo": "Nefrectomia parcial unilateral"
+ },
+ {
+  "codigo": "31101178",
+  "termo": "Nefrectomia parcial unilateral extracorpórea"
+ },
+ {
+  "codigo": "31101186",
+  "termo": "Nefrectomia radical unilateral"
+ },
+ {
+  "codigo": "31101194",
+  "termo": "Nefrectomia total unilateral"
+ },
+ {
+  "codigo": "31101216",
+  "termo": "Nefrolitotomia anatrófica unilateral"
+ },
+ {
+  "codigo": "31101224",
+  "termo": "Nefrolitotomia percutânea unilateral"
+ },
+ {
+  "codigo": "31101232",
+  "termo": "Nefrolitotomia simples unilateral"
+ },
+ {
+  "codigo": "31101240",
+  "termo": "Nefrolitotripsia extracorpórea - 1ª sessão"
+ },
+ {
+  "codigo": "31101259",
+  "termo": "Nefrolitotripsia extracorpórea - reaplicações (até 3 meses)"
+ },
+ {
+  "codigo": "31101321",
+  "termo": "Nefroureterectomia com ressecção vesical unilateral"
+ },
+ {
+  "codigo": "31101330",
+  "termo": "Pielolitotomia com nefrolitotomia anatrófica unilateral"
+ },
+ {
+  "codigo": "31101348",
+  "termo": "Pielolitotomia com nefrolitotomia simples unilateral"
+ },
+ {
+  "codigo": "31101364",
+  "termo": "Pieloplastia"
+ },
+ {
+  "codigo": "31101399",
+  "termo": "Punção aspirativa renal para diagnóstico de rejeição (ato médico)"
+ },
+ {
+  "codigo": "31101402",
+  "termo": "Punção biópsia renal percutânea"
+ },
+ {
+  "codigo": "31101410",
+  "termo": "Revascularização renal - qualquer técnica"
+ },
+ {
+  "codigo": "31101429",
+  "termo": "Sinfisiotomia (rim em ferradura)"
+ },
+ {
+  "codigo": "31101437",
+  "termo": "Transuretero anastomose"
+ },
+ {
+  "codigo": "31101453",
+  "termo": "Tumor renal - enucleação unilateral"
+ },
+ {
+  "codigo": "31101488",
+  "termo": "Adrenalectomia laparoscópica unilateral"
+ },
+ {
+  "codigo": "31101496",
+  "termo": "Marsupialização laparoscópica de cisto renal unilateral"
+ },
+ {
+  "codigo": "31101500",
+  "termo": "Biópsia renal laparoscópica unilateral"
+ },
+ {
+  "codigo": "31101526",
+  "termo": "Pieloplastia laparoscópica unilateral"
+ },
+ {
+  "codigo": "31101542",
+  "termo": "Nefroureterectomia com ressecção vesical laparoscópica unilateral"
+ },
+ {
+  "codigo": "31101550",
+  "termo": "Nefrectomia radical laparoscópica unilateral"
+ },
+ {
+  "codigo": "31101569",
+  "termo": "Nefrectomia parcial laparoscópica unilateral"
+ },
+ {
+  "codigo": "31101577",
+  "termo": "Nefrolitotripsia percutânea unilateral a laser"
+ },
+ {
+  "codigo": "31101585",
+  "termo": "Nefrectomia total unilateral por videolaparoscopia"
+ },
+ {
+  "codigo": "31101593",
+  "termo": "Cisto de supra-renal - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31102018",
+  "termo": "Biópsia cirúrgica de ureter unilateral"
+ },
+ {
+  "codigo": "31102026",
+  "termo": "Biópsia endoscópica de ureter unilateral"
+ },
+ {
+  "codigo": "31102034",
+  "termo": "Cateterismo ureteral unilateral"
+ },
+ {
+  "codigo": "31102077",
+  "termo": "Colocação ureteroscópica de duplo J unilateral"
+ },
+ {
+  "codigo": "31102093",
+  "termo": "Duplicação pieloureteral - tratamento cirúrgico - unilateral"
+ },
+ {
+  "codigo": "31102107",
+  "termo": "Fístula uretero-cutânea unilateral (tratamento cirúrgico)"
+ },
+ {
+  "codigo": "31102115",
+  "termo": "Fístula uretero-intestinal unilateral (tratamento cirúrgico)"
+ },
+ {
+  "codigo": "31102123",
+  "termo": "Fístula uretero-vaginal unilateral (tratamento cirúrgico)"
+ },
+ {
+  "codigo": "31102174",
+  "termo": "Reimplante ureterointestinal uni ou bilateral"
+ },
+ {
+  "codigo": "31102182",
+  "termo": "Reimplante ureteral por via extra ou intravesical unilateral"
+ },
+ {
+  "codigo": "31102204",
+  "termo": "Reimplante uretero-vesical unilateral - via combinada"
+ },
+ {
+  "codigo": "31102220",
+  "termo": "Retirada endoscópica de cálculo de ureter unilateral"
+ },
+ {
+  "codigo": "31102239",
+  "termo": "Transureterostomia"
+ },
+ {
+  "codigo": "31102247",
+  "termo": "Ureterectomia unilateral"
+ },
+ {
+  "codigo": "31102255",
+  "termo": "Ureterocele unilateral - ressecção a céu aberto"
+ },
+ {
+  "codigo": "31102271",
+  "termo": "Ureteroileocistostomia unilateral"
+ },
+ {
+  "codigo": "31102280",
+  "termo": "Ureteroileostomia cutânea unilateral"
+ },
+ {
+  "codigo": "31102298",
+  "termo": "Ureterólise unilateral"
+ },
+ {
+  "codigo": "31102301",
+  "termo": "Ureterolitotomia unilateral"
+ },
+ {
+  "codigo": "31102310",
+  "termo": "Ureterolitotripsia extracorpórea - 1ª sessão"
+ },
+ {
+  "codigo": "31102328",
+  "termo": "Ureterolitotripsia extracorpórea - reaplicações (até 3 meses)"
+ },
+ {
+  "codigo": "31102344",
+  "termo": "Ureteroplastia unilateral"
+ },
+ {
+  "codigo": "31102352",
+  "termo": "Ureterorrenolitotomia unilateral"
+ },
+ {
+  "codigo": "31102360",
+  "termo": "Ureterorrenolitotripsia flexível a laser unilateral"
+ },
+ {
+  "codigo": "31102379",
+  "termo": "Ureterorrenolitotripsia rígida unilateral"
+ },
+ {
+  "codigo": "31102409",
+  "termo": "Ureterossigmoidoplastia unilateral"
+ },
+ {
+  "codigo": "31102417",
+  "termo": "Ureterossigmoidostomia unilateral"
+ },
+ {
+  "codigo": "31102425",
+  "termo": "Ureterostomia cutânea unilateral"
+ },
+ {
+  "codigo": "31102433",
+  "termo": "Ureterotomia interna percutânea unilateral"
+ },
+ {
+  "codigo": "31102441",
+  "termo": "Ureterotomia interna ureteroscópica flexível unilateral"
+ },
+ {
+  "codigo": "31102450",
+  "termo": "Ureterotomia interna ureteroscópica rígida unilateral"
+ },
+ {
+  "codigo": "31102468",
+  "termo": "Ureteroureterocistoneostomia"
+ },
+ {
+  "codigo": "31102476",
+  "termo": "Ureteroureterostomia unilateral"
+ },
+ {
+  "codigo": "31102492",
+  "termo": "Ureterolitotomia laparoscópica unilateral"
+ },
+ {
+  "codigo": "31102506",
+  "termo": "Ureterólise laparoscópica unilateral"
+ },
+ {
+  "codigo": "31102514",
+  "termo": "Ureteroureterostomia laparoscópica unilateral"
+ },
+ {
+  "codigo": "31102522",
+  "termo": "Ureteroplastia laparoscópica unilateral"
+ },
+ {
+  "codigo": "31102530",
+  "termo": "Correção laparoscópica de refluxo vesico-ureteral unilateral"
+ },
+ {
+  "codigo": "31102549",
+  "termo": "Reimplante uretero-vesical laparoscópico unilateral"
+ },
+ {
+  "codigo": "31102557",
+  "termo": "Reimplante ureterointestinal laparoscópico unilateral"
+ },
+ {
+  "codigo": "31102565",
+  "termo": "Ureterorrenolitotripsia rígida unilateral a laser"
+ },
+ {
+  "codigo": "31102573",
+  "termo": "Ureteroenterostomia cutânea - unilateral"
+ },
+ {
+  "codigo": "31102581",
+  "termo": "Ureterolitotripsia transureteroscópica"
+ },
+ {
+  "codigo": "31102590",
+  "termo": "Refluxo vésico-ureteral - tratamento endoscópico - unilateral"
+ },
+ {
+  "codigo": "31103014",
+  "termo": "Ampliação vesical"
+ },
+ {
+  "codigo": "31103022",
+  "termo": "Bexiga psóica - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31103030",
+  "termo": "Biópsia endoscópica de bexiga (inclui cistoscopia)"
+ },
+ {
+  "codigo": "31103049",
+  "termo": "Biópsia vesical a céu aberto"
+ },
+ {
+  "codigo": "31103057",
+  "termo": "Cálculo vesical - extração endoscópica"
+ },
+ {
+  "codigo": "31103103",
+  "termo": "Cistolitotripsia extracorpórea - 1ª sessão"
+ },
+ {
+  "codigo": "31103111",
+  "termo": "Cistolitotripsia extracorpórea - reaplicações (até 3 meses)"
+ },
+ {
+  "codigo": "31103138",
+  "termo": "Cistolitotripsia percutânea (U.S., E.H., E.C.)"
+ },
+ {
+  "codigo": "31103146",
+  "termo": "Cistolitotripsia transuretral (U.S., E.H., E.C.)"
+ },
+ {
+  "codigo": "31103219",
+  "termo": "Colo vesical - ressecção endoscópica"
+ },
+ {
+  "codigo": "31103243",
+  "termo": "Diverticulectomia vesical"
+ },
+ {
+  "codigo": "31103251",
+  "termo": "Enterocistoplastia (ampliação vesical)"
+ },
+ {
+  "codigo": "31103278",
+  "termo": "Extrofia vesical - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31103332",
+  "termo": "Incontinência urinária - \"sling\" vaginal ou abdominal"
+ },
+ {
+  "codigo": "31103340",
+  "termo": "Incontinência urinária - suspensão endoscópica de colo"
+ },
+ {
+  "codigo": "31103359",
+  "termo": "Incontinência urinária - tratamento cirúrgico supra-púbico"
+ },
+ {
+  "codigo": "31103367",
+  "termo": "Incontinência urinária - tratamento endoscópico (injeção)"
+ },
+ {
+  "codigo": "31103375",
+  "termo": "Incontinência urinária com colpoplastia anterior - tratamento cirúrgico (com ou sem uso de prótese)"
+ },
+ {
+  "codigo": "31103405",
+  "termo": "Punção e aspiração vesical"
+ },
+ {
+  "codigo": "31103413",
+  "termo": "Reimplante uretero-vesical à Boari"
+ },
+ {
+  "codigo": "31103430",
+  "termo": "Retenção por coágulo - aspiração vesical"
+ },
+ {
+  "codigo": "31103448",
+  "termo": "Tumor vesical - fotocoagulação a laser"
+ },
+ {
+  "codigo": "31103456",
+  "termo": "Tumor vesical - ressecção endoscópica"
+ },
+ {
+  "codigo": "31103480",
+  "termo": "Neobexiga cutânea continente"
+ },
+ {
+  "codigo": "31103499",
+  "termo": "Neobexiga retal continente"
+ },
+ {
+  "codigo": "31103502",
+  "termo": "Neobexiga uretral continente"
+ },
+ {
+  "codigo": "31103510",
+  "termo": "Correção laparoscópica de incontinência urinária"
+ },
+ {
+  "codigo": "31103545",
+  "termo": "Neobexiga laparoscópica"
+ },
+ {
+  "codigo": "31103553",
+  "termo": "Diverticulectomia vesical laparoscópica"
+ },
+ {
+  "codigo": "31103561",
+  "termo": "Cistolitotripsia a laser"
+ },
+ {
+  "codigo": "31103570",
+  "termo": "Colo vesical - ressecção cirúrgica"
+ },
+ {
+  "codigo": "31103588",
+  "termo": "Tumor vesical, ressecção a céu aberto"
+ },
+ {
+  "codigo": "31103596",
+  "termo": "Tratamento da hiperatividade vesical: injeção intravesical de toxina botulínica"
+ },
+ {
+  "codigo": "31104010",
+  "termo": "Abscesso periuretral - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31104029",
+  "termo": "Biópsia endoscópica de uretra"
+ },
+ {
+  "codigo": "31104053",
+  "termo": "Divertículo uretral - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31104070",
+  "termo": "Esfincterotomia - uretra"
+ },
+ {
+  "codigo": "31104088",
+  "termo": "Fístula uretro-cutânea - correção cirúrgica"
+ },
+ {
+  "codigo": "31104096",
+  "termo": "Fístula uretro-retal - correção cirúrgica"
+ },
+ {
+  "codigo": "31104100",
+  "termo": "Fístula uretro-vaginal - correção cirúrgica"
+ },
+ {
+  "codigo": "31104118",
+  "termo": "Incontinência urinária masculina - tratamento cirúrgico (exclui implante de esfincter artificial)"
+ },
+ {
+  "codigo": "31104126",
+  "termo": "Injeções periuretrais (incluindo uretrocistocopia) por tratamento"
+ },
+ {
+  "codigo": "31104142",
+  "termo": "Meatotomia uretral"
+ },
+ {
+  "codigo": "31104150",
+  "termo": "Neouretra proximal (cistouretroplastia)"
+ },
+ {
+  "codigo": "31104177",
+  "termo": "Ressecção de válvula uretral posterior"
+ },
+ {
+  "codigo": "31104185",
+  "termo": "Tumor uretral - excisão"
+ },
+ {
+  "codigo": "31104193",
+  "termo": "Uretroplastia anterior"
+ },
+ {
+  "codigo": "31104207",
+  "termo": "Uretroplastia posterior"
+ },
+ {
+  "codigo": "31104215",
+  "termo": "Uretrostomia"
+ },
+ {
+  "codigo": "31104223",
+  "termo": "Uretrotomia interna"
+ },
+ {
+  "codigo": "31104231",
+  "termo": "Uretrotomia interna com prótese endouretral"
+ },
+ {
+  "codigo": "31104240",
+  "termo": "Uretrectomia total"
+ },
+ {
+  "codigo": "31104258",
+  "termo": "Ressecção de corda da uretra"
+ },
+ {
+  "codigo": "31104266",
+  "termo": "Uretrotomia externa para retirada de cálculo ou corpo estranho"
+ },
+ {
+  "codigo": "31104274",
+  "termo": "Incontinência urinária masculina - \"sling\""
+ },
+ {
+  "codigo": "31104282",
+  "termo": "Incontinência urinária masculina - esfincter artificial"
+ },
+ {
+  "codigo": "31104290",
+  "termo": "Retirada e/ou substituição de implante no tratamento da incontinência urinária masculina - esfincter artificial"
+ },
+ {
+  "codigo": "31201113",
+  "termo": "Prostatavesiculectomia radical"
+ },
+ {
+  "codigo": "31201121",
+  "termo": "Prostatectomia a céu aberto"
+ },
+ {
+  "codigo": "31201148",
+  "termo": "Prostatavesiculectomia radical laparoscópica"
+ },
+ {
+  "codigo": "31202012",
+  "termo": "Biópsia escrotal"
+ },
+ {
+  "codigo": "31202020",
+  "termo": "Drenagem de abscesso - escroto"
+ },
+ {
+  "codigo": "31202039",
+  "termo": "Elefantíase peno-escrotal - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31202047",
+  "termo": "Exérese de cisto escrotal"
+ },
+ {
+  "codigo": "31202055",
+  "termo": "Plástica escrotal"
+ },
+ {
+  "codigo": "31202063",
+  "termo": "Reconstrução da bolsa escrotal com retalho inguinal pediculado - por estágio"
+ },
+ {
+  "codigo": "31202071",
+  "termo": "Ressecção parcial da bolsa escrotal"
+ },
+ {
+  "codigo": "31203019",
+  "termo": "Autotransplante de um testículo"
+ },
+ {
+  "codigo": "31203027",
+  "termo": "Biópsia unilateral de testículo"
+ },
+ {
+  "codigo": "31203035",
+  "termo": "Escroto agudo - exploração cirúrgica"
+ },
+ {
+  "codigo": "31203043",
+  "termo": "Hidrocele unilateral - correção cirúrgica"
+ },
+ {
+  "codigo": "31203051",
+  "termo": "Implante de prótese testicular unilateral"
+ },
+ {
+  "codigo": "31203060",
+  "termo": "Orquidopexia unilateral"
+ },
+ {
+  "codigo": "31203078",
+  "termo": "Orquiectomia unilateral"
+ },
+ {
+  "codigo": "31203108",
+  "termo": "Torção de testículo - cura cirúrgica"
+ },
+ {
+  "codigo": "31203116",
+  "termo": "Tumor de testículo - ressecção"
+ },
+ {
+  "codigo": "31203124",
+  "termo": "Varicocele unilateral - correção cirúrgica"
+ },
+ {
+  "codigo": "31203132",
+  "termo": "Orquidopexia laparoscópica unilateral"
+ },
+ {
+  "codigo": "31203140",
+  "termo": "Orquiectomia intra-abdominal laparoscópica unilateral"
+ },
+ {
+  "codigo": "31203159",
+  "termo": "Correção laparoscópica de varicocele unilateral"
+ },
+ {
+  "codigo": "31204031",
+  "termo": "Epididimectomia unilateral"
+ },
+ {
+  "codigo": "31204040",
+  "termo": "Epididimovasoplastia unilateral"
+ },
+ {
+  "codigo": "31204058",
+  "termo": "Epididimovasoplastia unilateral microcirúrgica"
+ },
+ {
+  "codigo": "31205020",
+  "termo": "Exploração cirúrgica do deferente unilateral"
+ },
+ {
+  "codigo": "31205038",
+  "termo": "Recanalização dos ductus deferentes (microcirurgia)"
+ },
+ {
+  "codigo": "31205046",
+  "termo": "Vasectomia unilateral"
+ },
+ {
+  "codigo": "31206034",
+  "termo": "Biópsia peniana"
+ },
+ {
+  "codigo": "31206042",
+  "termo": "Doença de Peyronie - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31206093",
+  "termo": "Fratura de pênis - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31206166",
+  "termo": "Neofaloplastia com retalho inguinal pediculado com reconstrução uretral - por estágio"
+ },
+ {
+  "codigo": "31206174",
+  "termo": "Parafimose - redução manual ou cirúrgica"
+ },
+ {
+  "codigo": "31206182",
+  "termo": "Pênis curvo congênito - tratamento cirúrgico"
+ },
+ {
+  "codigo": "31206220",
+  "termo": "Postectomia"
+ },
+ {
+  "codigo": "31206247",
+  "termo": "Reconstrução de pênis com enxerto - plástica total"
+ },
+ {
+  "codigo": "31206255",
+  "termo": "Reimplante do pênis"
+ },
+ {
+  "codigo": "31206263",
+  "termo": "Revascularização peniana"
+ },
+ {
+  "codigo": "31306039",
+  "termo": "Correção de rotura perineal de III  grau  (com lesão  do  esfincter)  e  reconstituição  por  plástica - qualquer técnica"
+ },
+ {
+  "codigo": "31506038",
+  "termo": "Nefrectomia em doador vivo - para transplante"
+ },
+ {
+  "codigo": "31506046",
+  "termo": "Nefrectomia laparoscópica em doador vivo - para transplante"
+ },
+ {
+  "codigo": "40102076",
+  "termo": "Manometria esofágica para localização dos esfíncteres pré-pH-metria"
+ },
+ {
+  "codigo": "40201066",
+  "termo": "Cistoscopia e/ou uretroscopia"
+ },
+ {
+  "codigo": "40201198",
+  "termo": "Vídeo-endoscopia do esfíncter velo-palatino com ótica flexível"
+ },
+ {
+  "codigo": "40201201",
+  "termo": "Vídeo-endoscopia do esfíncter velo-palatino com ótica rígida"
+ },
+ {
+  "codigo": "40201279",
+  "termo": "Ureteroscopia flexível unilateral"
+ },
+ {
+  "codigo": "40201287",
+  "termo": "Ureteroscopia rígida unilateral"
+ },
+ {
+  "codigo": "40202640",
+  "termo": "Uretrotomia endoscópica"
+ },
+ {
+  "codigo": "40306283",
+  "termo": "Anticortex supra-renal - pesquisa e/ou dosagem"
+ },
+ {
+  "codigo": "40306771",
+  "termo": "Cross match (prova cruzada de histocompatibilidade para transplante renal)"
+ },
+ {
+  "codigo": "40307948",
+  "termo": "Antifígado (glomérulo, tub. Renal corte rim de rato), IFI - pesquisa e/ou dosagem"
+ },
+ {
+  "codigo": "40308650",
+  "termo": "Anticorpos anti fator intrinseco"
+ },
+ {
+  "codigo": "40309312",
+  "termo": "Espermograma (caracteres físicos, pH, fludificação, motilidade, vitalidade, contagem e morfologia)"
+ },
+ {
+  "codigo": "40309320",
+  "termo": "Espermograma e teste de penetração \"in vitro\", velocidade penetração vertical, colocação  vital, teste de revitalização"
+ },
+ {
+  "codigo": "40310272",
+  "termo": "Hemophilus (bordetella) pertussis - pesquisa"
+ },
+ {
+  "codigo": "40312062",
+  "termo": "Perfil  metabólico  para  litíase  renal: sangue (Ca, P, AU, Cr) urina: (Ca, AU, P, citr, pesq. Cistina) AMP-cíclico"
+ },
+ {
+  "codigo": "40314499",
+  "termo": "Teste de biologia molecular para hiperplasia adrenal congênita"
+ },
+ {
+  "codigo": "40323366",
+  "termo": "Fenotipagem virtual para HIV"
+ },
+ {
+  "codigo": "40324010",
+  "termo": "Bordetella pertussis (Coqueluche) anticorpos IgG"
+ },
+ {
+  "codigo": "40704017",
+  "termo": "Cintilografia renal dinâmica"
+ },
+ {
+  "codigo": "40704025",
+  "termo": "Cintilografia renal dinâmica com diurético"
+ },
+ {
+  "codigo": "40704033",
+  "termo": "Cintilografia renal estática (quantitativa ou qualitativa)"
+ },
+ {
+  "codigo": "40704041",
+  "termo": "Cintilografia testicular (escrotal)"
+ },
+ {
+  "codigo": "40704084",
+  "termo": "Determinação do fluxo plasmático renal"
+ },
+ {
+  "codigo": "40807010",
+  "termo": "RX - Urografia venosa com bexiga pré e pós-miccional"
+ },
+ {
+  "codigo": "40807053",
+  "termo": "RX - Uretrocistografia de adulto"
+ },
+ {
+  "codigo": "40807061",
+  "termo": "RX - Uretrocistografia de criança (até 12 anos)"
+ },
+ {
+  "codigo": "40807070",
+  "termo": "RX - Tomografia renal sem contraste"
+ },
+ {
+  "codigo": "40807088",
+  "termo": "RX - Pênis"
+ },
+ {
+  "codigo": "40807096",
+  "termo": "RX - Uretrocistografia retrógada"
+ },
+ {
+  "codigo": "40813126",
+  "termo": "Angioplastia renal para tratamento de hipertensão renovascular ou outra condição"
+ },
+ {
+  "codigo": "40813134",
+  "termo": "Angioplastia arterial ou venosa de anastomose vascular de rim transplantado"
+ },
+ {
+  "codigo": "40813339",
+  "termo": "Colocação de stent renal"
+ },
+ {
+  "codigo": "40813347",
+  "termo": "Colocação percutânea de cateter pielovesical"
+ },
+ {
+  "codigo": "40813495",
+  "termo": "Drenagem percutânea de cisto renal"
+ },
+ {
+  "codigo": "40813509",
+  "termo": "Drenagem percutânea de abscesso renal"
+ },
+ {
+  "codigo": "40813690",
+  "termo": "Embolização seletiva de fístula ou aneurisma renal para tratamento de hematúria"
+ },
+ {
+  "codigo": "40813703",
+  "termo": "Embolização de artéria renal para nefrectomia"
+ },
+ {
+  "codigo": "40813754",
+  "termo": "Embolização de veia espermática para tratamento de varicocele"
+ },
+ {
+  "codigo": "40814114",
+  "termo": "Litotripsia mecânica de cálculos renais orientada por RX ou US"
+ },
+ {
+  "codigo": "40901122",
+  "termo": "US - Abdome total (abdome superior, rins, bexiga, aorta, veia cava inferior e adrenais)"
+ },
+ {
+  "codigo": "40901173",
+  "termo": "US - Abdome inferior masculino (bexiga, próstata e vesículas seminais)"
+ },
+ {
+  "codigo": "40901181",
+  "termo": "US - Abdome inferior feminino (bexiga, útero, ovário e anexos)"
+ },
+ {
+  "codigo": "40901203",
+  "termo": "US - Órgãos superficiais (tireóide ou escroto ou pênis ou crânio)"
+ },
+ {
+  "codigo": "40901440",
+  "termo": "Doppler colorido peniano com fármaco-indução"
+ },
+ {
+  "codigo": "40901513",
+  "termo": "Doppler colorido de artérias penianas (sem fármaco indução)"
+ },
+ {
+  "codigo": "40901769",
+  "termo": "US - Aparelho urinário (rins, ureteres e bexiga)"
+ },
+ {
+  "codigo": "41001214",
+  "termo": "Endoscopia virtual de qualquer órgão ou estrutura por TC - acrescentar ao exame de base"
+ },
+ {
+  "codigo": "41001265",
+  "termo": "TC - Colonoscopia virtual"
+ },
+ {
+  "codigo": "41101170",
+  "termo": "RM - Abdome superior (fígado, pâncreas, baço, rins, supra-renais, retroperitônio)"
+ },
+ {
+  "codigo": "41101200",
+  "termo": "RM - Pênis"
+ },
+ {
+  "codigo": "41101219",
+  "termo": "RM - Bolsa escrotal"
+ },
+ {
+  "codigo": "41101375",
+  "termo": "Endoscopia virtual por RM - acrescentar ao exame de base"
+ },
+ {
+  "codigo": "41301285",
+  "termo": "Peniscopia (inclui bolsa escrotal)"
+ },
+ {
+  "codigo": "41501136",
+  "termo": "Termometria cutânea (por lateralidade: pescoço, membros, bolsa escrotal, por território peniano)"
+ },
+ {
+  "codigo": "41501241",
+  "termo": "Perfil de pressão uretral"
+ },
+ {
+  "codigo": "41501268",
+  "termo": "Pressão arterial peniana"
+ },
+ {
+  "codigo": "82000883",
+  "termo": "Frenulectomia labial"
+ },
+ {
+  "codigo": "82000891",
+  "termo": "Frenulectomia lingual"
+ },
+ {
+  "codigo": "82000905",
+  "termo": "Frenulotomia labial"
+ },
+ {
+  "codigo": "82000913",
+  "termo": "Frenulotomia lingual"
+ },
+ {
+  "codigo": "82001138",
+  "termo": "Reabertura - colocação de cicatrizador"
+ },
+ {
+  "codigo": "31101275",
+  "termo": "Nefrolitotripsia percutânea (pneumática ou pneumático-balística – MEC; eletrohidráulica -  E.H.; OU ultrassom - U.S.)"
+ },
+ {
+  "codigo": "31506011",
+  "termo": "Transplante renal (receptor e doador vivo ou doador falecido)"
+ },
+ {
+  "codigo": "31206131",
+  "termo": "Implante de prótese peniana inflável"
+ },
+ {
+  "codigo": "31104304",
+  "termo": "Retirada de implante no tratamento da incontinência urinária masculina - esfincter artificial"
+ },
+ {
+  "codigo": "40814181",
+  "termo": "Ablação percutânea de tumor renal (qualquer método)"
+ },
+ {
+  "codigo": "31101607",
+  "termo": "Pieloplastia na criança"
+ },
+ {
+  "codigo": "31101615",
+  "termo": "Pieloplastia laparoscópica unilateral na criança"
+ },
+ {
+  "codigo": "31203167",
+  "termo": "Tumor testicular na criança"
+ },
+ {
+  "codigo": "31307299",
+  "termo": "Endometriose  profunda - tratamento cirúrgico (não inclui ureterólise e abordagem de outros órgãos pélvicos)"
+ },
+ {
+  "codigo": "31102263",
+  "termo": "Ureterocele - tratamento endoscópico - unilateral"
+ },
+ {
+  "codigo": "31201180",
+  "termo": "Prostatavesiculectomia radical robótica"
+ }
+]

@@ -695,7 +695,7 @@ export default function Budgets() {
             ${useSignature && signatureUrl ? `<img src="${signatureUrl}" style="height: 45px; margin-bottom: -15px;" />` : `<div style="height: 30px;"></div>`}
             <div class="signature-line"></div>
             <span style="font-weight: bold; color: #1C3D5A;">Dr. Felipe de Bulhões Ojeda</span><br>
-            <span style="font-size: 8px; color: #64748B;">Urologista • CRM-SP 241.135 | RQE 112.445</span>
+            <span style="font-size: 8px; color: #64748B;">Urologista • CRM-SP 202291 | RQE 146538</span>
           </div>
         </div>
         

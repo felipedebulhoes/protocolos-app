@@ -278,3 +278,37 @@ export const adminAuditLogs = mysqlTable(
 
 export type AdminAuditLog = typeof adminAuditLogs.$inferSelect;
 export type NewAdminAuditLog = typeof adminAuditLogs.$inferInsert;
+
+// ---------------------------------------------------------------------------
+// Document verifications (autenticação de orçamentos/documentos via QR/código)
+// Permite uma página pública /verificar/:codigo que confirma a autenticidade
+// de um documento emitido (orçamento cirúrgico), sem expor dados sensíveis.
+// ---------------------------------------------------------------------------
+export const documentVerifications = mysqlTable(
+  "document_verifications",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    // Código curto legível impresso no documento (ex: "ORC-7K3F9A")
+    code: varchar("code", { length: 32 }).notNull().unique(),
+    // Hash SHA-256 do conteúdo essencial do documento (integridade)
+    contentHash: varchar("content_hash", { length: 128 }).notNull().default(""),
+    docType: mysqlEnum("doc_type", ["orcamento", "outro"]).notNull().default("orcamento"),
+    // Dados mínimos para exibir na verificação (sem expor prontuário)
+    patientName: varchar("patient_name", { length: 255 }).notNull().default(""),
+    procedureName: varchar("procedure_name", { length: 500 }).notNull().default(""),
+    totalLabel: varchar("total_label", { length: 60 }).notNull().default(""),
+    issuedByName: varchar("issued_by_name", { length: 255 }).notNull().default("Dr. Felipe de Bulhões Ojeda"),
+    issuedByCrm: varchar("issued_by_crm", { length: 80 }).notNull().default("CRM-SP 202291 | RQE 146538"),
+    // Assinatura ICP-Brasil aplicada? (preenchido quando o PDF é assinado no servidor)
+    icpSigned: tinyint("icp_signed").notNull().default(0),
+    validUntil: varchar("valid_until", { length: 20 }),
+    createdByOpenId: varchar("created_by_open_id", { length: 128 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({
+    codeIdx: index("docverif_code_idx").on(t.code),
+  }),
+);
+
+export type DocumentVerification = typeof documentVerifications.$inferSelect;
+export type NewDocumentVerification = typeof documentVerifications.$inferInsert;

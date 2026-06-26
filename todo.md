@@ -232,12 +232,13 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 
 ## Orçamentos PRO (TUSS/OPME/Justificativa/Assinatura) — 2026-06-26
 - [x] Finalizar pendências (rotas protegidas + Guia GLP-1) e salvar checkpoint
-- [ ] Extrair e indexar pacote oficial TUSS/OPME (TISS 202605) em JSON pesquisável
-- [ ] Schema: orçamento com itens TUSS, lista OPME, justificativa, hash/QR de verificação
-- [ ] Backend: helpers + procedures (criar/editar orçamento, busca TUSS, verificação pública)
-- [ ] UI Orçamentos: adicionar código TUSS por item, seção OPME, campo justificativa clínica
-- [ ] PDF do orçamento: layout convênio + autenticação visual (assinatura, CRM/RQE, QR/hash)
-- [ ] Página pública de verificação do documento (/verificar/:hash)
-- [ ] Preparar assinatura ICP-Brasil A1 no servidor (certificado como secret, ativável)
-- [ ] Validar (tsc + vitest), salvar checkpoint
-- [ ] Pedir ao Felipe: PNG da assinatura + confirmação de troca do certificado
+- [x] Extrair e indexar pacote oficial TUSS/OPME (TISS 202605): 281 procedimentos + 180 OPME curados (~58 KB)
+- [x] Processar assinatura PNG transparente (assinatura_felipe_1e22a021.png) e subir como asset webdev
+- [x] Schema/backend: tabela document_verifications + helpers + router (criar protegido, consultar público)
+- [x] UI Orçamentos: busca TUSS por procedimento, seção OPME (add/remover), campo justificativa clínica
+- [x] PDF do orçamento: seções TUSS/OPME/justificativa + autenticação visual (assinatura PNG, CRM/RQE, QR/hash)
+- [x] Página pública de verificação do documento (/verificar/:codigo)
+- [x] Corrigir CRM/RQE antigos em Budgets.tsx e protocols.json (241.135/112.445 -> 202291/146538)
+- [x] Testes de integridade das bases TUSS/OPME (9 testes) — 76/76 vitest no total
+- [DECISÃO] ICP-Brasil A1 adiado: caminho de menor custo usa autenticação visual+QR (aceito por convênios); certificado NÃO embarcado (Felipe vai trocar)
+- [x] Validar (tsc 0 erros + 76/76 vitest), salvar checkpoint
