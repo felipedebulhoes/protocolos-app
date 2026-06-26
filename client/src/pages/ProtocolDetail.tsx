@@ -242,6 +242,38 @@ export default function ProtocolDetail() {
       })
       .join("");
 
+    // Página de capa premium (folha A4 inteira): logo grande, nome do paciente em destaque,
+    // título/categoria do protocolo e mensagem da Linha de Cuidado Integral.
+    const safePatient = pdfPatientName.trim() ? escapeHtml(pdfPatientName.trim()) : "";
+    const coverPatientBlock = safePatient
+      ? `<div class="cover-patient">
+           <span class="cover-patient-label">Preparado exclusivamente para</span>
+           <span class="cover-patient-name">${safePatient}</span>
+         </div>`
+      : `<div class="cover-patient">
+           <span class="cover-patient-label">Plano de cuidado personalizado</span>
+         </div>`;
+    const coverProcDate = procDateStr
+      ? `<div class="cover-date">Procedimento previsto para ${procDateStr}</div>`
+      : "";
+    const coverHtml = `
+  <section class="cover">
+    <div class="cover-top">
+      <img class="cover-logo" src="${logoUrl}" alt="Dr. Felipe de Bulhões" />
+    </div>
+    <div class="cover-mid">
+      <span class="cover-cat">${escapeHtml(protocol.category || "")}</span>
+      <h1 class="cover-title">${escapeHtml(protocol.title)}</h1>
+      ${coverPatientBlock}
+      ${coverProcDate}
+    </div>
+    <div class="cover-bottom">
+      <div class="cover-care">Mais do que um procedimento, uma <strong>linha de cuidado completa</strong> &mdash; do preparo à recuperação, com acompanhamento dedicado.</div>
+      <div class="cover-sign">Dr.&nbsp;Felipe de Bulhões &middot; Urologia &amp; Andrologia</div>
+      <div class="cover-meta">Documento gerado em ${dateStr}</div>
+    </div>
+  </section>`;
+
     const printHtml = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8" />
 <title>${protocol.title}</title>
@@ -282,8 +314,27 @@ export default function ProtocolDetail() {
   .sec-body li { margin: 2px 0; break-inside: avoid; page-break-inside: avoid; }
   .sec-body a { color: #1C3D5A; text-decoration: underline; word-break: break-all; }
   .footer { margin-top: 24px; border-top: 1px solid #d8dde1; padding-top: 6px; font-size: 9.5px; color: #8b97a1; display: flex; justify-content: space-between; font-family: Arial, sans-serif; break-inside: avoid; page-break-inside: avoid; }
+  /* ===== Capa Premium ===== */
+  .cover { min-height: 247mm; display: flex; flex-direction: column; justify-content: space-between; text-align: center; page-break-after: always; break-after: page; position: relative; }
+  .cover::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, #B87333 0%, #B87333 40%, #1C3D5A 40%, #1C3D5A 100%); }
+  /* Faixa azul-petróleo no topo para acomodar o logo branco da marca */
+  .cover-top { background: #1C3D5A; padding: 30mm 4mm 26mm; border-bottom: 6px solid #B87333; }
+  .cover-logo { height: 120px; object-fit: contain; }
+  .cover-mid { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 16mm; }
+  .cover-cat { display: inline-block; background: #1C3D5A; color: #fff; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; padding: 5px 16px; border-radius: 3px; font-family: Arial, sans-serif; }
+  .cover-title { font-size: 34px; line-height: 1.2; color: #1C3D5A; margin: 6px 0 8px; max-width: 150mm; }
+  .cover-patient { margin-top: 22px; padding: 18px 24px; border-top: 1px solid #e3d4c2; border-bottom: 1px solid #e3d4c2; display: inline-flex; flex-direction: column; gap: 6px; }
+  .cover-patient-label { font-family: Arial, sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #B87333; }
+  .cover-patient-name { font-size: 28px; color: #1C3D5A; font-weight: bold; }
+  .cover-date { margin-top: 14px; font-family: Arial, sans-serif; font-size: 12px; color: #6b7a86; }
+  .cover-bottom { padding: 0 16mm 22mm; }
+  .cover-care { font-style: italic; font-size: 14px; color: #34505f; max-width: 140mm; margin: 0 auto 18px; }
+  .cover-care strong { color: #B87333; font-style: normal; }
+  .cover-sign { font-family: Arial, sans-serif; font-size: 13px; color: #1C3D5A; font-weight: bold; letter-spacing: .5px; }
+  .cover-meta { font-family: Arial, sans-serif; font-size: 10px; color: #8b97a1; margin-top: 6px; }
 </style></head>
 <body>
+  ${coverHtml}
   <div class="header">
     <img src="${logoUrl}" alt="Dr. Felipe de Bulhões" />
     <div class="meta">Documento gerado em ${dateStr}<br/>Orientações ao Paciente</div>

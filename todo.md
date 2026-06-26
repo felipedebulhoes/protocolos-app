@@ -206,3 +206,11 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Polir identidade visual do PDF (logo, azul-petróleo #1C3D5A, cobre #B87333)
 - [x] Extrair pipeline puro para shared/pdfPatientFilter.ts + 9 testes de regressão contra os 73 protocolos
 - [x] Validar (tsc 0 erros + 64/64 vitest), salvar checkpoint
+
+## Capa Premium do PDF — 2026-06-26
+- [x] Adicionar página de capa A4 (logo grande, nome do paciente, título/categoria, frase da Linha de Cuidado)
+- [x] Garantir quebra de página após a capa (capa ocupa folha inteira)
+- [x] Manter identidade visual (faixa azul-petróleo com logo branco + faixas cobre)
+- [x] Capa adapta-se quando não há nome do paciente ("Plano de cuidado personalizado")
+- [x] Validar visualmente via render WeasyPrint (logo branco visível sobre faixa azul)
+- [x] Validar (tsc 0 erros + 64/64 vitest), salvar checkpoint
