@@ -869,13 +869,31 @@ export default function ProtocolDetail() {
                       />
                     </div>
                   </div>
-                  <DialogFooter className="gap-2 sm:gap-0">
-                    <Button variant="outline" onClick={() => setPdfDialogOpen(false)}>
-                      Cancelar
+                  <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setPdfPatientName("");
+                        setPdfProcedureDate("");
+                        setPdfObservations("");
+                        if (typeof window !== "undefined") {
+                          sessionStorage.removeItem("pdf_patient_name");
+                          sessionStorage.removeItem("pdf_procedure_date");
+                        }
+                        toast.success("Dados do paciente limpos.");
+                      }}
+                      className="text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Limpar paciente
                     </Button>
-                    <Button onClick={handleDownloadPdf} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                      <Download className="mr-2 h-4 w-4" /> Gerar PDF
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={() => setPdfDialogOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleDownloadPdf} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                        <Download className="mr-2 h-4 w-4" /> Gerar PDF
+                      </Button>
+                    </div>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>

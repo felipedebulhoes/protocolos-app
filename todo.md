@@ -171,3 +171,11 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Corrigir falha no PDF: substituído Python/WeasyPrint por geração client-side (funciona em produção)
 - [x] Testar: 47/47 testes passando, TypeScript limpo, duplicação de blocos premium removida
 - [x] Salvar checkpoint (7d9b292e) e entregar
+
+## Botão Limpar Paciente + Expansão Clínica + Landing Premium
+- [x] Adicionar botão "Limpar paciente" no modal de PDF
+- [x] Redigir bloco de Acompanhamento Premium clínico (3 meses)
+- [x] Identificar protocolos clínicos não-cirúrgicos (7 protocolos)
+- [x] Aplicar o bloco clínico aos protocolos não-cirúrgicos no JSON (7 protocolos, sem duplicação)
+- [x] Criar landing page "Jornada Premium" (CPP, timeline, depoimentos, CTA) em /jornada-premium
+- [x] Testar (47/47), TypeScript limpo, salvar checkpoint
