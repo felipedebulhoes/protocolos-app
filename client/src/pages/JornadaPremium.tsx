@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import JornadasSelector from "@/components/JornadasSelector";
 import {
   ArrowRight,
   Stethoscope,
@@ -149,6 +150,15 @@ export default function JornadaPremium() {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </a>
+              <a href="#jornadas-procedimento">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="btn-press border-white/40 text-white hover:bg-white/10 px-8"
+                >
+                  Ver Jornadas por Procedimento
+                </Button>
+              </a>
             </div>
           </div>
         </div>
@@ -230,6 +240,26 @@ export default function JornadaPremium() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── JORNADAS POR PROCEDIMENTO ───────────────────────────────────── */}
+      <section id="jornadas-procedimento" className="py-20 px-4 bg-background">
+        <div className="container max-w-6xl">
+          <div className="text-center mb-12">
+            <span className="inline-block bg-[#B87333] text-white text-xs tracking-[0.2em] uppercase px-4 py-1.5 rounded-sm mb-5">
+              Planos Detalhados por Procedimento
+            </span>
+            <h3 className="font-serif text-2xl md:text-3xl text-primary mb-3">
+              Sua Jornada, Procedimento a Procedimento
+            </h3>
+            <p className="text-muted-foreground max-w-2xl mx-auto font-light">
+              Selecione o procedimento para ver o plano completo de preparo,
+              tratamento, recuperação e acompanhamento — baseado nas diretrizes
+              EAU e AUA.
+            </p>
+          </div>
+          <JornadasSelector />
         </div>
       </section>
 

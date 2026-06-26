@@ -248,3 +248,11 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Numeração dos itens + subtotal por item + total geral de OPME
 - [x] Refletir valores/subtotais/total no HTML do PDF (seção OPME financeira)
 - [x] Validar (tsc 0 erros + 76/76 vitest), salvar checkpoint
+
+## Jornada Premium por Procedimento (12 jornadas) — 2026-06-26
+- [x] Pesquisar evidências EAU/AUA para as 12 jornadas (otimização pré-op, cronograma pós-op, acompanhamento 6m)
+- [x] Estruturar dados reutilizáveis em shared/jornadas.ts (tipados) com fontes citadas
+- [x] Adicionar seção "Jornadas por Procedimento" + seletor (JornadasSelector) na JornadaPremium.tsx + CTA no hero
+- [x] 12 jornadas: prótese peniana, varicocelectomia, vasectomia, reversão de vasectomia, MicroTESE, Li-ESWT/PRP, postectomia/frenuloplastia, litíase, HPB, TRT, incontinência (masc+fem), ITU de repetição
+- [x] Teste de integridade dos dados (6 testes) movido p/ shared
+- [x] Validar (tsc 0 erros + 82/82 vitest), salvar checkpoint
