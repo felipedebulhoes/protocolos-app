@@ -242,3 +242,9 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Testes de integridade das bases TUSS/OPME (9 testes) — 76/76 vitest no total
 - [DECISÃO] ICP-Brasil A1 adiado: caminho de menor custo usa autenticação visual+QR (aceito por convênios); certificado NÃO embarcado (Felipe vai trocar)
 - [x] Validar (tsc 0 erros + 76/76 vitest), salvar checkpoint
+
+## Orçamento Financeiro OPME — 2026-06-26
+- [ ] Campo opcional de preço por item de OPME (e quantidade) na UI do orçamento
+- [ ] Numeração dos itens + subtotal por item + total geral de OPME
+- [ ] Refletir valores/subtotais/total no HTML do PDF (seção OPME financeira)
+- [ ] Validar (tsc + vitest), salvar checkpoint
