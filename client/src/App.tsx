@@ -16,7 +16,6 @@ import DiarioPaciente from "./pages/DiarioPaciente";
 import FichaPublica from "./pages/FichaPublica";
 import PortalPaciente from "./pages/PortalPaciente";
 import PacienteLanding from "./pages/PacienteLanding";
-import GuiaGLP1 from "./pages/GuiaGLP1";
 import VerifyDocument from "./pages/VerifyDocument";
 import IntakeManager from "./pages/IntakeManager";
 import IntakeDetail from "./pages/IntakeDetail";
@@ -127,13 +126,6 @@ function Router() {
       </Route>
       <Route path="/fluxograma-espermograma">
         <DoctorGuard><SpermogramFlowchart /></DoctorGuard>
-      </Route>
-      {/* Material para a equipe gerar e entregar ao paciente (interno) */}
-      <Route path="/guia-glp1">
-        <DoctorGuard><GuiaGLP1 /></DoctorGuard>
-      </Route>
-      <Route path="/canetas-emagrecedoras">
-        <DoctorGuard><GuiaGLP1 /></DoctorGuard>
       </Route>
       <Route path="/configuracoes">
         <DoctorGuard><Configuracoes /></DoctorGuard>
