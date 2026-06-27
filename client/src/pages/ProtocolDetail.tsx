@@ -60,6 +60,7 @@ import Layout from "@/components/Layout";
 import protocolsData from "@/data/protocols.json";
 import { trpc } from "@/lib/trpc";
 import { buildPatientSections, isCareJourneySection } from "@shared/pdfPatientFilter";
+import { isJourneyTimelineSection, applyRealDatesToTimeline } from "@shared/journeySchedule";
 
 // Mapeamento dinâmico de ícones do Lucide
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -233,6 +234,23 @@ export default function ProtocolDetail() {
 
     const sectionsHtml = clinicalSections
       .map((s: any) => {
+        const isJourney = isJourneyTimelineSection(s.title || "");
+        if (isJourney) {
+          // Aplica datas reais às janelas quando a data do procedimento foi informada.
+          const content = pdfProcedureDate
+            ? applyRealDatesToTimeline(s.content || "", pdfProcedureDate)
+            : (s.content || "");
+          const dateNote = pdfProcedureDate
+            ? `<div class="journey-note">Datas estimadas a partir do procedimento em <strong>${procDateStr}</strong>. As janelas (≈) são previsões; confirme cada retorno com a equipe.</div>`
+            : `<div class="journey-note">Informe a data do procedimento ao gerar o PDF para calcular as datas reais de cada retorno.</div>`;
+          return `
+        <section class="sec journey">
+          <div class="journey-badge">Linha do Tempo do Cuidado</div>
+          <h2>${s.title}</h2>
+          ${dateNote}
+          <div class="sec-body">${mdToHtml(content)}</div>
+        </section>`;
+        }
         const highlight = isCareJourneySection(s.title || "");
         return `
         <section class="sec${highlight ? " care" : ""}">
@@ -305,6 +323,19 @@ export default function ProtocolDetail() {
   .sec.care .sec-body table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; }
   .sec.care .sec-body th, .sec.care .sec-body td { border: 1px solid #e3d4c2; padding: 4px 6px; text-align: left; vertical-align: top; }
   .sec.care .sec-body th { background: #1C3D5A; color: #fff; font-family: Arial, sans-serif; }
+  /* ===== Cronograma da Jornada (linha do tempo do cuidado) ===== */
+  .sec.journey { background: #1C3D5A; color: #eaf0f5; border-radius: 6px; padding: 16px 18px; margin: 22px 0; break-inside: avoid; page-break-inside: avoid; }
+  .journey-badge { display: inline-block; background: #B87333; color: #fff; font-family: Arial, sans-serif; font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 12px; border-radius: 999px; margin-bottom: 8px; }
+  .sec.journey h2 { color: #fff; border-left: none; padding-left: 0; font-size: 16px; margin: 0 0 4px; }
+  .journey-note { font-family: Arial, sans-serif; font-size: 10.5px; color: #cdd8e2; margin: 0 0 10px; font-style: italic; }
+  .journey-note strong { color: #f0c9a3; font-style: normal; }
+  .sec.journey .sec-body { font-size: 12px; color: #eaf0f5; }
+  .sec.journey .sec-body strong { color: #f0c9a3; }
+  .sec.journey .sec-body a { color: #cfe0ef; }
+  .sec.journey .sec-body table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; background: #fff; color: #1C3D5A; border-radius: 4px; overflow: hidden; }
+  .sec.journey .sec-body th { background: #B87333; color: #fff; font-family: Arial, sans-serif; border: 1px solid #a4642c; padding: 5px 7px; text-align: left; }
+  .sec.journey .sec-body td { border: 1px solid #dfe5ea; padding: 5px 7px; vertical-align: top; }
+  .sec.journey .sec-body td strong { color: #1C3D5A; }
   .sec-body table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 8px 0; }
   .sec-body th, .sec-body td { border: 1px solid #d8dde1; padding: 4px 6px; text-align: left; vertical-align: top; }
   .sec-body th { background: #eef1f4; color: #1C3D5A; font-family: Arial, sans-serif; }

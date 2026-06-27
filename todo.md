@@ -264,3 +264,10 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Manter shared/jornadas.ts como fonte de verdade testada; só o Guia GLP-1 vai para o site público
 - [x] Teste de integração (server/jornadasIntegration.test.ts, 4 testes)
 - [x] Validar (tsc 0 erros + 86/86 vitest), salvar checkpoint
+
+## PDF da Jornada no Protocolo — 2026-06-26
+- [x] Destacar visualmente o cronograma da jornada no PDF do paciente (caixa "journey" azul-petróleo + badge)
+- [x] Calcular datas reais das janelas via shared/journeySchedule.ts (Semana/Mês/Dia/h, intervalos pelo limite inicial; idempotente)
+- [x] Teste do helper (shared/journeySchedule.test.ts, 9 testes)
+- [x] Validar (tsc 0 erros + 95/95 vitest), salvar checkpoint
+- [ ] Orientar migração do Guia GLP-1 para o site público (outra tarefa)
