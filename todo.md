@@ -256,3 +256,11 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] 12 jornadas: prótese peniana, varicocelectomia, vasectomia, reversão de vasectomia, MicroTESE, Li-ESWT/PRP, postectomia/frenuloplastia, litíase, HPB, TRT, incontinência (masc+fem), ITU de repetição
 - [x] Teste de integridade dos dados (6 testes) movido p/ shared
 - [x] Validar (tsc 0 erros + 82/82 vitest), salvar checkpoint
+
+## Integrar Jornadas aos Protocolos (Opção 2 — sem redundância) — 2026-06-26
+- [x] Mapear estrutura/lista dos protocolos (protocols.json) e cruzar com as 12 jornadas (17 protocolos cobrem as 12 jornadas)
+- [x] Integrar jornadas aos protocolos existentes: seção "📅 Cronograma da Jornada (Resumo) & Sinais de Alerta" inserida (idempotente, sem duplicar) via scripts/integrate_jornadas.py
+- [x] Remover página/rota pública da Jornada Premium (App.tsx, Layout.tsx, GuiaGLP1 footer) + arquivos JornadaPremium.tsx/JornadasSelector.tsx
+- [x] Manter shared/jornadas.ts como fonte de verdade testada; só o Guia GLP-1 vai para o site público
+- [x] Teste de integração (server/jornadasIntegration.test.ts, 4 testes)
+- [x] Validar (tsc 0 erros + 86/86 vitest), salvar checkpoint

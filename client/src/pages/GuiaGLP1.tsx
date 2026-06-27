@@ -452,11 +452,6 @@ export default function GuiaGLP1() {
           <p className="text-sm text-primary-foreground/80">
             Dr. Felipe de Bulhões — Urologia &amp; Andrologia
           </p>
-          <Link href="/jornada-premium">
-            <span className="text-sm text-primary-foreground/70 hover:text-primary-foreground cursor-pointer">
-              Conheça a Jornada Premium
-            </span>
-          </Link>
         </div>
       </footer>
     </div>

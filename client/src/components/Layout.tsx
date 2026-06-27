@@ -26,7 +26,6 @@ import {
   Check,
   Globe,
   TrendingUp,
-  Sparkles,
   Syringe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,7 +68,6 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/fichas", label: "Fichas Pré-Consulta", icon: ClipboardList },
     { href: "/exames-analytics", label: "Analytics de Exames", icon: TrendingUp },
     { href: "/icp", label: "Paciente Ideal (ICP)", icon: Target },
-    { href: "/jornada-premium", label: "Jornada Premium", icon: Sparkles },
     { href: "/guia-glp1", label: "Material: Canetas (GLP-1)", icon: Syringe },
     { href: "/configuracoes", label: "Configurações", icon: Settings },
   ];

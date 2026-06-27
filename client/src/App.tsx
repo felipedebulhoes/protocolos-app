@@ -16,7 +16,6 @@ import DiarioPaciente from "./pages/DiarioPaciente";
 import FichaPublica from "./pages/FichaPublica";
 import PortalPaciente from "./pages/PortalPaciente";
 import PacienteLanding from "./pages/PacienteLanding";
-import JornadaPremium from "./pages/JornadaPremium";
 import GuiaGLP1 from "./pages/GuiaGLP1";
 import VerifyDocument from "./pages/VerifyDocument";
 import IntakeManager from "./pages/IntakeManager";
@@ -83,7 +82,6 @@ function Router() {
 
       {/* Patient-facing public routes */}
       <Route path="/paciente" component={PacienteLanding} />
-      <Route path="/jornada-premium" component={JornadaPremium} />
       <Route path="/cadastro" component={PortalRegister} />
       <Route path="/login" component={PortalLogin} />
       <Route path="/portal" component={PortalRoute} />
