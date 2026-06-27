@@ -270,4 +270,10 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Calcular datas reais das janelas via shared/journeySchedule.ts (Semana/Mês/Dia/h, intervalos pelo limite inicial; idempotente)
 - [x] Teste do helper (shared/journeySchedule.test.ts, 9 testes)
 - [x] Validar (tsc 0 erros + 95/95 vitest), salvar checkpoint
-- [ ] Orientar migração do Guia GLP-1 para o site público (outra tarefa)
+- [x] Orientar migração do Guia GLP-1 para o site público (pacote pronto; instrução entregue — executar na tarefa do bulhoesurohealth.com)
+
+## Corrigir deploy OOM (exit 137) — 2026-06-27
+- [x] Substituir Streamdown por MarkdownLite próprio (remove Mermaid/Shiki/WASM do bundle); dep streamdown removida
+- [x] chunkSizeWarningLimit + NODE_OPTIONS=--max-old-space-size=2048 no build (margem de heap)
+- [x] Build local: 27,7s→9,5s; JS 5.172→4.258 kB; ~14 chunks pesados eliminados; tsc 0 erros + 95/95 vitest
+- [x] Salvar checkpoint e orientar nova publicação

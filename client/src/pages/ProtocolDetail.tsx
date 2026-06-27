@@ -55,7 +55,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Streamdown } from "streamdown";
+import MarkdownLite from "@/components/MarkdownLite";
 import Layout from "@/components/Layout";
 import protocolsData from "@/data/protocols.json";
 import { trpc } from "@/lib/trpc";
@@ -1077,7 +1077,7 @@ export default function ProtocolDetail() {
                     {section.title}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground text-base leading-relaxed">
-                    <Streamdown>{section.content}</Streamdown>
+                    <MarkdownLite>{section.content}</MarkdownLite>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -1452,7 +1452,7 @@ export default function ProtocolDetail() {
                   {protocol.sections.map((section: any, index: number) => (
                     section.is_references && (
                       <div key={index} className="mb-4">
-                        <Streamdown>{section.content}</Streamdown>
+                        <MarkdownLite>{section.content}</MarkdownLite>
                       </div>
                     )
                   ))}
@@ -1472,7 +1472,7 @@ export default function ProtocolDetail() {
                   {protocol.sections.map((section: any, index: number) => (
                     section.is_secretary && (
                       <div key={index} className="mb-4">
-                        <Streamdown>{section.content}</Streamdown>
+                        <MarkdownLite>{section.content}</MarkdownLite>
                       </div>
                     )
                   ))}
