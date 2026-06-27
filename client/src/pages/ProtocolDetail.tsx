@@ -407,6 +407,122 @@ export default function ProtocolDetail() {
     setPdfDialogOpen(false);
   };
 
+  // Imprime APENAS a seção de Cronograma da Jornada (linha do tempo do cuidado),
+  // sem capa nem demais seções. Reaproveita data do procedimento e o helper de datas reais.
+  const handlePrintJourney = () => {
+    if (!protocol) return;
+    const journeySection = (protocol.sections as any[]).find((s: any) =>
+      isJourneyTimelineSection(s.title || ""),
+    );
+    if (!journeySection) {
+      toast.error("Este protocolo não possui cronograma de jornada.");
+      return;
+    }
+
+    const savedDate =
+      typeof window !== "undefined"
+        ? sessionStorage.getItem("pdf_procedure_date") || ""
+        : "";
+    const procDate = pdfProcedureDate || savedDate;
+    const savedName =
+      typeof window !== "undefined"
+        ? sessionStorage.getItem("pdf_patient_name") || ""
+        : "";
+    const patientName = pdfPatientName.trim() || savedName.trim();
+
+    const logoUrl = `${window.location.origin}/images/logo_landscape.svg`;
+    const dateStr = new Date().toLocaleDateString("pt-BR");
+    const procDateStr = procDate
+      ? new Date(procDate + "T00:00:00").toLocaleDateString("pt-BR")
+      : "";
+    const escapeHtml = (v: string) =>
+      v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    const content = procDate
+      ? applyRealDatesToTimeline(journeySection.content || "", procDate)
+      : journeySection.content || "";
+    const dateNote = procDate
+      ? `<div class="journey-note">Datas estimadas a partir do procedimento em <strong>${procDateStr}</strong>. As janelas (≈) são previsões; confirme cada retorno com a equipe.</div>`
+      : `<div class="journey-note">Dica: informe a data do procedimento no botão \"Baixar PDF\" para que as datas reais de cada retorno apareçam aqui.</div>`;
+
+    const patientLine =
+      patientName || procDateStr
+        ? `<div class="patient">${
+            patientName
+              ? `<span><strong>Paciente:</strong> ${escapeHtml(patientName)}</span>`
+              : ""
+          }${
+            procDateStr
+              ? `<span><strong>Procedimento:</strong> ${procDateStr}</span>`
+              : ""
+          }</div>`
+        : "";
+
+    const printHtml = `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8" />
+<title>Jornada — ${escapeHtml(protocol.title)}</title>
+<style>
+  @page { size: A4; margin: 16mm 16mm 20mm 16mm;
+    @bottom-right { content: "Página " counter(page); font-family: Arial, sans-serif; font-size: 9px; color: #8b97a1; } }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #1C3D5A; line-height: 1.55; margin: 0; }
+  .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #B87333; padding-bottom: 12px; margin-bottom: 16px; }
+  .header img { height: 52px; object-fit: contain; }
+  .header .meta { text-align: right; font-size: 11px; color: #6b7a86; font-family: Arial, sans-serif; }
+  .cat { display: inline-block; background: #1C3D5A; color: #fff; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; font-family: Arial, sans-serif; }
+  h1 { font-size: 20px; color: #1C3D5A; margin: 8px 0 4px; }
+  .patient { display: flex; gap: 28px; flex-wrap: wrap; background: #f4f1ec; border-left: 4px solid #B87333; padding: 8px 12px; margin: 10px 0 16px; font-size: 12px; font-family: Arial, sans-serif; color: #1C3D5A; }
+  .sec.journey { background: #1C3D5A; color: #eaf0f5; border-radius: 6px; padding: 16px 18px; margin: 8px 0; }
+  .journey-badge { display: inline-block; background: #B87333; color: #fff; font-family: Arial, sans-serif; font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 12px; border-radius: 999px; margin-bottom: 8px; }
+  .sec.journey h2 { color: #fff; border-left: none; padding-left: 0; font-size: 17px; margin: 0 0 4px; }
+  .journey-note { font-family: Arial, sans-serif; font-size: 10.5px; color: #cdd8e2; margin: 0 0 10px; font-style: italic; }
+  .journey-note strong { color: #f0c9a3; font-style: normal; }
+  .sec.journey .sec-body { font-size: 12.5px; color: #eaf0f5; }
+  .sec.journey .sec-body strong { color: #f0c9a3; }
+  .sec.journey .sec-body table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin: 8px 0; background: #fff; color: #1C3D5A; border-radius: 4px; overflow: hidden; }
+  .sec.journey .sec-body th { background: #B87333; color: #fff; font-family: Arial, sans-serif; border: 1px solid #a4642c; padding: 6px 8px; text-align: left; }
+  .sec.journey .sec-body td { border: 1px solid #dfe5ea; padding: 6px 8px; vertical-align: top; }
+  .sec.journey .sec-body td strong { color: #1C3D5A; }
+  .sec.journey .sec-body ul { margin: 4px 0 4px 18px; padding: 0; }
+  .footer { margin-top: 22px; border-top: 1px solid #d8dde1; padding-top: 6px; font-size: 9.5px; color: #8b97a1; display: flex; justify-content: space-between; font-family: Arial, sans-serif; }
+</style></head>
+<body>
+  <div class="header">
+    <img src="${logoUrl}" alt="Dr. Felipe de Bulhões" />
+    <div class="meta">Documento gerado em ${dateStr}<br/>Linha do Tempo do Cuidado</div>
+  </div>
+  <span class="cat">${escapeHtml(protocol.category || "")}</span>
+  <h1>${escapeHtml(protocol.title)}</h1>
+  ${patientLine}
+  <section class="sec journey">
+    <div class="journey-badge">Linha do Tempo do Cuidado</div>
+    <h2>${escapeHtml(journeySection.title)}</h2>
+    ${dateNote}
+    <div class="sec-body">${mdToHtml(content)}</div>
+  </section>
+  <div class="footer">
+    <span>Dr. Felipe de Bulhões — Urologia &amp; Andrologia</span>
+    <span>Material educativo; não substitui a consulta médica.</span>
+  </div>
+</body></html>`;
+
+    const printWindow = window.open("", "_blank", "width=820,height=1000");
+    if (!printWindow) {
+      toast.error("Permita pop-ups para gerar o PDF.");
+      return;
+    }
+    printWindow.document.open();
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 400);
+    };
+    toast.success("Linha do tempo pronta. Use 'Salvar como PDF' na janela de impressão.");
+  };
+
   // Função para calcular datas de retorno (D+7 e D+30) com dias da semana em português
   const calculateReturnDates = (dateStr: string) => {
     if (!dateStr) return null;
@@ -951,9 +1067,20 @@ export default function ProtocolDetail() {
             <CardTitle className="flex flex-col items-center text-center">
               <h1 className="text-3xl font-bold text-primary-foreground mb-2">{protocol.title}</h1>
               <p className="text-sm text-muted-foreground">ID: {protocol.id}</p>
-              <Button onClick={() => setPdfDialogOpen(true)} className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90">
-                <Download className="mr-2 h-4 w-4" /> Baixar PDF
-              </Button>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                <Button onClick={() => setPdfDialogOpen(true)} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  <Download className="mr-2 h-4 w-4" /> Baixar PDF
+                </Button>
+                {protocol.sections.some((s: any) => isJourneyTimelineSection(s.title || "")) && (
+                  <Button
+                    variant="outline"
+                    onClick={handlePrintJourney}
+                    className="border-accent text-accent hover:bg-accent/10"
+                  >
+                    <Printer className="mr-2 h-4 w-4" /> Imprimir Jornada
+                  </Button>
+                )}
+              </div>
               <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>

@@ -277,3 +277,10 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] chunkSizeWarningLimit + NODE_OPTIONS=--max-old-space-size=2048 no build (margem de heap)
 - [x] Build local: 27,7s→9,5s; JS 5.172→4.258 kB; ~14 chunks pesados eliminados; tsc 0 erros + 95/95 vitest
 - [x] Salvar checkpoint e orientar nova publicação
+
+## Botão Imprimir Jornada (linha do tempo) — 2026-06-27
+- [x] Botão "Imprimir Jornada" no detalhe do protocolo (condicional: só com seção de jornada)
+- [x] PDF A4 enxuto só com a seção Cronograma da Jornada (cabeçalho + paciente/data + linha do tempo + rodapé)
+- [x] Reaproveita data do procedimento (datas reais) e estilo da caixa journey
+- [x] Validar (tsc 0 erros + 95/95 vitest), salvar checkpoint
+- [ ] Despublicar /guia-glp1 (após confirmação de que está ativo no site público)
