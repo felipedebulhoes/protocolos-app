@@ -22,3 +22,7 @@ server: {
 ## Validação em 28/08/2026
 
 Após reiniciar o servidor, a rota `/?from_webdev=1` carregou e redirecionou corretamente para o login protegido. O console do navegador permaneceu sem erros de Vite, HMR ou WebSocket após o carregamento. Um teste de regressão verifica que a integração continua presente no bootstrap do servidor.
+
+### Teste de continuidade
+
+Foram feitas três edições controladas e consecutivas em `client/src/index.css`, todas processadas sem recarregar o servidor. Os logs registraram três eventos `hot updated: /src/index.css` e nenhum novo `failed to connect`, `WebSocket closed without opened` ou `UnhandledRejection`. A alteração temporária foi removida ao final, sem mudança visual residual.

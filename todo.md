@@ -292,3 +292,11 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Teste de regressão em `server/viteHmrIntegration.test.ts`
 - [x] Validar preview (logs `[vite] connected.`), tsc 0 erros, 96/96 vitest e build em 8,81s
 - [x] Salvar checkpoint
+
+## Validação contínua do HMR + revisão de domínios — 2026-08-28
+- [x] Fazer três edições controladas e confirmar três eventos `hot updated: /src/index.css`
+- [x] Confirmar ausência de novos erros `WebSocket closed without opened` durante a sequência
+- [x] Revisar domínios: apenas `protocolapp-wtasisww.manus.space` está vinculado ao ProtoUro
+- [x] Diagnosticar `protocolos.*`, `paciente.*` e `www.*`: DNS alcança Manus, mas vínculo de projeto está ausente (HTTP 503/origem 404)
+- [x] Validar tsc 0 erros, 96/96 vitest e build em 8,67s
+- [x] Salvar novo checkpoint e orientar publicação manual pelo painel
