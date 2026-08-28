@@ -284,3 +284,11 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Reaproveita data do procedimento (datas reais) e estilo da caixa journey
 - [x] Validar (tsc 0 erros + 95/95 vitest), salvar checkpoint
 - [x] Despublicar /guia-glp1 do app interno: rotas (/guia-glp1, /canetas-emagrecedoras), item de menu, página GuiaGLP1.tsx e import Syringe removidos; tsc 0 erros + 95/95 vitest (confirmado ativo no site público)
+
+## Bug: WebSocket/HMR do Vite não conecta — 2026-08-28
+- [x] Inspecionar status do servidor, devserver.log e browserConsole.log
+- [x] Causa: Vite em middlewareMode não reutilizava o servidor HTTP do Express para upgrades de WebSocket
+- [x] Correção mínima: `server.hmr = { server }` na criação do Vite em `server/_core/index.ts`
+- [x] Teste de regressão em `server/viteHmrIntegration.test.ts`
+- [x] Validar preview (logs `[vite] connected.`), tsc 0 erros, 96/96 vitest e build em 8,81s
+- [x] Salvar checkpoint

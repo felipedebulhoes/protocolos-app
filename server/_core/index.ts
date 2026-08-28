@@ -166,7 +166,14 @@ async function startServer() {
     const vite = await createViteServer({
       // Load the project's vite.config.ts (aliases @, @shared, plugins, root=client).
       configFile: path.resolve(__dirname, "..", "..", "vite.config.ts"),
-      server: { middlewareMode: true },
+      // In middleware mode Vite does not own the HTTP server. Reuse our
+      // existing server for HMR upgrades; otherwise the page loads but the
+      // Vite client WebSocket is closed before it can open behind the preview
+      // reverse proxy.
+      server: {
+        middlewareMode: true,
+        hmr: { server },
+      },
       appType: "custom",
     });
     app.use(vite.middlewares);
