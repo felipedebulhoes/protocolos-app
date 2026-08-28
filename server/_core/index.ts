@@ -155,7 +155,10 @@ async function startServer() {
 
   // ---- Frontend (Vite in dev, static in prod) ----
   if (isProd()) {
-    const staticPath = path.resolve(__dirname, "..", "public");
+    // The server bundle is emitted as dist/index.js and Vite emits the client
+    // alongside it in dist/public. Resolving through ".." incorrectly points
+    // to /app/public in production and makes every SPA route fail with ENOENT.
+    const staticPath = path.resolve(__dirname, "public");
     app.use(express.static(staticPath));
     app.get("*", (_req, res) => {
       res.sendFile(path.join(staticPath, "index.html"));

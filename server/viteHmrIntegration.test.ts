@@ -12,4 +12,14 @@ describe("Vite HMR middleware integration", () => {
     expect(source).toMatch(/middlewareMode:\s*true/);
     expect(source).toMatch(/hmr:\s*\{\s*server\s*\}/);
   });
+
+  it("serves Vite output from dist/public beside the bundled server", () => {
+    const source = fs.readFileSync(
+      path.resolve(process.cwd(), "server/_core/index.ts"),
+      "utf8",
+    );
+
+    expect(source).toContain('path.resolve(__dirname, "public")');
+    expect(source).not.toContain('path.resolve(__dirname, "..", "public")');
+  });
 });
