@@ -304,7 +304,7 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 ## Bloqueio de produção: domínio personalizado sem vínculo — 2026-08-28
 - [x] Confirmar que `protocolos.felipebulhoes.com` continua retornando manutenção/503
 - [x] Restaurar `protocolos.felipebulhoes.com` em Settings → Domains do projeto ProtoUro
-- [ ] Confirmar que o domínio passa a abrir o login do ProtoUro em produção
+- [x] Confirmar que o domínio abre o login do ProtoUro em produção (sem página de manutenção)
 
 ## Bug de produção: frontend estático procurado no diretório errado — 2026-08-28
 - [x] Corrigir staticPath de `/usr/src/app/public` para `/usr/src/app/dist/public`
@@ -312,4 +312,4 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Validar bundle local em modo produção: raiz e `/login/doctor` retornam HTTP 200
 - [x] Validar tsc 0 erros, 97/97 vitest e build em 8,86s
 - [x] Salvar checkpoint da correção
-- [ ] Republicar o novo checkpoint e validar os logs de produção
+- [x] Republicar o checkpoint 93cf9387 e validar logs: container ativo, sem ENOENT
