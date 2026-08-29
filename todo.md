@@ -313,3 +313,10 @@ Rubrica padrão-ouro em /home/ubuntu/cpp_rubrica_padrao_ouro.md (referência: 4_
 - [x] Validar tsc 0 erros, 97/97 vitest e build em 8,86s
 - [x] Salvar checkpoint da correção
 - [x] Republicar o checkpoint 93cf9387 e validar logs: container ativo, sem ENOENT
+
+## Falha de deployment antes do build (Metal builder) — 2026-08-29
+- [x] Coletar status e logs: tentativa remota contém somente `scheduling build on Metal builder`
+- [x] Confirmar que o builder não iniciou instalação nem build; não há logs de container da tentativa
+- [x] Revalidar código: tsc 0 erros, 97/97 vitest e build local em 8,75s
+- [x] Não alterar código: nenhuma evidência de falha do projeto; produção anterior segue HTTP 200
+- [x] Registrar conclusão: falha transitória de infraestrutura; repetir a publicação preservando o deployment anterior
